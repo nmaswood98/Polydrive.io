@@ -30,7 +30,6 @@ module.exports.Game = {
 
     init: function (server) {
         io = socketIO(server);
-        console.log("Testing MacBook GitHub");
 
         this.engine = Engine.create();
         this.engine.world.gravity.y = 0;
