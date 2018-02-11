@@ -119,7 +119,7 @@ module.exports.Game = {
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
                
-                if (pair.bodyA.parent.id != pair.bodyB.parent.id && (pair.bodyB.parent.follower != pair.bodyA.parent.follower)) {
+                if (pair.bodyA.parent.id != pair.bodyB.parent.id && (pair.bodyB.parent.follower != pair.bodyA.parent.follower )) {
                   
                     
                     if (pair.bodyA.tag == pair.bodyB.tag) {
@@ -131,12 +131,11 @@ module.exports.Game = {
                         if (pair.bodyA.tag == 1) { //body A caused the collision
                             //console.log(pair.isActive);
                         
-                          console.log(pair.bodyA.isSensor);
+                        
                             gameServer.playerLost(pair.bodyB.parent, pair.bodyA.parent);
                             
                         }
                         else {
-                            console.log(pair.bodyA.isSensor);
    
                             gameServer.playerLost(pair.bodyA.parent, pair.bodyB.parent);
                            
@@ -155,10 +154,14 @@ module.exports.Game = {
              
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
-                pair.bodyB.parent.goInto ();
-                pair.bodyA.parent.goInto ();
-                console.log(pair.bodyA.isSensor);
-                console.log(pair.bodyB.isSensor);
+
+                pair.isActive = false;
+                if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
+                    pair.isActive = true;
+                }
+                
+                   
+                
 
             }
         });
@@ -192,7 +195,11 @@ module.exports.Game = {
 
         if (byCrash == true) {
             carFollower.moving = false;
-            setTimeout(function () { carFollower.moving = true; }, 500);
+            setTimeout(function () { carFollower.moving = true; 
+
+
+                
+            }, 500);
 
         }
 
@@ -234,14 +241,7 @@ module.exports.Game = {
         playerCar.follower = playerCar;
         playerCar.id = id; //socket id of clien
         playerCar.followerArray = [];
-
-        playerCar.goInto = function(){
-            bottom.isSensor = true;
-           // top.isSensor = true;
-
-        };
-
-        console.log("What Up pimps");
+        playerCar.moving = true;
 
         return playerCar;
     },
