@@ -38,17 +38,16 @@ var Game = {
             console.log("KCIKECKJEKCJEKJELC:JEKJCL:KEJCLEJM");
         });
         
-        socket.on("draw",function(users,otherCars){
-            //{isPlayer: true, drawn:true, ID:UWAIOEUD,x: 890, y:213,angle: 180}
-            //if(spriteInfo.drawn)
-
+        socket.on("draw",function(cars,environment){
+            //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
+            //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
 
             var amount = 0;
             var size = canvas.OnScreen.children.length; 
            // console.log("size" + size);
-            users.forEach(function(u){
+           cars.forEach(function(u){
                // console.log(canvas.car.id);
                 if (u.id === canvas.car.id){
                     //canvas.car.updated = true;
@@ -85,6 +84,37 @@ var Game = {
 
 
             });
+
+            environment.forEach(function(sprites){
+                if(canvas.screenSprites.hasOwnProperty(sprites.id)){
+                    canvas.screenSprites[sprites.id].x = sprites.x;
+                    canvas.screenSprites[sprites.id].y = sprites.y;
+                    canvas.OnScreen.setChildIndex(canvas.screenSprites[sprites.id] ,size - 1);
+                    amount++;
+
+                }
+                else{
+                    //temp circle going to change to sprites eventually
+
+                    var manaSprite = new PIXI.Graphics();
+                   // manaSprite.anchor.set(0.5,0.5);
+                    manaSprite.id = sprites.id;
+                    manaSprite.x = sprites.x;
+                    manaSprite.y = sprites.y;
+                    manaSprite.beginFill(0xFFFFFF);
+                    manaSprite.drawCircle(0,0,30);
+                    manaSprite.endFill();
+                    canvas.OnScreen.addChild(manaSprite);
+                    canvas.screenSprites[sprites.id] = manaSprite;
+                   
+                    amount++;
+                }
+            });
+
+
+
+
+
 
             amount = size - amount;
 

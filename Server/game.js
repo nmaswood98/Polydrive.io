@@ -36,11 +36,58 @@ module.exports.Game = {
         this.world = this.engine.world;
         // this.engine.world.
 
+
         setInterval(this.tick.bind(this), 1000 / 60);
         this.playerJoined();
         this.players = [];
         this.otherCars = [];
+        this.manaPool = [];
         this.sockets = {};
+
+///GameBoard
+
+
+
+        var mana =  Matter.Bodies.circle(100,100,10); 
+        mana.id = Math.random().toString(36).substring(7);
+
+        this.manaPool.push(mana);
+        World.add(this.engine.world, mana);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////GameBoard
+
+
+
+
+
+
+
+
         var gameServer = this;
 
         io.on("connection", function (socket) {
@@ -100,15 +147,14 @@ module.exports.Game = {
             socket.on("playerTick", function (carInfo) {
 
 
-                if (carInfo.stop == false)
+                if (carInfo.stop == false){
+                    currentCar.stopped = false;
                     gameServer.moveCar(currentCar, carInfo.angle, 5);
+                }
                 else
                     gameServer.stopCar(currentCar);
 
             });
-
-
-
 
         });
 
@@ -153,9 +199,10 @@ module.exports.Game = {
              
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
-
-                pair.isActive = false;
+              
+               // pair.isActive = false;
                 if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
+                    //problem was that the moment it collided it then became another follower so it followed the other rooms
                     pair.isActive = true;
                 }
                 
@@ -256,11 +303,17 @@ module.exports.Game = {
 
         Matter.Body.setVelocity(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
 
-        //console.log(car.position.x);
+        //console.log(car.position.x);helllo my name is nabhan maswood hello my name is nabhan maswood hell polydrvi.ei polydrive.io polydrive.io polydrvie.i
 
     },
     stopCar: function (car) {
         Matter.Body.setVelocity(car, { x: 0, y: 0 });
+        car.stopped = true;
+
+
+
+
+
 
     },
 
@@ -300,12 +353,22 @@ module.exports.Game = {
         //console.log(sentUsers.length);
 
 
+
+        var sentMana = this.manaPool.map(function(mana){
+            return { id: mana.id, x: mana.position.x, y: mana.position.y};
+
+
+
+
+        });
+
+
         var word = "";
         this.players.forEach(function (car) {
             //    console.log(this.players.length);
 
 
-            this.sockets[car.id].emit("draw", sentUsers);
+            this.sockets[car.id].emit("draw", sentUsers,sentMana);
 
 
 
@@ -320,12 +383,9 @@ module.exports.Game = {
         this.players.forEach(function (car) {
             car.followerArray.forEach(function (carFollower) {
 
-                if (carFollower.moving) {
+                if (carFollower.moving && !carFollower.follower.stopped) {
                     var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
-                    //   console.log(car.id);
-
-
-                    
+                
                     this.moveCar(carFollower, angle, 4);
                 }
 
@@ -354,13 +414,6 @@ module.exports.Game = {
 
     }
 
-
-
-
-
-
-
-
-
 };
 
+ 
