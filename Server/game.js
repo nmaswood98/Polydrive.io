@@ -24,6 +24,10 @@ var Engine = Matter.Engine,
     World = Matter.World;
 
 
+function getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) ) + min;
+    }
+
 var io;
 
 module.exports.Game = {
@@ -47,12 +51,15 @@ module.exports.Game = {
 ///GameBoard
 
 
+        for(var i = 0;i < 10;i++){
 
-        var mana =  Matter.Bodies.circle(100,100,10); 
+        var mana =  Matter.Bodies.circle(getRndInteger(0,1800),getRndInteger(0,1000),30); 
         mana.id = Math.random().toString(36).substring(7);
-
+        mana.collisionType = 1;
         this.manaPool.push(mana);
         World.add(this.engine.world, mana);
+
+        }
 
 
 
@@ -145,6 +152,10 @@ module.exports.Game = {
             });
 
             socket.on("playerTick", function (carInfo) {
+                if(currentCar.manaCount == 5){
+                    currentCar.manaCount = 0;
+                    console.log("NEW CAR ALERT NEW CAR ALERT");
+                }
 
 
                 if (carInfo.stop == false){
@@ -163,7 +174,34 @@ module.exports.Game = {
              
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
-               
+
+                if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
+                    if(pair.bodyA.collisionType == 0){
+                        pair.bodyA.parent.manaCount++;
+                        var pos = gameServer.manaPool.indexOf(pair.bodyB);
+                        Matter.Composite.remove(gameServer.world, pair.bodyB);
+                        gameServer.manaPool.splice(pos, 1);
+                        gameServer.newCarFollower(pair.bodyA.parent.follower);
+
+
+
+                    }
+                    else if(pair.bodyB.collisionType == 0){
+                        pair.bodyB.parent.manaCount++;
+                        var pos2 = gameServer.manaPool.indexOf(pair.bodyA);
+                        Matter.Composite.remove(gameServer.world, pair.bodyA);
+                        gameServer.manaPool.splice(pos2, 1);
+                        gameServer.newCarFollower(pair.bodyB.parent.follower);
+                        
+
+                    }
+                    
+                    
+                    
+                    break;
+                }
+
+                
                 if (pair.bodyA.parent.id != pair.bodyB.parent.id && (pair.bodyB.parent.follower != pair.bodyA.parent.follower )) {
                   
                     
@@ -203,7 +241,7 @@ module.exports.Game = {
                // pair.isActive = false;
                 if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
                     //problem was that the moment it collided it then became another follower so it followed the other rooms
-                    pair.isActive = true;
+                  //  pair.isActive = true;
                 }
                 
                    
@@ -267,11 +305,13 @@ module.exports.Game = {
     playerJoined: function (id) {
         var x = 200, y = 200, width = 60, height = 30, thickness = 3;
         var top = Bodies.rectangle(x - ((width - thickness) / 2 + thickness / 2), y, thickness, height);
+        top.collisionType = 0;
         top.tag = 1;
      //   top.isSensor = true;
         top.id = id;
         var bottom = Bodies.rectangle(x, y, width - thickness, height);
         bottom.tag = 0;
+        bottom.collisionType = 0;
         bottom.id = id;
         bottom.isSensor = false;
         
@@ -284,6 +324,8 @@ module.exports.Game = {
         Matter.Body.setStatic(playerCar, false);
       //  playerCar.isSensor = true;
         playerCar.followers = 0;
+        playerCar.manaCount = 0;
+       
         playerCar.follower = playerCar;
         playerCar.id = id; //socket id of clien
         playerCar.followerArray = [];
@@ -292,17 +334,26 @@ module.exports.Game = {
         return playerCar;
     },
 
+    newCarFollower: function(playerCar){
+        var newCar = this.playerJoined(Math.random().toString(36).substring(7)); //Every car needs a random id in order to function properly
+        //console.log(newCar.followers);
+        World.add(this.engine.world, newCar);
+        this.addCarFollower(playerCar,newCar,false);
+      
+       // newCar.moving = true;
+    },
+
 
 
 
     moveCar: function (car, angle, speed) {
 
         Matter.Body.setAngle(car, angle);
-
+        
 
 
         Matter.Body.setVelocity(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
-
+       // console.log(car.velocity);
         //console.log(car.position.x);helllo my name is nabhan maswood hello my name is nabhan maswood hell polydrvi.ei polydrive.io polydrive.io polydrvie.i
 
     },
@@ -350,7 +401,7 @@ module.exports.Game = {
         sentUsers = sentUsers.concat(sentOtherCars);
         
         //amount of cars sent to the user
-        //console.log(sentUsers.length);
+       
 
 
 
@@ -362,7 +413,7 @@ module.exports.Game = {
 
         });
 
-
+       // console.log(sentMana.length);
         var word = "";
         this.players.forEach(function (car) {
             //    console.log(this.players.length);
@@ -382,10 +433,10 @@ module.exports.Game = {
 
         this.players.forEach(function (car) {
             car.followerArray.forEach(function (carFollower) {
-
+              
                 if (carFollower.moving && !carFollower.follower.stopped) {
                     var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
-                
+                //    console.log(carFollower.position);
                     this.moveCar(carFollower, angle, 4);
                 }
 
