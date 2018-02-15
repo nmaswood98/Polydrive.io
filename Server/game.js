@@ -53,36 +53,13 @@ module.exports.Game = {
 
         for(var i = 0;i < 10;i++){
 
-        var mana =  Matter.Bodies.circle(getRndInteger(0,1800),getRndInteger(0,1000),30); 
-        mana.id = Math.random().toString(36).substring(7);
-        mana.collisionType = 1;
-        this.manaPool.push(mana);
-        World.add(this.engine.world, mana);
+      //  var mana =  Matter.Bodies.circle(getRndInteger(0,1800),getRndInteger(0,1000),30); 
+      //  mana.id = Math.random().toString(36).substring(7);
+     //   mana.collisionType = 1;
+     //   this.manaPool.push(mana);
+      //  World.add(this.engine.world, mana);
 
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -176,6 +153,7 @@ module.exports.Game = {
                 var pair = pairs[i];
 
                 if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
+                    console.log("HIT MANA");
                     if(pair.bodyA.collisionType == 0){
                         pair.bodyA.parent.manaCount++;
                         var pos = gameServer.manaPool.indexOf(pair.bodyB);
@@ -200,8 +178,30 @@ module.exports.Game = {
                     
                     break;
                 }
+                else{
+
+            
+                }
 
                 
+            
+
+            }
+        
+        });
+
+        Matter.Events.on(this.engine, 'collisionStart', function (event) {
+            var pairs = event.pairs; 
+             
+            for (var i = 0; i < pairs.length; i++) {
+                var pair = pairs[i];
+
+              
+                pair.isActive = false;
+                if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
+                    //problem was that the moment it collided it then became another follower so it followed the other rooms
+                    pair.isActive = true;
+                }
                 if (pair.bodyA.parent.id != pair.bodyB.parent.id && (pair.bodyB.parent.follower != pair.bodyA.parent.follower )) {
                   
                     
@@ -227,23 +227,6 @@ module.exports.Game = {
                     }
 
                 }
-
-            }
-        
-        });
-
-        Matter.Events.on(this.engine, 'collisionStart', function (event) {
-            var pairs = event.pairs; 
-             
-            for (var i = 0; i < pairs.length; i++) {
-                var pair = pairs[i];
-              
-               // pair.isActive = false;
-                if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
-                    //problem was that the moment it collided it then became another follower so it followed the other rooms
-                  //  pair.isActive = true;
-                }
-                
                    
                 
 
@@ -283,7 +266,7 @@ module.exports.Game = {
 
 
                 
-            }, 500);
+            }, 1000);
 
         }
 
@@ -303,7 +286,7 @@ module.exports.Game = {
     clap: function () { console.log("please clap"); },
 
     playerJoined: function (id) {
-        var x = 200, y = 200, width = 60, height = 30, thickness = 3;
+        var x = 200, y = 200, width = 118, height = 49, thickness = 3;
         var top = Bodies.rectangle(x - ((width - thickness) / 2 + thickness / 2), y, thickness, height);
         top.collisionType = 0;
         top.tag = 1;
@@ -325,7 +308,7 @@ module.exports.Game = {
       //  playerCar.isSensor = true;
         playerCar.followers = 0;
         playerCar.manaCount = 0;
-       
+        playerCar.collisionType = 0;
         playerCar.follower = playerCar;
         playerCar.id = id; //socket id of clien
         playerCar.followerArray = [];

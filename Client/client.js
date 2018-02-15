@@ -195,11 +195,8 @@ var Game = {
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
       var angle =   Math.atan2((mouseY - this.car.y),(mouseX - this.car.x)) - (Math.PI);
       this.car.rotation = angle;
-      //console.log(this.car.x);
-    //  if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0){
-    //    var xValue = this.car.x + 5 * Math.cos(this.car.rotation + Math.PI);
-        //var yValue = this.car.y + 5 * Math.sin(this.car.rotation + Math.PI);
-        if(!this.stop){
+ 
+     if(!this.stop){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && this.car.id != -1){
             socket.emit("playerTick",{angle: this.car.rotation, stop: false});
         }
@@ -208,9 +205,7 @@ var Game = {
             socket.emit("playerTick",{angle: this.car.rotation, stop: true});
         }
     }
-         //this.moveOnScreen("player",xValue,yValue);
-        // console.log(this.car.x);
-           
+   
             
     
       
@@ -255,6 +250,16 @@ var Game = {
 
 
   },
+
+
+  keyboard: function(){
+        
+
+
+
+
+  },
+
   checkDistance: function(X,Y){
     if ((Y - this.car.y) <= 100 && (Y - this.car.y) >= -100){
         if ((X - this.car.x) <= 100 && (X - this.car.x) >= -100){
