@@ -1,3 +1,6 @@
+/*jshint esversion: 6 */
+
+
 var socket = io({transports: ['websocket'], upgrade: false});
 
 var Game = {
@@ -15,10 +18,41 @@ var Game = {
         this.idArray = [];
         this.screenSprites = {};
         
-        this.stop = false;
+        this.starting = true;
+      
         document.body.appendChild(this.app.view);
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         this.app.stage.addChild(this.OnScreen);
+
+
+        this.aKey = this.keyboard(70);
+
+        this.aKey.press = function(){};
+        this.aKey.release = function(){};
+        
+        this.sKey = this.keyboard(68);
+        
+        this.sKey.press = function(){};
+        this.sKey.release = function(){};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         var canvas = this;
         socket.emit("respawn");
@@ -34,7 +68,7 @@ var Game = {
 
         socket.on("kicked",function(){
 
-            canvas.stop = true;
+            canvas.starting = false;
             console.log("KCIKECKJEKCJEKJELC:JEKJCL:KEJCLEJM");
         });
         
@@ -193,15 +227,18 @@ var Game = {
 
   ticker: function(delta){
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
+      
       var angle =   Math.atan2((mouseY - this.car.y),(mouseX - this.car.x)) - (Math.PI);
-      this.car.rotation = angle;
+
+      if(!this.sKey.down)
+        this.car.rotation = angle;
  
-     if(!this.stop){
-        if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && this.car.id != -1){
+     if(this.starting && this.car.id != -1){
+        if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
             socket.emit("playerTick",{angle: this.car.rotation, stop: false});
         }
-        else if (this.car.id != -1){
-
+        else{
+           
             socket.emit("playerTick",{angle: this.car.rotation, stop: true});
         }
     }
@@ -252,12 +289,40 @@ var Game = {
   },
 
 
-  keyboard: function(){
-        
-
-
-
-
+  keyboard: function(keyCode){
+    let key = {};
+    key.code = keyCode;
+    key.down = false;
+    key.press = undefined;
+    key.release = undefined;
+    
+    key.downHandler = event => {
+      if (event.keyCode === key.code) {
+         key.press();
+         key.down = true;
+      
+      }
+      event.preventDefault();
+    };
+  
+    
+    key.upHandler = event => {
+      if (event.keyCode === key.code) {
+       key.release();
+       key.down = false;
+       
+      }
+      event.preventDefault();
+    };
+  
+    
+    window.addEventListener(
+      "keydown", key.downHandler.bind(key), false
+    );
+    window.addEventListener(
+      "keyup", key.upHandler.bind(key), false
+    );
+    return key;
   },
 
   checkDistance: function(X,Y){
@@ -271,12 +336,6 @@ var Game = {
   }
 
  
-
-  
-
-
-
-
 };
 
     

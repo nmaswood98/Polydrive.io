@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 global.document = {
     createElement: function () {
         // Canvas
@@ -67,34 +69,27 @@ module.exports.Game = {
 
 
 
-
-
-
-
-
-        var gameServer = this;
-
-        io.on("connection", function (socket) {
+        io.on("connection", (socket) => {
             // socket.emit("moveCar",socket.id);
-            var currentCar = gameServer.playerJoined(socket.id);
+            var currentCar = this.playerJoined(socket.id);
             //console.log(socket.id);
 
-            socket.on("disconnect", function () {
+            socket.on("disconnect", () => {
                 console.log(socket.id + "  DISCONNETC");
 
-                var index = gameServer.players.indexOf(currentCar);
+                var index = this.players.indexOf(currentCar);
                 // console.log(index);
 
                 if (index > -1) {
-                    gameServer.players.splice(index, 1);
+                    this.players.splice(index, 1);
                     //console.log(socket.id);
-                    delete gameServer.sockets[currentCar.id];
+                    delete this.sockets[currentCar.id];
                 }
-                //gameServer.sockets[socket.id].disconnect();
+                //this.sockets[socket.id].disconnect();
 
             });
 
-            socket.on("respawn", function () {
+            socket.on("respawn", () => {
                 //player enters 
                 console.log("respawn");
 
@@ -104,31 +99,31 @@ module.exports.Game = {
 
             });
 
-            socket.kick = function () {
-                var index = gameServer.players.indexOf(currentCar);
+            socket.kick = () => {
+                var index = this.players.indexOf(currentCar);
 
 
                 if (index > -1) {
-                    gameServer.players.splice(index, 1);
+                    this.players.splice(index, 1);
                     console.log(currentCar.id + "  CURRENTCar");
-                    delete gameServer.sockets[currentCar.id];
+                    delete this.sockets[currentCar.id];
                 }
 
                 socket.emit("kicked");
 
             };
 
-            socket.on("ready", function (car) {
+            socket.on("ready", (car) => {
 
-                gameServer.sockets[socket.id] = socket;
-                gameServer.players.push(currentCar);
-                World.add(gameServer.engine.world, currentCar);
+                this.sockets[socket.id] = socket;
+                this.players.push(currentCar);
+                World.add(this.engine.world, currentCar);
                 console.log("ready");
 
 
             });
 
-            socket.on("playerTick", function (carInfo) {
+            socket.on("playerTick", (carInfo) => {
                 if(currentCar.manaCount == 5){
                     currentCar.manaCount = 0;
                     console.log("NEW CAR ALERT NEW CAR ALERT");
@@ -137,39 +132,40 @@ module.exports.Game = {
 
                 if (carInfo.stop == false){
                     currentCar.stopped = false;
-                    gameServer.moveCar(currentCar, carInfo.angle, 5);
+                    this.moveCar(currentCar, carInfo.angle, 5);
                 }
                 else
-                    gameServer.stopCar(currentCar);
+                    this.stopCar(currentCar);
 
             });
 
         });
 
-        Matter.Events.on(this.engine, 'collisionActive', function (event) { 
+        Matter.Events.on(this.engine, 'collisionActive', (event) => { 
              var pairs = event.pairs; 
              
             for (var i = 0; i < pairs.length; i++) {
                 var pair = pairs[i];
 
+                //Doesn't Follow DRY need to fix
                 if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
                     console.log("HIT MANA");
                     if(pair.bodyA.collisionType == 0){
                         pair.bodyA.parent.manaCount++;
-                        var pos = gameServer.manaPool.indexOf(pair.bodyB);
-                        Matter.Composite.remove(gameServer.world, pair.bodyB);
-                        gameServer.manaPool.splice(pos, 1);
-                        gameServer.newCarFollower(pair.bodyA.parent.follower);
+                        var pos = this.manaPool.indexOf(pair.bodyB);
+                        Matter.Composite.remove(this.world, pair.bodyB);
+                        this.manaPool.splice(pos, 1);
+                        this.newCarFollower(pair.bodyA.parent.follower);
 
 
 
                     }
                     else if(pair.bodyB.collisionType == 0){
                         pair.bodyB.parent.manaCount++;
-                        var pos2 = gameServer.manaPool.indexOf(pair.bodyA);
-                        Matter.Composite.remove(gameServer.world, pair.bodyA);
-                        gameServer.manaPool.splice(pos2, 1);
-                        gameServer.newCarFollower(pair.bodyB.parent.follower);
+                        var pos2 = this.manaPool.indexOf(pair.bodyA);
+                        Matter.Composite.remove(this.world, pair.bodyA);
+                        this.manaPool.splice(pos2, 1);
+                        this.newCarFollower(pair.bodyB.parent.follower);
                         
 
                     }
@@ -190,7 +186,7 @@ module.exports.Game = {
         
         });
 
-        Matter.Events.on(this.engine, 'collisionStart', function (event) {
+        Matter.Events.on(this.engine, 'collisionStart', (event) => {
             var pairs = event.pairs; 
              
             for (var i = 0; i < pairs.length; i++) {
@@ -215,21 +211,17 @@ module.exports.Game = {
                             //console.log(pair.isActive);
                         
                         
-                            gameServer.playerLost(pair.bodyB.parent, pair.bodyA.parent);
+                            this.playerLost(pair.bodyB.parent, pair.bodyA.parent);
                             
                         }
                         else {
    
-                            gameServer.playerLost(pair.bodyA.parent, pair.bodyB.parent);
+                            this.playerLost(pair.bodyA.parent, pair.bodyB.parent);
                            
 
                         }
                     }
-
                 }
-                   
-                
-
             }
         });
 
@@ -327,8 +319,6 @@ module.exports.Game = {
     },
 
 
-
-
     moveCar: function (car, angle, speed) {
 
         Matter.Body.setAngle(car, angle);
@@ -343,11 +333,6 @@ module.exports.Game = {
     stopCar: function (car) {
         Matter.Body.setVelocity(car, { x: 0, y: 0 });
         car.stopped = true;
-
-
-
-
-
 
     },
 
@@ -364,13 +349,13 @@ module.exports.Game = {
 
         var sentOtherCars = [];
 
-        this.players.forEach(function (car) {
-            car.followerArray.forEach(function (carFollower) {
+        this.players.forEach((car) => {
+            car.followerArray.forEach((carFollower) => {
 
                 sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, angle: carFollower.angle });
 
-            }.bind(this));
-        }.bind(this));
+            });
+        });
 
         var tempCars = this.otherCars.map(function (player){
 
@@ -414,8 +399,8 @@ module.exports.Game = {
     moveCars: function () {
 
 
-        this.players.forEach(function (car) {
-            car.followerArray.forEach(function (carFollower) {
+        this.players.forEach((car) => {
+            car.followerArray.forEach((carFollower) => {
               
                 if (carFollower.moving && !carFollower.follower.stopped) {
                     var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
@@ -423,8 +408,8 @@ module.exports.Game = {
                     this.moveCar(carFollower, angle, 4);
                 }
 
-            }.bind(this));
-        }.bind(this));
+            });
+        });
 
 
     },
