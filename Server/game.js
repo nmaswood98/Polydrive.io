@@ -83,6 +83,7 @@ module.exports.Game = {
                 if (index > -1) {
                     this.players.splice(index, 1);
                     //console.log(socket.id);
+                    Matter.Composite.remove(this.world, currentCar);
                     delete this.sockets[currentCar.id];
                 }
                 //this.sockets[socket.id].disconnect();
@@ -322,9 +323,8 @@ module.exports.Game = {
     moveCar: function (car, angle, speed) {
 
         Matter.Body.setAngle(car, angle);
-        
-
-
+       
+ 
         Matter.Body.setVelocity(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
        // console.log(car.velocity);
         //console.log(car.position.x);helllo my name is nabhan maswood hello my name is nabhan maswood hell polydrvi.ei polydrive.io polydrive.io polydrvie.i
@@ -341,7 +341,7 @@ module.exports.Game = {
         // console.log(this);
 
         var sentUsers = this.players.map(function (player) {
-
+           // console.log(player.angle);
             return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
 
         });

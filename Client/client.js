@@ -12,7 +12,7 @@ var Game = {
     amountFollowing : 0,
     
     init: function(){
-
+        
         this.OnScreen = new PIXI.Container();
         this.OffScreen = new PIXI.Container();
         this.idArray = [];
@@ -87,6 +87,8 @@ var Game = {
                     //canvas.car.updated = true;
                     canvas.car.x = u.x;
                     canvas.car.y = u.y;
+              //      canvas.car.rotation = u.angle;
+                 //   console.log(u.angle);
                    // amount++;
                   //  canvas.OnScreen.setChildIndex(canvas.car ,size - 1);
 
@@ -222,6 +224,8 @@ var Game = {
 
     },
 
+    addDegrees: function(){ },
+
 
 
 
@@ -229,9 +233,49 @@ var Game = {
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
       
       var angle =   Math.atan2((mouseY - this.car.y),(mouseX - this.car.x)) - (Math.PI);
+    
+      var angle2 = angle - this.car.rotation;
 
       if(!this.sKey.down)
-        this.car.rotation = angle;
+        if(Math.abs((angle2 * 180)/Math.PI) >= 180){
+       
+
+           var angle3 = (2* Math.PI) - Math.abs(angle2);
+           
+            if(angle2 > 0){
+                this.car.rotation = this.car.rotation - angle3 * 0.2;
+           }
+           else{
+                this.car.rotation = this.car.rotation + angle3 * 0.2;
+           }
+
+           if((this.car.rotation * 180)/Math.PI < -360)
+                this.car.rotation = (2* Math.PI) + this.car.rotation;
+           else  if((this.car.rotation * 180)/Math.PI > 10){
+               console.log("AYY LMAO");
+               this.car.rotation = this.car.rotation - (2* Math.PI) ;
+         //   console.log((this.car.rotation * 180)/Math.PI);
+
+           }
+
+                
+        
+        }
+        else{
+            this.car.rotation = this.car.rotation + angle2 * 0.2 ;
+
+        }
+           
+            
+    
+      //  console.log((angle2 * 180)/Math.PI);
+    
+        
+  //     console.log(Math.abs(this.car.rotation)* 180/Math.PI);
+
+
+      
+        
  
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
@@ -285,6 +329,13 @@ var Game = {
 
 
 
+
+  },
+
+  near: function(value,expectedValue,buffer){
+    var max = expectedValue + buffer;
+    var min = expectedValue - buffer;
+    return ((value < max) && (value > min));
 
   },
 
