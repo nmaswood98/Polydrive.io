@@ -53,13 +53,14 @@ module.exports.Game = {
 ///GameBoard
 
 
-        for(var i = 0;i < 10;i++){
+        for(var i = 0;i < 200;i++){
 
-      //  var mana =  Matter.Bodies.circle(getRndInteger(0,1800),getRndInteger(0,1000),30); 
-      //  mana.id = Math.random().toString(36).substring(7);
-     //   mana.collisionType = 1;
-     //   this.manaPool.push(mana);
-      //  World.add(this.engine.world, mana);
+        var mana =  Matter.Bodies.circle(getRndInteger(0,1800 * 3 ),getRndInteger(0,1000 * 3),10); 
+        mana.isStatic = true;
+        mana.id = Math.random().toString(36).substring(7);
+        mana.collisionType = 1;
+        this.manaPool.push(mana);
+        World.add(this.engine.world, mana);
 
         }
 
@@ -118,6 +119,7 @@ module.exports.Game = {
 
                 this.sockets[socket.id] = socket;
                 this.players.push(currentCar);
+                currentCar.speed = 5;
                 World.add(this.engine.world, currentCar);
                 console.log("ready");
 
@@ -133,10 +135,35 @@ module.exports.Game = {
 
                 if (carInfo.stop == false){
                     currentCar.stopped = false;
-                    this.moveCar(currentCar, carInfo.angle, 5);
+
+                    if (currentCar.speed >= 4.8 && currentCar.speed <= 5.1) {
+                        currentCar.speed = 5;
+                    }
+    
+                    if (currentCar.speed < 5) { currentCar.speed += 0.2; }
+                    else if (carInfo.leftClick === true) {
+                        if (currentCar.speed <= 15) {
+                        currentCar.speed += 0.35;
+    
+                        }
+    
+                    }
+                    else if (currentCar.speed > 5) {
+                        currentCar.speed = currentCar.speed * 0.96;
+    
+                    }
+
+                    //console.log(currentCar.speed);
+                        this.moveCar(currentCar, carInfo.angle, currentCar.speed);
+
+                    
                 }
-                else
-                    this.stopCar(currentCar);
+                else{
+                    //this.car.stopped = false; 
+                    currentCar.speed = currentCar.speed * 0.95;
+                   // this.stopCar(currentCar);
+                   this.moveCar(currentCar, carInfo.angle, currentCar.speed);
+                }
 
             });
 
@@ -156,7 +183,7 @@ module.exports.Game = {
                         var pos = this.manaPool.indexOf(pair.bodyB);
                         Matter.Composite.remove(this.world, pair.bodyB);
                         this.manaPool.splice(pos, 1);
-                        this.newCarFollower(pair.bodyA.parent.follower);
+                        //this.newCarFollower(pair.bodyA.parent.follower);
 
 
 
@@ -166,7 +193,7 @@ module.exports.Game = {
                         var pos2 = this.manaPool.indexOf(pair.bodyA);
                         Matter.Composite.remove(this.world, pair.bodyA);
                         this.manaPool.splice(pos2, 1);
-                        this.newCarFollower(pair.bodyB.parent.follower);
+                      // this.newCarFollower(pair.bodyB.parent.follower);
                         
 
                     }
@@ -195,6 +222,9 @@ module.exports.Game = {
 
               
                 pair.isActive = false;
+
+                if(pair.bodyA.isStatic || pair.bodyB.isStatic)
+                    return;
                 if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
                     //problem was that the moment it collided it then became another follower so it followed the other rooms
                     pair.isActive = true;

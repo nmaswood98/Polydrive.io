@@ -12,7 +12,8 @@ var Game = {
     amountFollowing : 0,
     
     init: function(){
-        
+        this.lClick = false;
+
         this.OnScreen = new PIXI.Container();
         this.OffScreen = new PIXI.Container();
         this.idArray = [];
@@ -37,14 +38,29 @@ var Game = {
 
 
 
+        var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
 
 
 
+        this.tilingSprite = new PIXI.extras.TilingSprite(
+            texture,
+            this.app.screen.width * 20,
+            this.app.screen.height * 20
+        );
+        this.app.stage.addChild(this.tilingSprite);
+        
+        this.app.stage.setChildIndex(this.tilingSprite,0);
 
 
+        this.app.renderer.plugins.interaction.on('mousedown',() => {
+            this.lClick = true;
+            console.log(this.lClick);
+        });
 
-
-
+        this.app.renderer.plugins.interaction.on('mouseup',  () => {
+            this.lClick = false;
+            console.log(this.lClick);
+        });
 
 
 
@@ -137,8 +153,8 @@ var Game = {
                     manaSprite.id = sprites.id;
                     manaSprite.x = sprites.x;
                     manaSprite.y = sprites.y;
-                    manaSprite.beginFill(0xFFFFFF);
-                    manaSprite.drawCircle(0,0,30);
+                    manaSprite.beginFill(canvas.randomColor());
+                    manaSprite.drawCircle(0,0,10);
                     manaSprite.endFill();
                     canvas.OnScreen.addChild(manaSprite);
                     canvas.screenSprites[sprites.id] = manaSprite;
@@ -216,6 +232,7 @@ var Game = {
         //this.app.stage.x = x;
        // this.app.stage.y = y;
         this.app.stage.pivot = new PIXI.Point(x,y);
+        //this.tilingSprite.pivot = new PIXI.Point(x,y);
         this.mPlusX = x;
         this.mPlusY = y;
 
@@ -225,6 +242,7 @@ var Game = {
     },
 
     addDegrees: function(){ },
+    
 
 
 
@@ -271,7 +289,7 @@ var Game = {
       //  console.log((angle2 * 180)/Math.PI);
     
         
-  //     console.log(Math.abs(this.car.rotation)* 180/Math.PI);
+   //     console.log(Math.abs(this.car.rotation)* 180/Math.PI);
 
 
       
@@ -279,15 +297,15 @@ var Game = {
  
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            socket.emit("playerTick",{angle: this.car.rotation, stop: false});
+            socket.emit("playerTick",{angle: this.car.rotation, stop: false, leftClick: this.lClick});
         }
         else{
            
-            socket.emit("playerTick",{angle: this.car.rotation, stop: true});
+            socket.emit("playerTick",{angle: this.car.rotation, stop: true,leftClick: false});
         }
     }
    
-            
+    this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));
     
       
     
@@ -374,6 +392,37 @@ var Game = {
       "keyup", key.upHandler.bind(key), false
     );
     return key;
+  },
+
+  randomColor: function(){
+   
+        var rando =  Math.floor(Math.random() * (5 - 1 + 1) ) + 1;
+        console.log("HEYO");
+
+    switch (rando) {
+        case 1:
+            return 0xffb400;
+        case 2:
+            return 0xff0000;
+        case 3:
+            return 0x7cc576;
+        case 4:
+            return 0x00e4ff;
+        case 5:
+            return 0xcd81ff;
+        
+
+            
+            
+        
+    
+        default:
+            
+            break;
+    }
+
+
+
   },
 
   checkDistance: function(X,Y){

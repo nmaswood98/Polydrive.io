@@ -21,6 +21,7 @@ app.use("/Client/index.html", express.static(publicPath + '/Client/index.html'))
 app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
 app.use("/client.js", express.static(publicPath + '/Client/client.js'));
 app.use("/assets/carSprite.png", express.static(publicPath + '/carSprite.png'));
+app.use("/assets/TextureBackground.png", express.static(publicPath + '/TextureBackground.png'));
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
 
 
