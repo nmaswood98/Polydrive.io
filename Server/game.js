@@ -369,59 +369,83 @@ module.exports.Game = {
     sendUpdates: function () {
         //eventuallly only send cars that are visble to the player
         // console.log(this);
-
-        var sentUsers = this.players.map(function (player) {
-           // console.log(player.angle);
-            return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
-
-        });
-
-
-        var sentOtherCars = [];
-
         this.players.forEach((car) => {
-            car.followerArray.forEach((carFollower) => {
+            var hDis = 800; var yDis = 800;
+            var maxX = car.position.x + hDis;
+            var maxY = car.position.y + yDis;
+            var minX = car.position.x - hDis;
+            var minY = car.position.y - yDis;
 
-                sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, angle: carFollower.angle });
+            var sentUsers = this.players.filter((player)=>{ 
+                var inView = false;
+                
+                
+                if (player.position.x < maxX && player.position.x > minX)
+                    inView = true;
+                else
+                    inView = false;
+                
+                if(!(player.position.y < maxY && player.position.y > minY))
+                    inView = false;
+            
+                
+                return inView;       
+            
+            
+            
+            
+            }).map(function (player) {
+                // console.log(player.angle);
+                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
 
             });
+
+
+            var sentOtherCars = [];
+
+            this.players.forEach((car) => {
+                car.followerArray.forEach((carFollower) => {
+
+                    sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, angle: carFollower.angle });
+
+                });
+            });
+
+            var tempCars = this.otherCars.map(function (player) {
+
+                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
+
+
+            });
+
+
+
+            sentUsers = sentUsers.concat(sentOtherCars);
+
+            //amount of cars sent to the user
+
+
+
+
+            var sentMana = this.manaPool.map(function (mana) {
+                return { id: mana.id, x: mana.position.x, y: mana.position.y };
+
+
+
+
+            });
+
+
+            var word = "";
+
+
+
+
+            this.sockets[car.id].emit("draw", sentUsers, sentMana);
+
+
+
         });
-
-        var tempCars = this.otherCars.map(function (player){
-
-            return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
-
-
-        });
-
-
-
-        sentUsers = sentUsers.concat(sentOtherCars);
-        
-        //amount of cars sent to the user
-       
-
-
-
-        var sentMana = this.manaPool.map(function(mana){
-            return { id: mana.id, x: mana.position.x, y: mana.position.y};
-
-
-
-
-        });
-
-       // console.log(sentMana.length);
-        var word = "";
-        this.players.forEach(function (car) {
-            //    console.log(this.players.length);
-
-
-            this.sockets[car.id].emit("draw", sentUsers,sentMana);
-
-
-
-        }.bind(this));
 
 
     },

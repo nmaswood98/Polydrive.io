@@ -94,11 +94,14 @@ var Game = {
             //need to reuse sprites
             //need to move sprites
 
+            
+
             var amount = 0;
             var size = canvas.OnScreen.children.length; 
            // console.log("size" + size);
            cars.forEach(function(u){
-               // console.log(canvas.car.id);
+           var ayy = 0;
+               
                 if (u.id === canvas.car.id){
                     //canvas.car.updated = true;
                     canvas.car.x = u.x;
@@ -110,30 +113,34 @@ var Game = {
 
                 }
                 else if(canvas.screenSprites.hasOwnProperty(u.id)){
-    
+                   
                     canvas.screenSprites[u.id].x = u.x;
                     canvas.screenSprites[u.id].y = u.y;
                    // canvas.screenSprites[u.id].drawn = true;
                     //json 
                     canvas.screenSprites[u.id].rotation = u.angle;
                     amount++;
+                    ayy++;
                     canvas.OnScreen.setChildIndex(canvas.screenSprites[u.id] ,size - 1);
 
                 }
                 else{
+                    
                     var carSprite = new PIXI.Sprite.fromImage("/assets/carSprite.png");
                     carSprite.anchor.set(0.5,0.5);
                     //carSprite.updated = true;
                     carSprite.x = u.x;
                     carSprite.y = u.y;
+                    carSprite.id = u.id;
                     carSprite.rotation = u.angle;
                     canvas.OnScreen.addChild(carSprite);
                     canvas.screenSprites[u.id] = carSprite;
                     amount++;
+                    ayy++;
                     //canvas.OnScreen.setChildIndex(canvas.car ,size - 1);
 
                 }
-
+                console.log(ayy);
 
             });
 
@@ -165,7 +172,7 @@ var Game = {
 
 
 
-
+            
 
 
             amount = size - amount;
@@ -173,6 +180,7 @@ var Game = {
             if(amount != 0){
                 //canvas.OnScreen.removeChildren(0,amount);
                 for (var i = 0; i < amount; i++){
+                    delete canvas.screenSprites[canvas.OnScreen.children[i].id];
                     canvas.OnScreen.removeChildAt(i);
                 }
             }
