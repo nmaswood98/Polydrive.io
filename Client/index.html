@@ -9,8 +9,36 @@
 <body>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script type="text/javascript" src = "client.js"></script>
    
+
+   <style>
+   input[type=text]{
+        position: absolute;
+        left: calc(50% - 250px);
+        top: 50%;
+        text-align: center;
+
+        width: 500px;
+         height: 150px;
+        border: 2px solid #aaa;
+       
+        border-radius: 29px;
+        padding: 2px;
+        font-size: 100px;
+        outline: none;
+       
+    
+
+   }
+   input[type=text]:focus{
+       border-color: dodgerblue;
+       box-shadow: 0 0 80px 0 dodgerblue;
+
+   }
+
+   </style>
+   <input type="text" placeholder="NickName" id="nameField">
+    <script type="text/javascript" src = "menu.js"></script> 
     
    
     
