@@ -40,8 +40,13 @@ var Menu = {
         startButton.buttonMode = true;
         var textbox = document.getElementById("nameField");
         startButton.on('pointerdown', ()=>{
-            console.log(textbox.value);
+            textbox.style.display = "none";
+            while(this.app.stage.children[0]) { this.app.stage.removeChild(this.app.stage.children[0]); }
 
+
+            var game = Object.create(Game);
+            game.init(this.app,textbox.value);
+            game.app.ticker.add(function(delta){game.ticker(delta);});
 
         });
 

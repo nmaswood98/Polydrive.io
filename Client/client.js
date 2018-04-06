@@ -11,7 +11,7 @@ var Game = {
      mPlusY : 0,
     amountFollowing : 0,
     
-    init: function(){
+    init: function(application,name){
         this.lClick = false;
 
         this.OnScreen = new PIXI.Container();
@@ -21,7 +21,8 @@ var Game = {
         
         this.starting = true;
       
-        document.body.appendChild(this.app.view);
+        //document.body.appendChild(this.app.view);
+        this.app = application;
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         this.app.stage.addChild(this.OnScreen);
 
@@ -71,7 +72,7 @@ var Game = {
 
 
         var canvas = this;
-        socket.emit("respawn");
+        socket.emit("respawn",name);
 
 
         socket.on("welcome",function(car){
@@ -106,6 +107,7 @@ var Game = {
                     //canvas.car.updated = true;
                     canvas.car.x = u.x;
                     canvas.car.y = u.y;
+                    console.log(u.name);
               //      canvas.car.rotation = u.angle;
                  //   console.log(u.angle);
                    // amount++;
@@ -449,6 +451,3 @@ var Game = {
     
 
 
-var game = Object.create(Game);
-game.init();
-game.app.ticker.add(function(delta){game.ticker(delta);});
