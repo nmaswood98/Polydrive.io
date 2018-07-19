@@ -91,10 +91,11 @@ module.exports.Game = {
 
             });
 
-            socket.on("respawn", () => {
+            socket.on("respawn", (name) => {
                 //player enters 
                 console.log("respawn");
-
+                currentCar.playerName = name;
+                console.log(currentCar.playerName);
                 socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y }); /// Sends Client initial information about car. 
 
                 console.log("RWDW");
@@ -396,7 +397,7 @@ module.exports.Game = {
             
             }).map(function (player) {
                 // console.log(player.angle);
-                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
+                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName };
 
             });
 
