@@ -14,17 +14,20 @@
    <style>
    input[type=text]{
         position: absolute;
-        left: calc(50% - 250px);
-        top: 50%;
-        text-align: center;
-
-        width: 500px;
-         height: 150px;
+        left: calc(50% - 175px);
+        top: 38%;
+        text-align: left;
+        border-color: dimgray;
+        background-color: rgba(53, 85, 114, 0.705);
+        width: 350px;
+         height: 100px;
         border: 2px solid #aaa;
        
         border-radius: 29px;
-        padding: 2px;
-        font-size: 100px;
+        padding-bottom: 5px;
+        padding-left: 20px;
+        font-size: 70px;
+        color:rgba(30, 143, 255, 0.591);
         outline: none;
        
     
@@ -36,9 +39,15 @@
 
    }
 
+   ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color:rgba(82, 145, 156, 0.502);
+    opacity: 1; /* Firefox */
+}
+
    </style>
-   <input type="text" placeholder="NickName" id="nameField">
+   <input type="text" placeholder="name" id="nameField">
     <script type="text/javascript" src = "menu.js"></script> 
+    <script type="text/javascript" src = "client.js"></script> 
     
    
     

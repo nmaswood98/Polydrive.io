@@ -22,6 +22,8 @@ app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
 app.use("/client.js", express.static(publicPath + '/Client/client.js'));
 app.use("/menu.js", express.static(publicPath + '/Client/menu.js'));
 app.use("/assets/carSprite.png", express.static(publicPath + '/carSprite.png'));
+app.use("/assets/Play.png", express.static(publicPath + '/Play.png'));
+app.use("/assets/Polydrivelogo.png", express.static(publicPath + '/Polydrivelogo.png'));
 app.use("/assets/TextureBackground.png", express.static(publicPath + '/TextureBackground.png'));
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
 
