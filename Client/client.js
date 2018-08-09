@@ -37,7 +37,9 @@ var Game = {
         this.sKey.press = function(){};
         this.sKey.release = function(){};
 
-
+        this.line = new PIXI.Graphics();
+        this.line.car = null;
+        this.app.stage.addChild(this.line);
 
         var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
 
@@ -123,22 +125,103 @@ var Game = {
                     canvas.screenSprites[u.id].rotation = u.angle;
                     amount++;
                     ayy++;
+
+
+                    //console.log("hey" + u.isFollower);
+                    if(u.isFollower === true){
+                        canvas.screenSprites[u.id].interactive = true;
+                    }
+                    else{
+                        canvas.screenSprites[u.id].interactive = false;
+                    }
+
                     canvas.OnScreen.setChildIndex(canvas.screenSprites[u.id] ,size - 1);
+                    
+                    
+                    if(u.name != undefined){
+                        console.log("helhelfhelf");
+                        canvas.screenSprites[u.id].nameLabel.x = u.x ;
+                        canvas.screenSprites[u.id].nameLabel.y = u.y - 110;
+
+                    }
+                    
 
                 }
                 else{
                     
                     var carSprite = new PIXI.Sprite.fromImage("/assets/carSprite.png");
+                    carSprite.interactive = false;
                     carSprite.anchor.set(0.5,0.5);
                     //carSprite.updated = true;
                     carSprite.x = u.x;
                     carSprite.y = u.y;
                     carSprite.id = u.id;
                     carSprite.rotation = u.angle;
+
+                    
+
+                    carSprite.on('pointerdown', () => {
+                        console.log("PEPEfasdfasdfsafdasdfasdfsadfsa");
+                        canvas.line.car = carSprite;
+                        canvas.line.color = canvas.randomColor();
+                        carSprite.alpha = 0.5;
+                    });
+                    carSprite.on('pointerup', ()=>{
+                        console.log("!@#$%^&");
+                        canvas.line.car = null;
+                        carSprite.alpha = 1;
+            
+                    });
+            
+                    carSprite.on('pointerupoutside', ()=>{
+                        console.log("qwertyuiopasdfghjkl");
+                        canvas.line.car = null;
+                        carSprite.alpha = 1;
+                        
+                        var mouseX = canvas.mouse.x + canvas.mPlusX; var mouseY = canvas.mouse.y + canvas.mPlusY;
+                        socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
+            
+                    });
+
+
+
                     canvas.OnScreen.addChild(carSprite);
-                    canvas.screenSprites[u.id] = carSprite;
+                    canvas.screenSprites[u. id] = carSprite;
                     amount++;
                     ayy++;
+
+                  
+
+                 
+
+                    var style = new PIXI.TextStyle({
+                        fontFamily: 'Arial',
+                        fontSize: 20,
+                       
+                        
+                        fill: ['#9a41c6'], // gradient
+                        
+                        dropShadow: true,
+                        dropShadowColor: '#000000',
+                        dropShadowBlur: 4,
+                        dropShadowAngle: Math.PI / 6,
+                        dropShadowDistance: 6,
+                        wordWrap: true,
+                        wordWrapWidth: 440
+                    });
+
+                    if(u.name != undefined){
+
+                        console.log("helhelfhelf");
+                        var playerName = new PIXI.Text(u.name,style); 
+                        playerName.x = carSprite.x;
+                        playerName.y = carSprite.y  - 110;
+                        carSprite.nameLabel = playerName;
+                      
+                        canvas.app.stage.addChild(playerName);
+                        //this.app.stage.setChildIndex(this.tilingSprite,0);
+                    }
+
                     //canvas.OnScreen.setChildIndex(canvas.car ,size - 1);
 
                 }
@@ -148,8 +231,8 @@ var Game = {
 
             environment.forEach(function(sprites){
                 if(canvas.screenSprites.hasOwnProperty(sprites.id)){
-                    canvas.screenSprites[sprites.id].x = sprites.x;
-                    canvas.screenSprites[sprites.id].y = sprites.y;
+                    canvas.screenSprites[sprites.id].x = sprites.x ;
+                    canvas.screenSprites[sprites.id].y = sprites.y ;
                     canvas.OnScreen.setChildIndex(canvas.screenSprites[sprites.id] ,size - 1);
                     amount++;
 
@@ -182,6 +265,7 @@ var Game = {
             if(amount != 0){
                 //canvas.OnScreen.removeChildren(0,amount);
                 for (var i = 0; i < amount; i++){
+                    canvas.app.stage.removeChild(canvas.screenSprites[canvas.OnScreen.children[i].id].nameLabel);
                     delete canvas.screenSprites[canvas.OnScreen.children[i].id];
                     canvas.OnScreen.removeChildAt(i);
                 }
@@ -219,12 +303,13 @@ var Game = {
 
     createCar: function(){
         this.car = new PIXI.Sprite.fromImage("/assets/carSprite.png");
+        this.car.interactive = true;
         this.car.anchor.set(0.5,0.5);
         this.car.id = -1;
         this.car.x = this.app.renderer.width / 2 ;
         this.car.y = this.app.renderer.height / 2;
         //this.car.rotation = 270 * (Math.PI / 180);
-        
+
 
       
 
@@ -251,7 +336,7 @@ var Game = {
 
     },
 
-    addDegrees: function(){ },
+    addDegrees: function(){console.log("HEYELOELOELOELO"); },
     
 
 
@@ -259,6 +344,16 @@ var Game = {
 
   ticker: function(delta){
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
+
+        this.line.clear();
+        if(this.line.car != null){
+            this.lClick = false;
+            console.log("IT WORKING IT WORKING");
+            this.line.lineStyle(10, this.line.color);
+            this.line.moveTo(this.line.car.x,this.line.car.y);
+            this.line.lineTo(mouseX, mouseY);
+        }
+
       
       var angle =   Math.atan2((mouseY - this.car.y),(mouseX - this.car.x)) - (Math.PI);
     

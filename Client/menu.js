@@ -6,6 +6,7 @@ var Menu = {
     app: new PIXI.Application(document.documentElement.clientWidth
         , document.documentElement.clientHeight
         , { backgroundColor: 0x1099bb }),
+        
 
         randomColor: function(){
    
@@ -47,7 +48,7 @@ var Menu = {
         this.app.view.style.top = '50%';
         this.app.view.style.transform = 'translate3d( -50%, -50%, 0 )';
         this.app.view.style.zIndex = -1;
-
+        this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
 
         this.tilingSprite = new PIXI.extras.TilingSprite(
@@ -113,6 +114,17 @@ var Menu = {
 
         this.app.stage.addChild(logo);
 
+
+         this.line = new PIXI.Graphics();
+
+         this.line.lineStyle(2, 0x33FF00);
+         this.line.moveTo(this.app.screen.width / 2,this.app.screen.height / 2);
+         this.line.lineTo(600, 300);
+
+       // this.app.stage.addChild(this.line);
+
+
+
         for(var i = 0; i < 20; i++){
 
             var manaSprite = new PIXI.Graphics();
@@ -130,9 +142,14 @@ var Menu = {
 
 
 
+    },
+
+    ticker: function(delta){
+     
     }
 
 };
 
 var menu = Object.create(Menu);
 menu.init();
+menu.app.ticker.add(function(delta){menu.ticker(delta);});
