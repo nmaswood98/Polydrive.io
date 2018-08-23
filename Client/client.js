@@ -17,6 +17,7 @@ var GameNet = {
         var serverUpdates = [];
       
         var canvas = game;
+        var that = this;
         socket.emit("respawn",name);
 
 
@@ -35,12 +36,15 @@ var GameNet = {
         });
         
         socket.on("draw",function(cars,environment){
-           // var serverUpdate = [d.getTime(),cars,environment];
-           // serverUpdates.push(serverUpdate);
-            canvas.draw(cars,environment);
-            if(serverUpdates.length() == 3){
-
-                
+            that.currentTime = that.d.getTime();
+            var serverUpdate = [that.currentTime,cars,environment];
+                serverUpdates.push(serverUpdate);
+            
+            if ( serverUpdates.length === 3 ){
+                var nextUpdate = serverUpdates.shift();
+                var timeDif = that.currentTime - nextUpdate[0];
+                canvas.draw(nextUpdate[1],nextUpdate[2],timeDif);
+            
             }
             
 

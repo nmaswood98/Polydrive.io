@@ -11,6 +11,7 @@ var Game = {
     amountFollowing : 0,
     
     init: function(application,name){
+        createjs.Ticker.framerate = 60;
         this.lClick = false; 
 
         this.OnScreen = new PIXI.Container();
@@ -202,7 +203,7 @@ var Game = {
     
   },
 
-  draw: function(cars,environment){
+  draw: function(cars,environment,timeDelta){
   //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
@@ -219,19 +220,22 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                    this.car.x = u.x;
-                    this.car.y = u.y;
+                    createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta);
+                  //  this.car.x = u.x;
+                  //  this.car.y = u.y;
                     console.log(u.x  + "HEL" + u.y);
                  
 
                 }
                 else if(this.screenSprites.hasOwnProperty(u.id)){
                    //Tween
-                    this.screenSprites[u.id].x = u.x;
-                    this.screenSprites[u.id].y = u.y;
+                   createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
+                   // this.screenSprites[u.id].x = u.x;
+                  //  this.screenSprites[u.id].y = u.y;
 
                     //Tween
-                    this.screenSprites[u.id].rotation = u.angle;
+                    createjs.Tween.get(this.screenSprites[u.id]).to({rotation:u.angle},timeDelta);
+                   // this.screenSprites[u.id].rotation = u.angle;
                     amount++;
                     ayy++;
 
@@ -250,8 +254,9 @@ var Game = {
                     if(u.name != undefined){
                         console.log("helhelfhelf");
                         //Tween
-                        this.screenSprites[u.id].nameLabel.x = u.x ;
-                        this.screenSprites[u.id].nameLabel.y = u.y - 110;
+                        createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y - 110},timeDelta);
+                       // this.screenSprites[u.id].nameLabel.x = u.x ;
+                       // this.screenSprites[u.id].nameLabel.y = u.y - 110;
 
                     }
                     
@@ -342,8 +347,9 @@ var Game = {
             environment.forEach((sprites) => {
                 if(this.screenSprites.hasOwnProperty(sprites.id)){
                     //Tween
-                    this.screenSprites[sprites.id].x = sprites.x ;
-                    this.screenSprites[sprites.id].y = sprites.y ;
+                    createjs.Tween.get(this.screenSprites[sprites.id]).to({x:sprites.x,y:sprites.y},timeDelta);
+                   // this.screenSprites[sprites.id].x = sprites.x ;
+                  //  this.screenSprites[sprites.id].y = sprites.y ;
                     this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,size - 1);
                     amount++;
 

@@ -57,7 +57,7 @@ module.exports.Game = {
 
 
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / 60);
+        setInterval(this.tick2.bind(this), 1000 / 30);
         this.playerJoined();
         this.players = [];
         this.otherCars = [];
