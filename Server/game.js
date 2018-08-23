@@ -42,8 +42,22 @@ module.exports.Game = {
         this.world = this.engine.world;
         // this.engine.world.
 
+        var worldY = 10000;
+        var worldX = 15000;
+
+        World.add(this.world, [
+    
+            Bodies.rectangle(worldX/2, 0, worldX, 50, { isStatic: true }),
+            Bodies.rectangle(worldX/2, worldY, worldX, 50, { isStatic: true }),
+            Bodies.rectangle(worldX, worldY/2, 50, worldY, { isStatic: true }),
+            Bodies.rectangle(0, worldY/2, 50, worldY, { isStatic: true })
+        ]);
+       
+        
+
 
         setInterval(this.tick.bind(this), 1000 / 60);
+        setInterval(this.tick2.bind(this), 1000 / 60);
         this.playerJoined();
         this.players = [];
         this.otherCars = [];
@@ -57,6 +71,7 @@ module.exports.Game = {
 
         var mana =  Matter.Bodies.circle(getRndInteger(0,1800 * 3 ),getRndInteger(0,1000 * 3),10); 
         mana.isStatic = true;
+        mana.isMana = true;
         mana.id = Math.random().toString(36).substring(7);
         mana.collisionType = 1;
         this.manaPool.push(mana);
@@ -191,6 +206,7 @@ module.exports.Game = {
         });
 
         Matter.Events.on(this.engine, 'collisionActive', (event) => { 
+           
              var pairs = event.pairs; 
              
             for (var i = 0; i < pairs.length; i++) {
@@ -242,10 +258,16 @@ module.exports.Game = {
                 var pair = pairs[i];
 
               
-                pair.isActive = false;
+                
 
+                if(pair.bodyA.isMana || pair.bodyB.isMana){
+                    pair.isActive = false;
+                    return;
+                }
+                
                 if(pair.bodyA.isStatic || pair.bodyB.isStatic)
                     return;
+                  
                 if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
                     //problem was that the moment it collided it then became another follower so it followed the other rooms
                     pair.isActive = true;
@@ -274,7 +296,10 @@ module.exports.Game = {
                         }
                     }
                 }
+            
+            
             }
+
         });
 
 
@@ -397,7 +422,7 @@ module.exports.Game = {
         //eventuallly only send cars that are visble to the player
         // console.log(this);
         this.players.forEach((car) => {
-            var hDis = 800; var yDis = 800;
+            var hDis = 2000; var yDis = 1000;
             var maxX = car.position.x + hDis;
             var maxY = car.position.y + yDis;
             var minX = car.position.x - hDis;
@@ -407,13 +432,11 @@ module.exports.Game = {
                 var inView = false;
                 
                 
-                if (player.position.x < maxX && player.position.x > minX)
+                if( (player.position.x < maxX && player.position.x > minX) &&  (player.position.y < maxY && player.position.y > minY))
                     inView = true;
                 else
                     inView = false;
                 
-                if(!(player.position.y < maxY && player.position.y > minY))
-                    inView = false;
             
                 
                 return inView;       
@@ -452,7 +475,23 @@ module.exports.Game = {
 
 
 
-            var sentMana = this.manaPool.map(function (mana) {
+            var sentMana = this.manaPool.filter((player)=>{ 
+                var inView = false;
+                
+                
+                if( (player.position.x < maxX && player.position.x > minX) &&  (player.position.y < maxY && player.position.y > minY))
+                    inView = true;
+                else
+                    inView = false;
+                
+            
+                
+                return inView;       
+            
+            
+            
+            
+            }).map(function (mana) {
                 return { id: mana.id, x: mana.position.x, y: mana.position.y };
 
 
@@ -505,7 +544,7 @@ module.exports.Game = {
         this.moveCars();
         Engine.update(this.engine, 1000 / 60);
         
-        this.sendUpdates();
+        
      ///   
 
 
@@ -513,7 +552,7 @@ module.exports.Game = {
     },
 
     tick2: function () {
-
+        this.sendUpdates();
 
     }
 

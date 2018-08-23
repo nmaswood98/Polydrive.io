@@ -20,6 +20,7 @@ console.log(__dirname);
 app.use("/Client/index.html", express.static(publicPath + '/Client/index.html'));
 app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
 app.use("/client.js", express.static(publicPath + '/Client/client.js'));
+app.use("/game.js", express.static(publicPath + '/Client/game.js'));
 app.use("/menu.js", express.static(publicPath + '/Client/menu.js'));
 app.use("/assets/carSprite.png", express.static(publicPath + '/carSprite.png'));
 app.use("/assets/Play.png", express.static(publicPath + '/Play.png'));

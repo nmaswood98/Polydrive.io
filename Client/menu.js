@@ -80,9 +80,9 @@ var Menu = {
 
 
 
-            var game = Object.create(Game);
-            game.init(this.app,textbox.value);
-            game.app.ticker.add(function(delta){game.ticker(delta);});
+            var gameNet = Object.create(GameNet);
+            gameNet.init(this.app,textbox.value);
+         //   gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
 
         });
 
@@ -139,6 +139,8 @@ var Menu = {
              
         }
 
+       // createjs.Tween.get(logo).to({x:100,y:100},3000);
+       // createjs.Ticker.framerate = 60;
 
 
 
