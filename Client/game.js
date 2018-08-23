@@ -13,7 +13,7 @@ var Game = {
     init: function(application,name){
         createjs.Ticker.framerate = 60;
         this.lClick = false; 
-
+        this.isDrawing = false;
         this.OnScreen = new PIXI.Container();
         this.OffScreen = new PIXI.Container();
         this.idArray = [];
@@ -209,7 +209,7 @@ var Game = {
             //need to reuse sprites
             //need to move sprites
 
-            
+            createjs.Tween.removeAllTweens();
 
             var amount = 0;
             var size = this.OnScreen.children.length; 
@@ -220,16 +220,19 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                    createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta);
+                    createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{ this.isDrawing = false;});
+                  //  createjs.Tween.get(this.app.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
                   //  this.car.x = u.x;
                   //  this.car.y = u.y;
-                    console.log(u.x  + "HEL" + u.y);
+                  //  this.isDrawing = false;
+                 //   console.log(u.x  + "HEL" + u.y);
                  
 
                 }
                 else if(this.screenSprites.hasOwnProperty(u.id)){
                    //Tween
                    createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
+                  // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
                    // this.screenSprites[u.id].x = u.x;
                   //  this.screenSprites[u.id].y = u.y;
 
@@ -340,7 +343,7 @@ var Game = {
                     //this.OnScreen.setChildIndex(this.car ,size - 1);
 
                 }
-                console.log(ayy);
+               // console.log(ayy);
 
             });
 

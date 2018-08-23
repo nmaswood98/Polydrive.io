@@ -9,14 +9,15 @@ var GameNet = {
 
     
     init: function(application,name){
-        var game = Object.create(Game);
-        game.init(application,name);
-        game.app.ticker.add(function(delta){game.ticker(delta);});
+        this.app = application;
+         this.game = Object.create(Game);
+         this.game.init(application,name);
+         this.game.app.ticker.add((delta)=>{this.game.ticker(delta);});
         this.currentTime = this.d.getTime();
-
-        var serverUpdates = [];
-      
-        var canvas = game;
+        this.lastTime = 0;
+         this.serverUpdates = [];
+      this.lastServerUpdate = null;
+        var canvas = this.game;
         var that = this;
         socket.emit("respawn",name);
 
@@ -36,17 +37,34 @@ var GameNet = {
         });
         
         socket.on("draw",function(cars,environment){
-            that.currentTime = that.d.getTime();
-            var serverUpdate = [that.currentTime,cars,environment];
-                serverUpdates.push(serverUpdate);
-            
-            if ( serverUpdates.length === 3 ){
+            var d = new Date();
+           var currentTime = d.getTime();
+            var serverUpdate = [currentTime,cars,environment];
+            that.serverUpdates.push(serverUpdate);
+                if(that.lastTime === 0)
+                    that.lastTime = currentTime;
+
+                if(that.serverUpdates.length >= (60)) {
+                    that.serverUpdates.splice(0,1);
+                }
+
+               
+
+    
+            /*
+            if ( serverUpdates.length >= 5 ){
+
+                console.log(serverUpdates.length);
+                game.isDrawing = true;
                 var nextUpdate = serverUpdates.shift();
-                var timeDif = that.currentTime - nextUpdate[0];
+                
+                var timeDif = that.lastTime - nextUpdate[0];
+                that.lastTime = nextUpdate[0];
                 canvas.draw(nextUpdate[1],nextUpdate[2],timeDif);
+
             
             }
-            
+            */
 
 
             
@@ -62,8 +80,40 @@ var GameNet = {
         
           
         this.intialized = true;
-    }
+    },
 
+    ticker: function(delta){
+        
+
+        var d = new Date();
+        var currentTime = d.getTime();
+        var offset = 100;
+   
+        var canDraw = false;
+        if(true){
+        var nextFrame = null;
+        for(var i = (this.serverUpdates.length - 1); i >= 0; i--){
+            var timeD = currentTime - this.serverUpdates[i][0];
+            if(timeD <= (offset + 20) && timeD >= (offset - 20))
+                {
+                    canDraw = true;
+                    this.game.isDrawing = true;
+                    nextFrame = this.serverUpdates[i];
+                    console.log(timeD);
+                    this.game.draw(nextFrame[1],nextFrame[2],timeD);
+                    break;
+
+
+                }
+            }
+        }
+
+
+
+    
+
+
+    }
  
 
 };

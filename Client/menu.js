@@ -82,7 +82,7 @@ var Menu = {
 
             var gameNet = Object.create(GameNet);
             gameNet.init(this.app,textbox.value);
-         //   gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
+            gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
 
         });
 

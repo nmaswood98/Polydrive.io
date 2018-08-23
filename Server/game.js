@@ -486,7 +486,7 @@ module.exports.Game = {
                 
             
                 
-                return inView;       
+                return true;       
             
             
             
