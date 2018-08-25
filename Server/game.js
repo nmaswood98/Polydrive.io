@@ -42,22 +42,22 @@ module.exports.Game = {
         this.world = this.engine.world;
         // this.engine.world.
 
-        var worldY = 10000;
-        var worldX = 15000;
+        this.worldY = 10000;
+        this.worldX = 15000;
 
         World.add(this.world, [
     
-            Bodies.rectangle(worldX/2, 0, worldX, 50, { isStatic: true }),
-            Bodies.rectangle(worldX/2, worldY, worldX, 50, { isStatic: true }),
-            Bodies.rectangle(worldX, worldY/2, 50, worldY, { isStatic: true }),
-            Bodies.rectangle(0, worldY/2, 50, worldY, { isStatic: true })
+            Bodies.rectangle(this.worldX/2, 0, this.worldX, 50, { isStatic: true }),
+            Bodies.rectangle(this.worldX/2, this.worldY, this.worldX, 50, { isStatic: true }),
+            Bodies.rectangle(this.worldX, this.worldY/2, 50, this.worldY, { isStatic: true }),
+            Bodies.rectangle(0, this.worldY/2, 50, this.worldY, { isStatic: true })
         ]);
        
         
 
 
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / 30);
+        setInterval(this.tick2.bind(this), 1000 / 60);
         this.playerJoined();
         this.players = [];
         this.otherCars = [];
@@ -67,12 +67,13 @@ module.exports.Game = {
 ///GameBoardasdfasdfasfdadf
 
 
-        for(var i = 0;i < 200;i++){
+        for(var i = 0;i < 1000;i++){
 
-        var mana =  Matter.Bodies.circle(getRndInteger(0,1800 * 3 ),getRndInteger(0,1000 * 3),10); 
+    var mana =  Matter.Bodies.circle(getRndInteger(0,this.worldX ),getRndInteger(0,this.worldY),20); 
+       // var mana =  Matter.Bodies.circle(getRndInteger(0,1000 ),getRndInteger(0,1000),20); 
         mana.isStatic = true;
         mana.isMana = true;
-        mana.id = Math.random().toString(36).substring(7);
+        mana.id = "mana" + i.toString();
         mana.collisionType = 1;
         this.manaPool.push(mana);
         World.add(this.engine.world, mana);
@@ -214,13 +215,14 @@ module.exports.Game = {
 
                 //Doesn't Follow DRY need to fix
                 if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
-                    console.log("HIT MANA");
+                  //  console.log("HIT MANA");
+                    pair.isActive = false;
                     if(pair.bodyA.collisionType == 0){
                         pair.bodyA.parent.manaCount++;
                         var pos = this.manaPool.indexOf(pair.bodyB);
                         Matter.Composite.remove(this.world, pair.bodyB);
                         this.manaPool.splice(pos, 1);
-                        //this.newCarFollower(pair.bodyA.parent.follower);
+                      //  this.newCarFollower(pair.bodyA.parent.follower);
 
 
 
@@ -361,7 +363,13 @@ module.exports.Game = {
     clap: function () { console.log("please clap"); },
 
     playerJoined: function (id) {
-        var x = 200, y = 200, width = 118, height = 49, thickness = 3;
+        //Position On Board
+        var x = getRndInteger(0,this.worldX), y = getRndInteger(0,this.worldY);
+       // var x = 200, y = 200;
+        //position on board
+
+        
+        var width = 118, height = 49, thickness = 3;
         var top = Bodies.rectangle(x - ((width - thickness) / 2 + thickness / 2), y, thickness, height);
         top.collisionType = 0;
         top.tag = 1;
@@ -486,7 +494,7 @@ module.exports.Game = {
                 
             
                 
-                return true;       
+                return inView;       
             
             
             

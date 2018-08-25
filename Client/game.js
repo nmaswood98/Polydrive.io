@@ -11,14 +11,18 @@ var Game = {
     amountFollowing : 0,
     
     init: function(application,name){
+        
         createjs.Ticker.framerate = 60;
+        TweenMax.ticker.fps(60);
+        //TweenMax.ticker.addEventListener("tick",(event)=>{ this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));});
+       // createjs.RotationPlugin.install();
         this.lClick = false; 
         this.isDrawing = false;
         this.OnScreen = new PIXI.Container();
         this.OffScreen = new PIXI.Container();
         this.idArray = [];
         this.screenSprites = {};
-        
+        this.carrotation = 0;
         this.starting = true;
       
         //document.body.appendChild(this.app.view);
@@ -131,7 +135,7 @@ var Game = {
 
   ticker: function(delta){
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
-
+        
         this.line.clear();
         if(this.line.car != null){
             this.lClick = false;
@@ -144,7 +148,7 @@ var Game = {
       
       var angle =   Math.atan2((mouseY - this.car.y),(mouseX - this.car.x)) - (Math.PI);
     
-      var angle2 = angle - this.car.rotation;
+      var angle2 = angle - this.carrotation;
 
       if(!this.sKey.down)
         if(Math.abs((angle2 * 180)/Math.PI) >= 180){
@@ -153,17 +157,17 @@ var Game = {
            var angle3 = (2* Math.PI) - Math.abs(angle2);
            
             if(angle2 > 0){
-                this.car.rotation = this.car.rotation - angle3 * 0.2;
+                this.carrotation = this.carrotation - angle3 
            }
            else{
-                this.car.rotation = this.car.rotation + angle3 * 0.2;
+                this.carrotation = this.carrotation + angle3 
            }
 
-           if((this.car.rotation * 180)/Math.PI < -360)
-                this.car.rotation = (2* Math.PI) + this.car.rotation;
-           else  if((this.car.rotation * 180)/Math.PI > 10){
-               console.log("AYY LMAO");
-               this.car.rotation = this.car.rotation - (2* Math.PI) ;
+           if((this.carrotation * 180)/Math.PI < -360)
+                this.carrotation = (2* Math.PI) + this.carrotation;
+           else  if((this.carrotation * 180)/Math.PI > 10){
+               
+               this.carrotation = this.carrotation - (2* Math.PI) ;
          //   console.log((this.car.rotation * 180)/Math.PI);
 
            }
@@ -172,7 +176,7 @@ var Game = {
         
         }
         else{
-            this.car.rotation = this.car.rotation + angle2 * 0.2 ;
+            this.carrotation = this.carrotation + angle2 * 0.2 ;
 
         }
            
@@ -189,16 +193,17 @@ var Game = {
  
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            socket.emit("playerTick",{angle: this.car.rotation, stop: false, leftClick: this.lClick});
+            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick});
         }
         else{
            
-            socket.emit("playerTick",{angle: this.car.rotation, stop: true,leftClick: false});
+            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: false});
         }
     }
    
+   
     this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));
-    
+      //  console.log(this.car.rotation);
       
     
   },
@@ -208,11 +213,12 @@ var Game = {
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
-
-            createjs.Tween.removeAllTweens();
-
+           // console.log(timeDelta);
+           createjs.Tween.removeAllTweens();
+           TweenMax.killAll();
             var amount = 0;
             var size = this.OnScreen.children.length; 
+            var updatedChildArray = [];
            // console.log("size" + size);
            cars.forEach((u) => {
            
@@ -220,7 +226,28 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                    createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{ this.isDrawing = false;});
+                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{ this.isDrawing = false;});
+                    function notDrawing(){
+                        this.isDrawing = false;
+
+                    }
+                    
+                    this.car.anim = TweenMax.to(this.car,timeDelta/1000,{
+                        ease:Linear.easeNone,
+                      //  pixi:{x:u.x,y:u.y},
+                        directionalRotation:{
+                            rotation: u.angle + "_short",
+                            useRadians: true
+                        },
+                      //  onComplete:notDrawing
+                    
+                    
+                    });
+
+
+                 //   console.log((this.car.rotation * 180)/Math.PI +" new " + (u.angle * 180)/Math.PI);
+                 //   createjs.Tween.get(this.car).to({rotation:u.angle},timeDelta);
+                  // this.car.rotation = 0;
                   //  createjs.Tween.get(this.app.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
                   //  this.car.x = u.x;
                   //  this.car.y = u.y;
@@ -235,9 +262,19 @@ var Game = {
                   // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
                    // this.screenSprites[u.id].x = u.x;
                   //  this.screenSprites[u.id].y = u.y;
+                  TweenMax.to(this.screenSprites[u.id],timeDelta,{
+                        
+                   // pixi:{x:u.x,y:u.y},
+                    directionalRotation:{
+                        rotation: u.angle + "_short",
+                        useRadians: true
+                    }
+                
+                
+                });
 
                     //Tween
-                    createjs.Tween.get(this.screenSprites[u.id]).to({rotation:u.angle},timeDelta);
+                   // createjs.Tween.get(this.screenSprites[u.id]).to({rotation:u.angle},timeDelta);
                    // this.screenSprites[u.id].rotation = u.angle;
                     amount++;
                     ayy++;
@@ -250,13 +287,14 @@ var Game = {
                     else{
                         this.screenSprites[u.id].interactive = false;
                     }
-
-                    this.OnScreen.setChildIndex(this.screenSprites[u.id] ,size - 1);
+                    updatedChildArray.push(u.id);
+                  //  this.OnScreen.setChildIndex(this.screenSprites[u.id] ,this.OnScreen.children.length - 1);
                     
                     
                     if(u.name != undefined){
                         console.log("helhelfhelf");
                         //Tween
+                   
                         createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y - 110},timeDelta);
                        // this.screenSprites[u.id].nameLabel.x = u.x ;
                        // this.screenSprites[u.id].nameLabel.y = u.y - 110;
@@ -304,7 +342,8 @@ var Game = {
 
 
                     this.OnScreen.addChild(carSprite);
-                    this.screenSprites[u. id] = carSprite;
+                    this.screenSprites[u.id] = carSprite;
+                    updatedChildArray.push(u.id);
                     amount++;
                     ayy++;
 
@@ -348,12 +387,16 @@ var Game = {
             });
 
             environment.forEach((sprites) => {
+                
                 if(this.screenSprites.hasOwnProperty(sprites.id)){
                     //Tween
-                    createjs.Tween.get(this.screenSprites[sprites.id]).to({x:sprites.x,y:sprites.y},timeDelta);
-                   // this.screenSprites[sprites.id].x = sprites.x ;
-                  //  this.screenSprites[sprites.id].y = sprites.y ;
-                    this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,size - 1);
+                   
+               //     createjs.Tween.get(this.screenSprites[sprites.id]).to({x:sprites.x,y:sprites.y},timeDelta);
+                    
+                    this.screenSprites[sprites.id].x = sprites.x ;
+                    this.screenSprites[sprites.id].y = sprites.y ;
+                    updatedChildArray.push(sprites.id);
+                   // this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,this.OnScreen.children.length - 1);
                     amount++;
 
                 }
@@ -366,12 +409,14 @@ var Game = {
                     manaSprite.x = sprites.x;
                     manaSprite.y = sprites.y;
                     manaSprite.beginFill(this.randomColor());
-                 //   console.log("MANA DRAWN");
+                  //  console.log("MANA DRAWN" + sprites.id);
                     manaSprite.drawCircle(0,0,10);
                     manaSprite.endFill();
                     this.OnScreen.addChild(manaSprite);
+                  
                     this.screenSprites[sprites.id] = manaSprite;
-                   
+                    updatedChildArray.push(sprites.id);
+                    //this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,this.OnScreen.children.length - 1);
                     amount++;
                 }
             });
@@ -380,17 +425,17 @@ var Game = {
 
             
 
+            console.log(this.OnScreen.children.length);
+            amount = this.OnScreen.children.length - amount;
+           let difference = this.OnScreen.children.filter(x => !updatedChildArray.includes(x.id));
 
-            amount = size - amount;
+           difference.forEach((trash)=>{
+            this.app.stage.removeChild(trash);
+            delete this.screenSprites[trash.id];
+            this.OnScreen.removeChild(trash);
 
-            if(amount != 0){
-                //this.OnScreen.removeChildren(0,amount);
-                for (var i = 0; i < amount; i++){
-                    this.app.stage.removeChild(this.screenSprites[this.OnScreen.children[i].id].nameLabel);
-                    delete this.screenSprites[this.OnScreen.children[i].id];
-                    this.OnScreen.removeChildAt(i);
-                }
-            }
+           });
+         
            
 
   },

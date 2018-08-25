@@ -19,6 +19,7 @@ app.use(express.static(publicPath));
 console.log(__dirname);
 app.use("/Client/index.html", express.static(publicPath + '/Client/index.html'));
 app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
+
 app.use("/client.js", express.static(publicPath + '/Client/client.js'));
 app.use("/game.js", express.static(publicPath + '/Client/game.js'));
 app.use("/menu.js", express.static(publicPath + '/Client/menu.js'));

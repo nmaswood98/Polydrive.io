@@ -94,12 +94,12 @@ var GameNet = {
         var nextFrame = null;
         for(var i = (this.serverUpdates.length - 1); i >= 0; i--){
             var timeD = currentTime - this.serverUpdates[i][0];
-            if(timeD <= (offset + 20) && timeD >= (offset - 20))
+            if(timeD <= (offset + 20 ) && timeD >= (offset -20  ))
                 {
                     canDraw = true;
                     this.game.isDrawing = true;
                     nextFrame = this.serverUpdates[i];
-                    console.log(timeD);
+                 //   console.log(timeD);
                     this.game.draw(nextFrame[1],nextFrame[2],timeD);
                     break;
 
