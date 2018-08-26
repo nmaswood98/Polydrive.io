@@ -57,7 +57,7 @@ module.exports.Game = {
 
 
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / 60);
+        setInterval(this.tick2.bind(this), 1000 / 5);
         this.playerJoined();
         this.players = [];
         this.otherCars = [];
@@ -364,8 +364,8 @@ module.exports.Game = {
 
     playerJoined: function (id) {
         //Position On Board
-        var x = getRndInteger(0,this.worldX), y = getRndInteger(0,this.worldY);
-       // var x = 200, y = 200;
+       // var x = getRndInteger(0,this.worldX), y = getRndInteger(0,this.worldY);
+        var x = 200, y = 200;
         //position on board
 
         
@@ -512,9 +512,11 @@ module.exports.Game = {
 
 
 
-
-            this.sockets[car.id].emit("draw", sentUsers, sentMana);
-
+            
+            //var d = new Date();
+            this.sockets[car.id].emit("draw", sentUsers, sentMana,Date.now());
+            
+            //console.log(d.getSeconds());
 
 
         });
@@ -534,7 +536,7 @@ module.exports.Game = {
                     this.moveCar(carFollower,carFollower.launchAngle,20);
                 }
                 else if (carFollower.moving && !carFollower.follower.stopped) {
-                    var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
+                    var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Masth.PI);
                 //    console.log(carFollower.position);
                     this.moveCar(carFollower, angle, 4);
                 }

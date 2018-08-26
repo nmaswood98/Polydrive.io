@@ -213,7 +213,7 @@ var Game = {
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
-           // console.log(timeDelta);
+            console.log(timeDelta);
            createjs.Tween.removeAllTweens();
            TweenMax.killAll();
             var amount = 0;
@@ -226,7 +226,7 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{ this.isDrawing = false;});
+                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{this.isDrawing = false;});
                     function notDrawing(){
                         this.isDrawing = false;
 
@@ -239,7 +239,7 @@ var Game = {
                             rotation: u.angle + "_short",
                             useRadians: true
                         },
-                      //  onComplete:notDrawing
+                     //   onComplete:notDrawing
                     
                     
                     });

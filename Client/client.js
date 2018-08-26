@@ -13,6 +13,7 @@ var GameNet = {
          this.game = Object.create(Game);
          this.game.init(application,name);
          this.game.app.ticker.add((delta)=>{this.game.ticker(delta);});
+         this.game.isDrawing = false;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
          this.serverUpdates = [];
@@ -36,16 +37,18 @@ var GameNet = {
             console.log("KCIKECKJEKCJEKJELC:JEKJCL:KEJCLEJM");
         });
         
-        socket.on("draw",function(cars,environment){
+        socket.on("draw",function(cars,environment,timeStamp){
             var d = new Date();
            var currentTime = d.getTime();
-            var serverUpdate = [currentTime,cars,environment];
+           var travelTime =  Date.now() - timeStamp;
+         ///  console.log(travelTime); //outputs travel time
+            var serverUpdate = [timeStamp + travelTime,cars,environment];
             that.serverUpdates.push(serverUpdate);
                 if(that.lastTime === 0)
                     that.lastTime = currentTime;
 
-                if(that.serverUpdates.length >= (60)) {
-                    that.serverUpdates.splice(0,1);
+                if(that.serverUpdates.length >= (3000)) {
+                   // that.serverUpdates.splice(0,1);
                 }
 
                
@@ -87,10 +90,28 @@ var GameNet = {
 
         var d = new Date();
         var currentTime = d.getTime();
-        var offset = 100;
+        var offset = 500;
    
         var canDraw = false;
         if(true){
+           for(var i = 0; i < this.serverUpdates.length;i++ ) {
+               
+               element = this.serverUpdates[i];
+               var currentRenderingTime = currentTime - offset;
+               
+               if(element[0] >= currentRenderingTime ){
+               this.game.isDrawing = true;
+               this.game.draw(element[1],element[2],element[0] - currentRenderingTime);
+           
+              this.serverUpdates.splice(0,i + 1 );
+               break;
+               }
+
+           }
+        }
+
+
+        /*
         var nextFrame = null;
         for(var i = (this.serverUpdates.length - 1); i >= 0; i--){
             var timeD = currentTime - this.serverUpdates[i][0];
@@ -106,11 +127,7 @@ var GameNet = {
 
                 }
             }
-        }
-
-
-
-    
+            */
 
 
     }
