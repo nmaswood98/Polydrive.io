@@ -90,7 +90,7 @@ var GameNet = {
 
         var d = new Date();
         var currentTime = d.getTime();
-        var offset = 500;
+        var offset = 100;
    
         var canDraw = false;
         if(true){

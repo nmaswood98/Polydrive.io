@@ -1,6 +1,8 @@
 /*jshint esversion: 6 */
 //var PIXI = require('pixi.js');
 
+
+
 var Menu = {
 
     app: new PIXI.Application(document.documentElement.clientWidth
@@ -38,27 +40,48 @@ var Menu = {
     
     
       },
+     
         
 
     init: function () {
+        PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         document.body.appendChild(this.app.view);
+        console.log(this);
+        var that = this;
+        var loadGame = (a)=>{
+            that.setup(a).call(that);
 
-        this.app.view.style.position = 'absolute';
-        this.app.view.style.left = '50%';
-        this.app.view.style.top = '50%';
-        this.app.view.style.transform = 'translate3d( -50%, -50%, 0 )';
-        this.app.view.style.zIndex = -1;
-        this.mouse = this.app.renderer.plugins.interaction.mouse.global;
+        }
+        
+        PIXI.loader
+        .add('/polydriveSprites.json')
+        .load(this.setup);
+        var that = this;
+       
+        //this.setup(PIXI.loader);
+        console.log(PIXI.loader);
+    },
+
+    setup: (a) =>  {
+        spriteSheet = a.resources["/polydriveSprites.json"].textures; 
+        var that = this.menu;
+       console.log(this);
+        that.app.view.style.position = 'absolute';
+        that.app.view.style.left = '50%';
+        that.app.view.style.top = '50%';
+        that.app.view.style.transform = 'translate3d( -50%, -50%, 0 )';
+        that.app.view.style.zIndex = -1;
+        that.mouse = that.app.renderer.plugins.interaction.mouse.global;
         var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
 
-        this.tilingSprite = new PIXI.extras.TilingSprite(
+        that.tilingSprite = new PIXI.extras.TilingSprite(
             texture,
-            this.app.screen.width * 20,
-            this.app.screen.height * 20
+            that.app.screen.width * 20,
+            that.app.screen.height * 20
         );
-        this.app.stage.addChild(this.tilingSprite);
+        that.app.stage.addChild(that.tilingSprite);
         
-        this.app.stage.setChildIndex(this.tilingSprite,0);
+        that.app.stage.setChildIndex(that.tilingSprite,0);
 
 
         document.documentElement.style.overflow = 'hidden';  // firefox, chrome
@@ -67,8 +90,8 @@ var Menu = {
         var startButton = PIXI.Sprite.fromImage("/assets/Play.png");
         var logo = PIXI.Sprite.fromImage("/assets/polydrivelogo.png");
         startButton.anchor.set(0.5);
-        startButton.x = this.app.screen.width / 2;
-        startButton.y = this.app.screen.height / 2;
+        startButton.x = that.app.screen.width / 2;
+        startButton.y = that.app.screen.height / 2;
         startButton.scale.x *= 1.8;
         startButton.scale.y *= 1.8;
         startButton.interactive = true;
@@ -76,18 +99,18 @@ var Menu = {
         var textbox = document.getElementById("nameField");
         startButton.on('pointerdown', ()=>{
             textbox.style.display = "none";
-            while(this.app.stage.children[0]) { this.app.stage.removeChild(this.app.stage.children[0]); }
+            while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
 
 
 
             var gameNet = Object.create(GameNet);
-            gameNet.init(this.app,textbox.value);
+            gameNet.init(that.app,textbox.value);
             gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
 
         });
 
 
-        this.app.stage.addChild(startButton);
+        that.app.stage.addChild(startButton);
 
         var style = new PIXI.TextStyle({
             fontFamily: 'Arial',
@@ -109,17 +132,17 @@ var Menu = {
 
         var basicText = new PIXI.Text('Polydrive.io',style);
         logo.anchor.set(0.5);
-        logo.x = this.app.screen.width / 2;
+        logo.x = that.app.screen.width / 2;
         logo.y = 450;
 
-        this.app.stage.addChild(logo);
+        that.app.stage.addChild(logo);
 
 
-         this.line = new PIXI.Graphics();
+        that.line = new PIXI.Graphics();
 
-         this.line.lineStyle(2, 0x33FF00);
-         this.line.moveTo(this.app.screen.width / 2,this.app.screen.height / 2);
-         this.line.lineTo(600, 300);
+        that.line.lineStyle(2, 0x33FF00);
+        that.line.moveTo(that.app.screen.width / 2,that.app.screen.height / 2);
+        that.line.lineTo(600, 300);
 
        // this.app.stage.addChild(this.line);
 
@@ -130,18 +153,36 @@ var Menu = {
             var manaSprite = new PIXI.Graphics();
             // manaSprite.anchor.set(0.5,0.5);
              
-             manaSprite.x = Math.floor(Math.random() * this.app.screen.width );
-             manaSprite.y = Math.floor(Math.random() * this.app.screen.height);
-             manaSprite.beginFill(this.randomColor());
+             manaSprite.x = Math.floor(Math.random() * that.app.screen.width );
+             manaSprite.y = Math.floor(Math.random() * that.app.screen.height);
+             manaSprite.beginFill(that.randomColor());
              manaSprite.drawCircle(0,0,10);
              manaSprite.endFill();
-             this.app.stage.addChild(manaSprite);
+             that.app.stage.addChild(manaSprite);
              
         }
 
+
+
+       // let textures = PIXI.loader.resources["car12_blue.png"].texture;
+       console.log(spriteSheet);
+        var carSprite = new PIXI.Sprite(spriteSheet["polydrive.io/car2_neongreen.png"]);
+        carSprite.interactive = false;
+        carSprite.anchor.set(0.5,0.5);
+        //carSprite.updated = true;
+        carSprite.x = 1500;
+        carSprite.y = 1000;
+       // carSprite.id = u.id;
+        carSprite.rotation = Math.PI/2;
+        carSprite.scale.x = 30;
+        carSprite.scale.y = 30;
+        that.app.stage.addChild(carSprite);
+
+
+
+
        // createjs.Tween.get(logo).to({x:100,y:100},3000);
        // createjs.Ticker.framerate = 60;
-
 
 
     },

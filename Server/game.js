@@ -57,9 +57,9 @@ module.exports.Game = {
 
 
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / 5);
+        setInterval(this.tick2.bind(this), 1000 / 30);
         this.playerJoined();
-        this.players = [];
+        this.players = []; 
         this.otherCars = [];
         this.manaPool = [];
         this.sockets = {};
@@ -145,7 +145,20 @@ module.exports.Game = {
 
             });
 
-            socket.on("playerTick", (carInfo) => {
+            socket.on("playerTick", (carInfo,launchedCar) => {
+
+                if(launchedCar != null){
+                    console.log("Hello");
+                    var bodies;
+                  var carFound =   Matter.Query.point(currentCar.followerArray, { x:mouseInfo.x, y: mouseInfo.y });
+                  carFound[0].launching = true;
+                  carFound[0].launchAngle = Math.atan2((mouseInfo.mY - mouseInfo.y), (mouseInfo.mX - mouseInfo.x)) - (Math.PI);
+    
+                setTimeout(function () { carFound[0].launching = false; }, 5000); //amount of time the car will launch for
+
+
+                }
+
                 if(currentCar.manaCount == 5){
                     currentCar.manaCount = 0;
                     console.log("NEW CAR ALERT NEW CAR ALERT");
@@ -187,19 +200,7 @@ module.exports.Game = {
             });
 
             socket.on("launch", (mouseInfo) => {
-                console.log("Hello");
-                var bodies;
-              var carFound =   Matter.Query.point(currentCar.followerArray, { x:mouseInfo.x, y: mouseInfo.y });
-              carFound[0].launching = true;
-              carFound[0].launchAngle = Math.atan2((mouseInfo.mY - mouseInfo.y), (mouseInfo.mX - mouseInfo.x)) - (Math.PI);
-             // var index = currentCar.followerArray.indexOf(carFound);
-            //  currentCar.followerArray.splice(index, 1);
-            //  Matter.Composite.remove(this.world, carFound);
-            setTimeout(function () { carFound[0].launching = false; 
 
-
-                
-            }, 5000);
 
             });
             
@@ -463,7 +464,12 @@ module.exports.Game = {
 
             this.players.forEach((car1) => {
                 car1.followerArray.forEach((carFollower) => {  
-                    sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, angle: carFollower.angle, isFollower: (car === car1) ? true : false });
+                    sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
+                                            angle: carFollower.angle, isFollower: (car === car1) ? true : false,
+                                            isLaunching: carFollower.isLaunching
+                                        
+                                        
+                                        });
                 });
             });
 

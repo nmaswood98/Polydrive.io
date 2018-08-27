@@ -43,6 +43,7 @@ var Game = {
 
         this.line = new PIXI.Graphics();
         this.line.car = null;
+        this.launchedCar = null;
         this.app.stage.addChild(this.line);
 
         var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
@@ -193,11 +194,13 @@ var Game = {
  
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick});
+            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick},this.launchedCar);
+            this.launchedCar = null;
         }
         else{
            
-            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: false});
+            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: false},this.launchedCar);
+            this.launchedCar = null;
         }
     }
    
@@ -335,7 +338,8 @@ var Game = {
                         carSprite.alpha = 1;
                         
                         var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
-                        socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
+                      //  socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
+                        this.launchedCar = {x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY};
             
                     });
 
