@@ -36,7 +36,7 @@ module.exports.Game = {
 
     init: function (server) {
         io = socketIO(server);
-
+        this.updateRate = 30;
         this.engine = Engine.create();
         this.engine.world.gravity.y = 0;
         this.world = this.engine.world;
@@ -57,7 +57,7 @@ module.exports.Game = {
 
 
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / 30);
+        setInterval(this.tick2.bind(this), 1000 / this.updateRate);
         this.playerJoined();
         this.players = []; 
         this.otherCars = [];

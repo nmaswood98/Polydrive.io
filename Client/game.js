@@ -11,7 +11,7 @@ var Game = {
     amountFollowing : 0,
     
     init: function(application,name){
-        
+        this.spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures; 
         createjs.Ticker.framerate = 60;
         TweenMax.ticker.fps(60);
         //TweenMax.ticker.addEventListener("tick",(event)=>{ this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));});
@@ -46,12 +46,12 @@ var Game = {
         this.launchedCar = null;
         this.app.stage.addChild(this.line);
 
-        var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
+        
 
 
 
         this.tilingSprite = new PIXI.extras.TilingSprite(
-            texture,
+            this.spriteSheet["TextureBackground.png"],
             15000,
             10000
         );
@@ -94,10 +94,13 @@ var Game = {
     
 
     createCar: function(){
-        this.car = new PIXI.Sprite.fromImage("/assets/carSprite.png");
+        let carName = "car12_blue.png"; //Player eventually gets to choose
+        this.car = new PIXI.Sprite(this.spriteSheet[carName]);
         this.car.interactive = true;
         this.car.anchor.set(0.5,0.5);
         this.car.id = -1;
+        this.car.scale.x = 4.382353;
+        this.car.scale.y = 4.382353;
         this.car.x = this.app.renderer.width / 2 ;
         this.car.y = this.app.renderer.height / 2;
         //this.car.rotation = 270 * (Math.PI / 180);
@@ -216,7 +219,7 @@ var Game = {
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
-            console.log(timeDelta);
+         //   console.log(timeDelta);
            createjs.Tween.removeAllTweens();
            TweenMax.killAll();
             var amount = 0;
@@ -229,9 +232,9 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{this.isDrawing = false;});
+                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
                     function notDrawing(){
-                        this.isDrawing = false;
+                      //  this.isDrawing = false;
 
                     }
                     
@@ -239,7 +242,7 @@ var Game = {
                         ease:Linear.easeNone,
                       //  pixi:{x:u.x,y:u.y},
                         directionalRotation:{
-                            rotation: u.angle + "_short",
+                            rotation: (u.angle - (Math.PI/2)) + "_short",
                             useRadians: true
                         },
                      //   onComplete:notDrawing
@@ -307,8 +310,8 @@ var Game = {
 
                 }
                 else{
-                    
-                    var carSprite = new PIXI.Sprite.fromImage("/assets/carSprite.png");
+                    var carName = "car14_red.png";
+                    var carSprite = new PIXI.Sprite(this.spriteSheet[carName]);
                     carSprite.interactive = false;
                     carSprite.anchor.set(0.5,0.5);
                     //carSprite.updated = true;
@@ -429,7 +432,7 @@ var Game = {
 
             
 
-            console.log(this.OnScreen.children.length);
+         //   console.log(this.OnScreen.children.length);
             amount = this.OnScreen.children.length - amount;
            let difference = this.OnScreen.children.filter(x => !updatedChildArray.includes(x.id));
 
@@ -444,27 +447,7 @@ var Game = {
 
   },
 
-  drawObject: function(blueprint){
-    this.idArray.push(blueprint.id);
-    console.log("Drawings");
-   var car = new PIXI.Sprite.fromImage("/assets/carSprite.png");
-    car.anchor.set(0.5,0.5);
-    car.id = blueprint.id;
-    car.x = blueprint.x;
-    car.y = blueprint.y;
-    
-    this.OnScreen.on(car.id,function(x,y){
-        car.x = x;
-        car.y = y;
-
-    });
-
-   
-
-    this.OnScreen.addChild(car);
-    
-
-  },
+  
 
   moveOnScreen: function(id,x,y){
     // {isPlayer:false, id:true, x: 120, y:5, angle:180}

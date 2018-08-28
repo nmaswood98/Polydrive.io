@@ -54,7 +54,7 @@ var Menu = {
         }
         
         PIXI.loader
-        .add('/polydriveSprites.json')
+        .add('/polydriveSpriteSheet.json')
         .load(this.setup);
         var that = this;
        
@@ -63,7 +63,7 @@ var Menu = {
     },
 
     setup: (a) =>  {
-        spriteSheet = a.resources["/polydriveSprites.json"].textures; 
+       var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 
         var that = this.menu;
        console.log(this);
         that.app.view.style.position = 'absolute';
@@ -72,10 +72,10 @@ var Menu = {
         that.app.view.style.transform = 'translate3d( -50%, -50%, 0 )';
         that.app.view.style.zIndex = -1;
         that.mouse = that.app.renderer.plugins.interaction.mouse.global;
-        var texture = PIXI.Texture.fromImage('/assets/TextureBackground.png');
+        
 
         that.tilingSprite = new PIXI.extras.TilingSprite(
-            texture,
+            spriteSheet["TextureBackground.png"],
             that.app.screen.width * 20,
             that.app.screen.height * 20
         );
@@ -87,8 +87,8 @@ var Menu = {
         document.documentElement.style.overflow = 'hidden';  // firefox, chrome
         document.body.scroll = "no";
 
-        var startButton = PIXI.Sprite.fromImage("/assets/Play.png");
-        var logo = PIXI.Sprite.fromImage("/assets/polydrivelogo.png");
+        var startButton = new PIXI.Sprite(spriteSheet["Play.png"]);
+        var logo =new PIXI.Sprite(spriteSheet["Polydrivelogo.png"]);
         startButton.anchor.set(0.5);
         startButton.x = that.app.screen.width / 2;
         startButton.y = that.app.screen.height / 2;
@@ -166,7 +166,7 @@ var Menu = {
 
        // let textures = PIXI.loader.resources["car12_blue.png"].texture;
        console.log(spriteSheet);
-        var carSprite = new PIXI.Sprite(spriteSheet["polydrive.io/car2_neongreen.png"]);
+        var carSprite = new PIXI.Sprite(spriteSheet["car2_neongreen.png"]);
         carSprite.interactive = false;
         carSprite.anchor.set(0.5,0.5);
         //carSprite.updated = true;
@@ -174,8 +174,8 @@ var Menu = {
         carSprite.y = 1000;
        // carSprite.id = u.id;
         carSprite.rotation = Math.PI/2;
-        carSprite.scale.x = 30;
-        carSprite.scale.y = 30;
+        carSprite.scale.x = 10;
+        carSprite.scale.y = 10;
         that.app.stage.addChild(carSprite);
 
 

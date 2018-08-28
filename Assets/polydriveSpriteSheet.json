@@ -1,0 +1,144 @@
+{"frames": {
+
+"car2_neongreen.png":
+{
+	"frame": {"x":32,"y":0,"w":20,"h":35},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":35},
+	"sourceSize": {"w":20,"h":35}
+},
+"car12_blue.png":
+{
+	"frame": {"x":16,"y":0,"w":16,"h":34},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":34},
+	"sourceSize": {"w":16,"h":34}
+},
+"car14_red.png":
+{
+	"frame": {"x":0,"y":0,"w":16,"h":34},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":34},
+	"sourceSize": {"w":16,"h":34}
+},
+"hit_0.png":
+{
+	"frame": {"x":308,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"hit_1.png":
+{
+	"frame": {"x":276,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"hit_2.png":
+{
+	"frame": {"x":244,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"hit_3.png":
+{
+	"frame": {"x":212,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_0.png":
+{
+	"frame": {"x":52,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_1.png":
+{
+	"frame": {"x":84,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_2.png":
+{
+	"frame": {"x":148,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_3.png":
+{
+	"frame": {"x":180,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_4.png":
+{
+	"frame": {"x":116,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"nitro_5.png":
+{
+	"frame": {"x":340,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+"Play.png":
+{
+	"frame": {"x":372,"y":0,"w":81,"h":41},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":81,"h":41},
+	"sourceSize": {"w":81,"h":41}
+},
+"Polydrivelogo.png":
+{
+	"frame": {"x":0,"y":300,"w":1420,"h":135},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1420,"h":135},
+	"sourceSize": {"w":1420,"h":135}
+},
+"TextureBackground.png":
+{
+	"frame": {"x":453,"y":0,"w":300,"h":300},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":300},
+	"sourceSize": {"w":300,"h":300}
+}},
+"animations": {
+	"hit": ["hit_0.png","hit_1.png","hit_2.png","hit_3.png"],
+	"nitro": ["nitro_0.png","nitro_1.png","nitro_2.png","nitro_3.png","nitro_4.png","nitro_5.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "polydriveSpriteSheet.png",
+	"format": "RGBA8888",
+	"size": {"w":1420,"h":435},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:bdbe51205ae3851fcf585b6dc49b8c6a:1e6fe5072b8ebdaf11bd3fca7f8022ea:ad633f935abb65d8200bcf2bb1e1f357$"
+}
+}

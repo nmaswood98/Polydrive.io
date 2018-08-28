@@ -23,13 +23,11 @@ app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
 app.use("/client.js", express.static(publicPath + '/Client/client.js'));
 app.use("/game.js", express.static(publicPath + '/Client/game.js'));
 app.use("/menu.js", express.static(publicPath + '/Client/menu.js'));
-app.use("/assets/carSprite.png", express.static(publicPath + '/carSprite.png'));
-app.use("/polydriveSprites.png", express.static(publicPath + '/Assets/polydriveSprites.png'));
-app.use("/polydriveSprites.json", express.static(publicPath + '/Assets/polydriveSprites.json'));
 
-app.use("/assets/Play.png", express.static(publicPath + '/Play.png'));
-app.use("/assets/Polydrivelogo.png", express.static(publicPath + '/Polydrivelogo.png'));
-app.use("/assets/TextureBackground.png", express.static(publicPath + '/TextureBackground.png'));
+app.use("/polydriveSpriteSheet.png", express.static(publicPath + '/Assets/polydriveSpriteSheet.png'));
+app.use("/polydriveSpriteSheet.json", express.static(publicPath + '/Assets/polydriveSpriteSheet.json'));
+
+
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
 
 

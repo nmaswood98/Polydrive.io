@@ -40,10 +40,11 @@ var GameNet = {
         socket.on("draw",function(cars,environment,timeStamp){
             var d = new Date();
            var currentTime = d.getTime();
-           var travelTime =  Date.now() - timeStamp;
+           that.travelTime =  Date.now() - timeStamp;
          ///  console.log(travelTime); //outputs travel time
-            var serverUpdate = [timeStamp + travelTime,cars,environment];
+            var serverUpdate = [timeStamp + that.travelTime,cars,environment];
             that.serverUpdates.push(serverUpdate);
+            console.log(that.serverUpdates.length);
                 if(that.lastTime === 0)
                     that.lastTime = currentTime;
 
@@ -51,7 +52,7 @@ var GameNet = {
                    // that.serverUpdates.splice(0,1);
                 }
 
-               
+             
 
     
             /*
@@ -88,27 +89,31 @@ var GameNet = {
     ticker: function(delta){
         
 
-        var d = new Date();
-        var currentTime = d.getTime();
-        var offset = 100;
-   
-        var canDraw = false;
-        if(true){
-           for(var i = 0; i < this.serverUpdates.length;i++ ) {
-               
-               element = this.serverUpdates[i];
-               var currentRenderingTime = currentTime - offset;
-               
-               if(element[0] >= currentRenderingTime ){
-               this.game.isDrawing = true;
-               this.game.draw(element[1],element[2],element[0] - currentRenderingTime);
+      var d = new Date();
+                var currentTime = d.getTime();
+               var offset = 100;
            
-              this.serverUpdates.splice(0,i + 1 );
-               break;
-               }
+               var canDraw = false;
+               if(!this.game.isDrawing){
+                  for(var i = 0; i < this.serverUpdates.length;i++ ) {
+                      
+                      element = this.serverUpdates[i];
+                      var currentRenderingTime = currentTime - offset;
+                      
+                      if(element[0] >= currentRenderingTime ){
+                        this.game.isDrawing = true;
+                       this.game.draw(element[1],element[2],element[0] - currentRenderingTime);
+                       setTimeout( () => { this.game.isDrawing =  false; 
 
-           }
-        }
+
+               
+                       }, element[0] - currentRenderingTime - this.travelTime);
+                       this.serverUpdates.splice(0,i + 1 );
+                      break;
+                      }
+       
+                  }
+               }
 
 
         /*
