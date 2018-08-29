@@ -268,11 +268,11 @@ var Game = {
                   // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
                    // this.screenSprites[u.id].x = u.x;
                   //  this.screenSprites[u.id].y = u.y;
-                  TweenMax.to(this.screenSprites[u.id],timeDelta,{
-                        
+                  TweenMax.to(this.screenSprites[u.id],timeDelta/1000,{
+                    ease:Linear.easeNone,
                    // pixi:{x:u.x,y:u.y},
                     directionalRotation:{
-                        rotation: u.angle + "_short",
+                        rotation: (u.angle- (Math.PI/2)) + "_short",
                         useRadians: true
                     }
                 
@@ -301,7 +301,8 @@ var Game = {
                         console.log("helhelfhelf");
                         //Tween
                    
-                        createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y - 110},timeDelta);
+                        createjs.Tween.get(this.screenSprites[u.id].nameLabel).to({x:u.x,y:u.y - 110},timeDelta);
+                        
                        // this.screenSprites[u.id].nameLabel.x = u.x ;
                        // this.screenSprites[u.id].nameLabel.y = u.y - 110;
 
@@ -317,8 +318,10 @@ var Game = {
                     //carSprite.updated = true;
                     carSprite.x = u.x;
                     carSprite.y = u.y;
+                    carSprite.scale.x = 4.382353;
+                    carSprite.scale.y = 4.382353;
                     carSprite.id = u.id;
-                    carSprite.rotation = u.angle;
+                    carSprite.rotation = (u.angle - (Math.PI/2));
 
                     
 

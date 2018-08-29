@@ -161,12 +161,31 @@ var Menu = {
              that.app.stage.addChild(manaSprite);
              
         }
+        var animationArray = [];
+        
+        a.resources["/polydriveSpriteSheet.json"].data.animations.nitro.forEach(element => {
+            animationArray.push(spriteSheet[element]);
+        });
 
+        var createAnimationAt = (x,y) =>{
+        var nitroSprite = new PIXI.extras.AnimatedSprite(animationArray);
+        nitroSprite.anchor.set(0.5,0.5);
+        nitroSprite.x = x;
+        nitroSprite.y = y;
+        nitroSprite.rotation =Math.PI/2;
+        nitroSprite.scale.set(10);
+        nitroSprite.animationSpeed = 0.18;
+        nitroSprite.loop = false;
+        nitroSprite.onComplete = function (){this.parent.removeChild(this);};
+        that.app.stage.addChild(nitroSprite);
+        nitroSprite.play();
+        }
 
-
+        var poop =  createAnimationAt(1207,1000);
        // let textures = PIXI.loader.resources["car12_blue.png"].texture;
-       console.log(spriteSheet);
+       console.log(a.resources["/polydriveSpriteSheet.json"].data.animations.nitro);
         var carSprite = new PIXI.Sprite(spriteSheet["car2_neongreen.png"]);
+        //var carSprite = new PIXI.extras.AnimatedSprite()
         carSprite.interactive = false;
         carSprite.anchor.set(0.5,0.5);
         //carSprite.updated = true;

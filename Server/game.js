@@ -150,9 +150,9 @@ module.exports.Game = {
                 if(launchedCar != null){
                     console.log("Hello");
                     var bodies;
-                  var carFound =   Matter.Query.point(currentCar.followerArray, { x:mouseInfo.x, y: mouseInfo.y });
+                  var carFound =   Matter.Query.point(currentCar.followerArray, { x:launchedCar.x, y: launchedCar.y });
                   carFound[0].launching = true;
-                  carFound[0].launchAngle = Math.atan2((mouseInfo.mY - mouseInfo.y), (mouseInfo.mX - mouseInfo.x)) - (Math.PI);
+                  carFound[0].launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
     
                 setTimeout(function () { carFound[0].launching = false; }, 5000); //amount of time the car will launch for
 
@@ -265,6 +265,7 @@ module.exports.Game = {
 
                 if(pair.bodyA.isMana || pair.bodyB.isMana){
                     pair.isActive = false;
+                    
                     return;
                 }
                 
@@ -437,6 +438,8 @@ module.exports.Game = {
             var minX = car.position.x - hDis;
             var minY = car.position.y - yDis;
 
+            var sentOtherCars = [];
+
             var sentUsers = this.players.filter((player)=>{ 
                 var inView = false;
                 
@@ -453,15 +456,27 @@ module.exports.Game = {
             
             
             
-            }).map(function (player) {
+            }).map( (player) => {
                 // console.log(player.angle);
-                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName };
+                let onPlayer = car === player;
+                player.followerArray.forEach((carFollower) => {  
+                    sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
+                                            angle: carFollower.angle, isFollower: (onPlayer) ? true : false,
+                                            isLaunching: carFollower.isLaunching
+                                        
+                                        
+                                        });
+                });
 
+                if(onPlayer)
+                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.mana, angle: player.angle, name: player.playerName };
+                else
+                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName };
             });
 
 
-            var sentOtherCars = [];
-
+           
+/*
             this.players.forEach((car1) => {
                 car1.followerArray.forEach((carFollower) => {  
                     sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
@@ -472,7 +487,7 @@ module.exports.Game = {
                                         });
                 });
             });
-
+*/
             var tempCars = this.otherCars.map(function (player) {
 
                 return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
@@ -542,7 +557,7 @@ module.exports.Game = {
                     this.moveCar(carFollower,carFollower.launchAngle,20);
                 }
                 else if (carFollower.moving && !carFollower.follower.stopped) {
-                    var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Masth.PI);
+                    var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
                 //    console.log(carFollower.position);
                     this.moveCar(carFollower, angle, 4);
                 }
