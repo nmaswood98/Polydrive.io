@@ -14,8 +14,7 @@ var Game = {
         this.spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures; 
         createjs.Ticker.framerate = 60;
         TweenMax.ticker.fps(60);
-        //TweenMax.ticker.addEventListener("tick",(event)=>{ this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));});
-       // createjs.RotationPlugin.install();
+     
         this.lClick = false; 
         this.isDrawing = false;
         this.OnScreen = new PIXI.Container();
@@ -24,6 +23,15 @@ var Game = {
         this.screenSprites = {};
         this.carrotation = 0;
         this.starting = true;
+
+        //Set Up Animation Arrays
+        this.animationArray = [];
+        PIXI.loader.resources["/polydriveSpriteSheet.json"].data.animations.nitro.forEach(element => {
+            this.animationArray.push(this.spriteSheet[element]);
+        }); 
+        
+
+        ///
       
         //document.body.appendChild(this.app.view);
         this.app = application;
@@ -143,7 +151,7 @@ var Game = {
         this.line.clear();
         if(this.line.car != null){
             this.lClick = false;
-            console.log("IT WORKING IT WORKING");
+          //  console.log("IT WORKING IT WORKING");
             this.line.lineStyle(10, this.line.color);
             this.line.moveTo(this.line.car.x,this.line.car.y);
             this.line.lineTo(mouseX, mouseY);
@@ -219,7 +227,7 @@ var Game = {
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
-         //   console.log(timeDelta);
+           // console.log(timeDelta);
            createjs.Tween.removeAllTweens();
            TweenMax.killAll();
             var amount = 0;
@@ -278,10 +286,21 @@ var Game = {
                 
                 
                 });
+           
 
-                    //Tween
-                   // createjs.Tween.get(this.screenSprites[u.id]).to({rotation:u.angle},timeDelta);
-                   // this.screenSprites[u.id].rotation = u.angle;
+                if(u.isLaunching){
+                    //console.log(this.screenSprites[u.id].anim);
+                    if(this.screenSprites[u.id].anim == null && !(this.screenSprites[u.id].isLaunching) ){
+                        this.screenSprites[u.id].isLaunching = true;
+                        this.screenSprites[u.id].launchAnimation();
+                    }
+                }
+                else{
+                    this.screenSprites[u.id].isLaunching = false;
+                }
+                
+
+            
                     amount++;
                     ayy++;
 
@@ -294,7 +313,7 @@ var Game = {
                         this.screenSprites[u.id].interactive = false;
                     }
                     updatedChildArray.push(u.id);
-                  //  this.OnScreen.setChildIndex(this.screenSprites[u.id] ,this.OnScreen.children.length - 1);
+                  
                     
                     
                     if(u.name != undefined){
@@ -322,6 +341,19 @@ var Game = {
                     carSprite.scale.y = 4.382353;
                     carSprite.id = u.id;
                     carSprite.rotation = (u.angle - (Math.PI/2));
+                    
+                    carSprite.launchAnimation = () =>{
+                        
+                        carSprite.anim = new PIXI.extras.AnimatedSprite(this.animationArray);
+                        carSprite.anim.anchor.set(0.5,-0.37);
+                        carSprite.anim.x = 0;
+                        carSprite.anim.y = 0;
+                        carSprite.anim.animationSpeed = 0.15;
+                        carSprite.anim.loop = false;
+                        carSprite.anim.onComplete = function (){this.parent.anim = null; this.parent.removeChild(this); };
+                        carSprite.addChild(carSprite.anim);
+                        carSprite.anim.play();
+                    };
 
                     
 
@@ -345,7 +377,7 @@ var Game = {
                         
                         var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
                       //  socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
-                        this.launchedCar = {x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY};
+                        this.launchedCar = {id:carSprite.id, x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY};
             
                     });
 
@@ -516,7 +548,7 @@ var Game = {
   randomColor: function(){
    
         var rando =  Math.floor(Math.random() * (5 - 1 + 1) ) + 1;
-        console.log("HEYO");
+        //console.log("HEYO");
 
     switch (rando) {
         case 1:

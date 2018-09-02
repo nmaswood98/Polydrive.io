@@ -165,25 +165,12 @@ var Menu = {
         
         a.resources["/polydriveSpriteSheet.json"].data.animations.nitro.forEach(element => {
             animationArray.push(spriteSheet[element]);
-        });
+        });   
 
-        var createAnimationAt = (x,y) =>{
-        var nitroSprite = new PIXI.extras.AnimatedSprite(animationArray);
-        nitroSprite.anchor.set(0.5,0.5);
-        nitroSprite.x = x;
-        nitroSprite.y = y;
-        nitroSprite.rotation =Math.PI/2;
-        nitroSprite.scale.set(10);
-        nitroSprite.animationSpeed = 0.18;
-        nitroSprite.loop = false;
-        nitroSprite.onComplete = function (){this.parent.removeChild(this);};
-        that.app.stage.addChild(nitroSprite);
-        nitroSprite.play();
-        }
-
-        var poop =  createAnimationAt(1207,1000);
+    
        // let textures = PIXI.loader.resources["car12_blue.png"].texture;
-       console.log(a.resources["/polydriveSpriteSheet.json"].data.animations.nitro);
+      // console.log(a.resources["/polydriveSpriteSheet.json"].data.animations.nitro);
+      console.log(spriteSheet);
         var carSprite = new PIXI.Sprite(spriteSheet["car2_neongreen.png"]);
         //var carSprite = new PIXI.extras.AnimatedSprite()
         carSprite.interactive = false;
@@ -192,13 +179,28 @@ var Menu = {
         carSprite.x = 1500;
         carSprite.y = 1000;
        // carSprite.id = u.id;
-        carSprite.rotation = Math.PI/2;
-        carSprite.scale.x = 10;
-        carSprite.scale.y = 10;
+        carSprite.rotation = Math.PI/4;
+        carSprite.scale.x = 4.382353;
+        //carSprite.scale.x = 4.382353;
+        carSprite.scale.y = 4.382353;
         that.app.stage.addChild(carSprite);
 
 
-
+        var createAnimationAt = (x,y) =>{
+            var nitroSprite = new PIXI.extras.AnimatedSprite(animationArray);
+            nitroSprite.anchor.set(0.5,-0.37);
+            nitroSprite.x = x;
+            nitroSprite.y = y;
+           // nitroSprite.rotation = 0;
+            //nitroSprite.scale.set(4.382353);
+            nitroSprite.animationSpeed = 0.18;
+            nitroSprite.loop = true;
+           // nitroSprite.onComplete = function (){this.parent.removeChild(this);};
+           carSprite.addChild(nitroSprite);
+            nitroSprite.play();
+            }
+    
+            var poop =  createAnimationAt(0,0);
 
        // createjs.Tween.get(logo).to({x:100,y:100},3000);
        // createjs.Ticker.framerate = 60;

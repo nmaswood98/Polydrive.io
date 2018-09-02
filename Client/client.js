@@ -10,6 +10,7 @@ var GameNet = {
     
     init: function(application,name){
         this.app = application;
+        this.travelTime = 0;
          this.game = Object.create(Game);
          this.game.init(application,name);
          this.game.app.ticker.add((delta)=>{this.game.ticker(delta);});
@@ -39,14 +40,14 @@ var GameNet = {
         
         socket.on("draw",function(cars,environment,timeStamp){
             var d = new Date();
-           var currentTime = d.getTime();
+           var currentTime = d.getTime() - that.travelTime; //add /2
            that.travelTime =  Date.now() - timeStamp;
-         ///  console.log(travelTime); //outputs travel time
-            var serverUpdate = [timeStamp + that.travelTime,cars,environment];
+         //  console.log(that.travelTime); //outputs travel time
+            var serverUpdate = [timeStamp ,cars,environment];
             that.serverUpdates.push(serverUpdate);
-            console.log(that.serverUpdates.length);
+           // console.log(that.travelTime);
+            
                 if(that.lastTime === 0)
-                    that.lastTime = currentTime;
 
                 if(that.serverUpdates.length >= (3000)) {
                    // that.serverUpdates.splice(0,1);
@@ -90,11 +91,12 @@ var GameNet = {
         
 
       var d = new Date();
-                var currentTime = d.getTime();
+      //console.log(Date.now());
+                var currentTime = d.getTime() - this.travelTime;
                var offset = 100;
            
                var canDraw = false;
-               if(!this.game.isDrawing){
+               if(true){
                   for(var i = 0; i < this.serverUpdates.length;i++ ) {
                       
                       element = this.serverUpdates[i];
@@ -103,11 +105,7 @@ var GameNet = {
                       if(element[0] >= currentRenderingTime ){
                         this.game.isDrawing = true;
                        this.game.draw(element[1],element[2],element[0] - currentRenderingTime);
-                       setTimeout( () => { this.game.isDrawing =  false; 
-
-
-               
-                       }, element[0] - currentRenderingTime - this.travelTime);
+                      
                        this.serverUpdates.splice(0,i + 1 );
                       break;
                       }

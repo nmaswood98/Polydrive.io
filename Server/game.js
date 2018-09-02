@@ -150,12 +150,17 @@ module.exports.Game = {
                 if(launchedCar != null){
                     console.log("Hello");
                     var bodies;
-                  var carFound =   Matter.Query.point(currentCar.followerArray, { x:launchedCar.x, y: launchedCar.y });
-                  carFound[0].launching = true;
-                  carFound[0].launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
-    
-                setTimeout(function () { carFound[0].launching = false; }, 5000); //amount of time the car will launch for
-
+                  //var carFound =   Matter.Query.point(currentCar.followerArray, { x:launchedCar.x, y: launchedCar.y });
+                    var carFound = currentCar.followerArray.find(c => c.id === launchedCar.id);
+                  
+                if(carFound != undefined){
+                  carFound.launching = true;
+                  carFound.launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
+                  setTimeout(function () { carFound.launching = false; }, 1000); //amount of time the car will launch for
+                }
+                else{
+                    console.log("ERROR: CLIENT SENT NONEXISTANT ID");
+                }
 
                 }
 
@@ -462,7 +467,7 @@ module.exports.Game = {
                 player.followerArray.forEach((carFollower) => {  
                     sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
                                             angle: carFollower.angle, isFollower: (onPlayer) ? true : false,
-                                            isLaunching: carFollower.isLaunching
+                                            isLaunching: carFollower.launching
                                         
                                         
                                         });
@@ -534,10 +539,10 @@ module.exports.Game = {
 
 
             
-            //var d = new Date();
+            var d = new Date();
             this.sockets[car.id].emit("draw", sentUsers, sentMana,Date.now());
             
-            //console.log(d.getSeconds());
+           // console.log(Date.now());
 
 
         });
