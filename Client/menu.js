@@ -5,9 +5,13 @@
 
 var Menu = {
 
-    app: new PIXI.Application(document.documentElement.clientWidth
+    app: new PIXI.Application(
+        
+        document.documentElement.clientWidth
         , document.documentElement.clientHeight
-        , { backgroundColor: 0x1099bb }),
+        , { backgroundColor: 0x1099bb, autoResize: true }
+    
+    ),
         
 
         randomColor: function(){
@@ -45,6 +49,43 @@ var Menu = {
 
     init: function () {
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+        this.app.screen.width = this.app.screen.width * 2;
+        this.app.screen.height = this.app.screen.height * 2;
+      //  this.app.renderer.resize(this.app.screen.width * 2, this.app.screen.height * 2);
+      this.app.stage.scale.set(0.5);
+    // this.app.stage.width = this.app.stage.width * 2;
+    // this.app.stage.height = this.app.stage.height * 2;
+     // this.app.stage.x = 0;
+    //  this.app.stage.y = 0;
+     // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
+        console.log( this.app.screen.width);
+       // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
+       
+        
+        var size = [16, 9];
+        var ratio = size[0] / size[1];  
+
+        console.log(this.app.screen.width); 
+        
+        
+        window.addEventListener('resize',()=>{
+        
+  
+            // You can use the 'screen' property as the renderer visible
+            // area, this is more useful than view.width/height because
+            // it handles resolution
+            
+           
+          
+       
+        });
+        
+
+       
+      
+        
+       // var renderer = PIXI.autoDetectRenderer(size[0], size[1], null);
+        
         document.body.appendChild(this.app.view);
         console.log(this);
         var that = this;
@@ -132,8 +173,9 @@ var Menu = {
 
         var basicText = new PIXI.Text('Polydrive.io',style);
         logo.anchor.set(0.5);
+      //  logo.scale.set(0.5);
         logo.x = that.app.screen.width / 2;
-        logo.y = 450;
+        logo.y = that.app.screen.height/4;
 
         that.app.stage.addChild(logo);
 
@@ -206,6 +248,18 @@ var Menu = {
        // createjs.Ticker.framerate = 60;
 
 
+       var textSample = new PIXI.Text('Pixi.js can has\n multiline text!', {
+        fontFamily: 'Snippet',
+        fontSize: 35,
+        fill: 'white',
+        align: 'left'
+    });
+    //textSample.position.set(20);
+    textSample.x = 20;
+    textSample.y = that.app.screen.height - textSample.height - 20 ;
+    console.log(textSample.x + " fd " + textSample.y);
+
+    that.app.stage.addChild(textSample);
     },
 
     ticker: function(delta){

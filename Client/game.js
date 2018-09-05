@@ -4,13 +4,16 @@
 
 var Game = {
     
-    app:  new PIXI.Application(1800, 1000, {backgroundColor : 0x27e85e}),
+    
 
      mPlusX : 0,
      mPlusY : 0,
     amountFollowing : 0,
     
     init: function(application,name){
+        this.app = application;
+        
+        
         this.spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures; 
         createjs.Ticker.framerate = 60;
         TweenMax.ticker.fps(60);
@@ -34,7 +37,7 @@ var Game = {
         ///
       
         //document.body.appendChild(this.app.view);
-        this.app = application;
+       
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         this.app.stage.addChild(this.OnScreen);
 
@@ -109,8 +112,8 @@ var Game = {
         this.car.id = -1;
         this.car.scale.x = 4.382353;
         this.car.scale.y = 4.382353;
-        this.car.x = this.app.renderer.width / 2 ;
-        this.car.y = this.app.renderer.height / 2;
+        this.car.x = this.app.screen.width / 2 ;
+        this.car.y = this.app.screen.height / 2;
         //this.car.rotation = 270 * (Math.PI / 180);
 
 
@@ -126,12 +129,13 @@ var Game = {
     
     },
 
-    setStage: function(x,y){
+   
+    setStage: function(x,y,x1,y1){
         //this.app.stage.x = x;
        // this.app.stage.y = y;
-        this.app.stage.pivot = new PIXI.Point(x,y);
+        this.app.stage.pivot = new PIXI.Point(x1,y1);
         //this.tilingSprite.pivot = new PIXI.Point(x,y);
-        this.mPlusX = x;
+        this.mPlusX = x ;
         this.mPlusY = y;
 
 
@@ -147,7 +151,7 @@ var Game = {
 
   ticker: function(delta){
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
-        
+        console.log(mouseX)
         this.line.clear();
         if(this.line.car != null){
             this.lClick = false;
@@ -215,12 +219,13 @@ var Game = {
         }
     }
    
-   
-    this.setStage(this.car.x - (this.app.renderer.width / 2), this.car.y - (this.app.renderer.height / 2));
+   console.log(this.app.renderer);
+    this.setStage(this.car.x - (this.app.renderer.width/2 ), this.car.y - (this.app.renderer.height/2),this.car.x - (this.app.screen.width/2 ), this.car.y - (this.app.screen.height/2));
       //  console.log(this.car.rotation);
       
     
   },
+
 
   draw: function(cars,environment,timeDelta){
   //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
@@ -240,7 +245,7 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                     createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
+                    // createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
                     function notDrawing(){
                       //  this.isDrawing = false;
 
@@ -248,12 +253,12 @@ var Game = {
                     
                     this.car.anim = TweenMax.to(this.car,timeDelta/1000,{
                         ease:Linear.easeNone,
-                      //  pixi:{x:u.x,y:u.y},
+                        pixi:{x:u.x,y:u.y},
                         directionalRotation:{
                             rotation: (u.angle - (Math.PI/2)) + "_short",
                             useRadians: true
                         },
-                     //   onComplete:notDrawing
+                        onComplete:notDrawing
                     
                     
                     });
@@ -272,13 +277,13 @@ var Game = {
                 }
                 else if(this.screenSprites.hasOwnProperty(u.id)){
                    //Tween
-                   createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
+                 //  createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
                   // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
                    // this.screenSprites[u.id].x = u.x;
                   //  this.screenSprites[u.id].y = u.y;
                   TweenMax.to(this.screenSprites[u.id],timeDelta/1000,{
                     ease:Linear.easeNone,
-                   // pixi:{x:u.x,y:u.y},
+                    pixi:{x:u.x,y:u.y},
                     directionalRotation:{
                         rotation: (u.angle- (Math.PI/2)) + "_short",
                         useRadians: true
