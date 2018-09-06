@@ -49,19 +49,23 @@ var Menu = {
 
     init: function () {
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-        this.app.screen.width = this.app.screen.width * 2;
-        this.app.screen.height = this.app.screen.height * 2;
+        this.app.renderer = new PIXI.CanvasRenderer ( this.app.screen.width * 2, this.app.screen.height * 2 );
+       // this.app.screen.width = this.app.screen.width * 2;
+       // this.app.screen.height = this.app.screen.height * 2;
       //  this.app.renderer.resize(this.app.screen.width * 2, this.app.screen.height * 2);
-      this.app.stage.scale.set(0.5);
+    //  this.app.stage.scale.set(0.51);
     // this.app.stage.width = this.app.stage.width * 2;
     // this.app.stage.height = this.app.stage.height * 2;
      // this.app.stage.x = 0;
     //  this.app.stage.y = 0;
      // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
+
+     this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
+     this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
         console.log( this.app.screen.width);
        // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
        
-        
+        //this.app.roundPixels = true;
         var size = [16, 9];
         var ratio = size[0] / size[1];  
 
@@ -263,7 +267,7 @@ var Menu = {
     },
 
     ticker: function(delta){
-     
+        console.log(this.app.resolution);
     }
 
 };
