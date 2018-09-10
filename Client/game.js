@@ -12,8 +12,30 @@ var Game = {
     
     init: function(application,name){
         this.app = application;
+        this.stage = new PIXI.Container(); //Main Container for everything in the game
+
+        //this.stage is a child of viewport and viewport is a  child of this.app.stage
+        //viewport allows zooming of the view. this.stage contains all the sprites for the game
+        var viewport = new  PIXI.extras.Viewport({ //for zooming
+            screenWidth: window.innerWidth * 2,
+            screenHeight: window.innerHeight * 2,
+            worldWidth: this.app.width,
+            worldHeight: this.app.height,
         
-        
+            interaction: this.app.renderer.interaction
+        });
+
+        viewport.addChild(this.stage);
+        this.app.stage.addChild(viewport);
+        //viewport plugins for zooming
+        viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
+        viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
+        //
+
+        //funciton that changes the max zoom
+        this.setMaxZoom = (x,y)=>{viewport.clampZoom({maxWidth: x,maxHeight: y});};
+        //
+
         this.spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures; 
         createjs.Ticker.framerate = 60;
         TweenMax.ticker.fps(60);
@@ -39,7 +61,7 @@ var Game = {
         //document.body.appendChild(this.app.view);
        
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
-        this.app.stage.addChild(this.OnScreen);
+        this.stage.addChild(this.OnScreen);
 
 
         this.aKey = this.keyboard(70);
@@ -55,9 +77,14 @@ var Game = {
         this.line = new PIXI.Graphics();
         this.line.car = null;
         this.launchedCar = null;
-        this.app.stage.addChild(this.line);
+        this.stage.addChild(this.line);
 
-        
+        //LeaderBoard
+        this.lBoard = Leaderboard.create(this.app);
+        this.sLabel = ScoreLabel.create(this.app);
+       // this.lBoard.updateLeaderboard([{name:"nabhan",score:231}]);
+        this.lBoard.updateLeaderboard([{name:'nabhan',score:1},{name:"maswood",score:1},{name:"pablo",score:1}]);
+        //
 
 
 
@@ -66,9 +93,9 @@ var Game = {
             15000,
             10000
         );
-        this.app.stage.addChild(this.tilingSprite);
+        this.stage.addChild(this.tilingSprite);
         
-        this.app.stage.setChildIndex(this.tilingSprite,0);
+        this.stage.setChildIndex(this.tilingSprite,0);
 
 
         this.app.renderer.plugins.interaction.on('mousedown',() => {
@@ -116,24 +143,29 @@ var Game = {
         this.car.y = this.app.screen.height / 2;
         //this.car.rotation = 270 * (Math.PI / 180);
 
-
+        
       
 
-        this.app.stage.addChild(this.car);
+        this.stage.addChild(this.car);
         var gameThis = this;
         this.car.on("player",function(x2,y2){
             this.car.x = x2;
             this.car.y = y2;
            
         }.bind(gameThis));
+
+        
     
     },
 
    
     setStage: function(x,y,x1,y1){
-        //this.app.stage.x = x;
-       // this.app.stage.y = y;
-        this.app.stage.pivot = new PIXI.Point(x1,y1);
+        //this.stage.x = x;
+       // this.stage.y = y;
+        this.stage.pivot = new PIXI.Point(x1,y1);
+       //this.stage.moveCorner(x1,y1);
+       
+      // console.log(this.car.x);
         //this.tilingSprite.pivot = new PIXI.Point(x,y);
         this.mPlusX = x ;
         this.mPlusY = y;
@@ -150,8 +182,9 @@ var Game = {
 
 
   ticker: function(delta){
+      
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
-        console.log(mouseX)
+      //  console.log(mouseX)
         this.line.clear();
         if(this.line.car != null){
             this.lClick = false;
@@ -219,7 +252,7 @@ var Game = {
         }
     }
    
-   console.log(this.app.renderer);
+  // console.log(this.app.renderer);
     this.setStage(this.car.x - (this.app.renderer.width/2 ), this.car.y - (this.app.renderer.height/2),this.car.x - (this.app.screen.width/2 ), this.car.y - (this.app.screen.height/2));
       //  console.log(this.car.rotation);
       
@@ -250,6 +283,8 @@ var Game = {
                       //  this.isDrawing = false;
 
                     }
+
+                    
                     
                     this.car.anim = TweenMax.to(this.car,timeDelta/1000,{
                         ease:Linear.easeNone,
@@ -267,13 +302,13 @@ var Game = {
                  //   console.log((this.car.rotation * 180)/Math.PI +" new " + (u.angle * 180)/Math.PI);
                  //   createjs.Tween.get(this.car).to({rotation:u.angle},timeDelta);
                   // this.car.rotation = 0;
-                  //  createjs.Tween.get(this.app.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
+                  //  createjs.Tween.get(this.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
                   //  this.car.x = u.x;
                   //  this.car.y = u.y;
                   //  this.isDrawing = false;
                  //   console.log(u.x  + "HEL" + u.y);
                  
-
+                 this.sLabel.updateScoreLabel(u.manaCount);
                 }
                 else if(this.screenSprites.hasOwnProperty(u.id)){
                    //Tween
@@ -422,8 +457,8 @@ var Game = {
                         playerName.y = carSprite.y  - 110;
                         carSprite.nameLabel = playerName;
                       
-                        this.app.stage.addChild(playerName);
-                        //this.app.stage.setChildIndex(this.tilingSprite,0);
+                        this.stage.addChild(playerName);
+                        //this.stage.setChildIndex(this.tilingSprite,0);
                     }
 
                     //this.OnScreen.setChildIndex(this.car ,size - 1);
@@ -477,7 +512,7 @@ var Game = {
            let difference = this.OnScreen.children.filter(x => !updatedChildArray.includes(x.id));
 
            difference.forEach((trash)=>{
-            this.app.stage.removeChild(trash);
+            this.stage.removeChild(trash);
             delete this.screenSprites[trash.id];
             this.OnScreen.removeChild(trash);
 

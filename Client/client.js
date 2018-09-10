@@ -55,27 +55,15 @@ var GameNet = {
 
              
 
-    
-            /*
-            if ( serverUpdates.length >= 5 ){
-
-                console.log(serverUpdates.length);
-                game.isDrawing = true;
-                var nextUpdate = serverUpdates.shift();
-                
-                var timeDif = that.lastTime - nextUpdate[0];
-                that.lastTime = nextUpdate[0];
-                canvas.draw(nextUpdate[1],nextUpdate[2],timeDif);
-
-            
-            }
-            */
 
 
             
         });
 
-        socket.on();
+        socket.on("leaderboard",(a)=>{
+
+            that.game.lBoard.updateLeaderboard(a);
+        });
 
         socket.on("moveCar2",function(carPositions){
             

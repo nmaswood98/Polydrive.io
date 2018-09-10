@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 //var PIXI = require('pixi.js');
-
+var Viewport = new PIXI.extras.Viewport();;
 
 
 var Menu = {
@@ -49,11 +49,12 @@ var Menu = {
 
     init: function () {
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-        this.app.renderer = new PIXI.CanvasRenderer ( this.app.screen.width * 2, this.app.screen.height * 2 );
+        this.app.renderer.resize(this.app.screen.width*2, this.app.screen.height*2);
+      //  this.app.renderer = new PIXI.WebGLRenderer ( this.app.screen.width * 2, this.app.screen.height * 2 );
        // this.app.screen.width = this.app.screen.width * 2;
        // this.app.screen.height = this.app.screen.height * 2;
       //  this.app.renderer.resize(this.app.screen.width * 2, this.app.screen.height * 2);
-    //  this.app.stage.scale.set(0.51);
+    //=  this.app.stage.scale.set(0.51);
     // this.app.stage.width = this.app.stage.width * 2;
     // this.app.stage.height = this.app.stage.height * 2;
      // this.app.stage.x = 0;
@@ -63,7 +64,7 @@ var Menu = {
      this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
      this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
         console.log( this.app.screen.width);
-       // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
+      //  this.app.renderer.resize(this.app.screen.width/2, this.app.screen.height/2);
        
         //this.app.roundPixels = true;
         var size = [16, 9];
@@ -83,9 +84,10 @@ var Menu = {
           
        
         });
-        
 
+        this.viewport = this.app.stage;
        
+        
       
         
        // var renderer = PIXI.autoDetectRenderer(size[0], size[1], null);
@@ -124,9 +126,9 @@ var Menu = {
             that.app.screen.width * 20,
             that.app.screen.height * 20
         );
-        that.app.stage.addChild(that.tilingSprite);
+        that.viewport.addChild(that.tilingSprite);
         
-        that.app.stage.setChildIndex(that.tilingSprite,0);
+        that.viewport.setChildIndex(that.tilingSprite,0);
 
 
         document.documentElement.style.overflow = 'hidden';  // firefox, chrome
@@ -142,7 +144,13 @@ var Menu = {
         startButton.interactive = true;
         startButton.buttonMode = true;
         var textbox = document.getElementById("nameField");
+        
+     /* var lb = Object.create(Leaderboard);
+      lb.init(that.app);
+      lb.updateLeaderboard([{name:'nabhan',score:2232},{name:"maswood",score:3232},{name:"pablo",score:23892}]);
+ */
         startButton.on('pointerdown', ()=>{
+   //         lb.addPlayer({name:"yolo",score:23293});
             textbox.style.display = "none";
             while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
 
@@ -155,7 +163,7 @@ var Menu = {
         });
 
 
-        that.app.stage.addChild(startButton);
+        that.viewport.addChild(startButton);
 
         var style = new PIXI.TextStyle({
             fontFamily: 'Arial',
@@ -181,7 +189,7 @@ var Menu = {
         logo.x = that.app.screen.width / 2;
         logo.y = that.app.screen.height/4;
 
-        that.app.stage.addChild(logo);
+        that.viewport.addChild(logo);
 
 
         that.line = new PIXI.Graphics();
@@ -204,7 +212,7 @@ var Menu = {
              manaSprite.beginFill(that.randomColor());
              manaSprite.drawCircle(0,0,10);
              manaSprite.endFill();
-             that.app.stage.addChild(manaSprite);
+             that.viewport.addChild(manaSprite);
              
         }
         var animationArray = [];
@@ -229,7 +237,7 @@ var Menu = {
         carSprite.scale.x = 4.382353;
         //carSprite.scale.x = 4.382353;
         carSprite.scale.y = 4.382353;
-        that.app.stage.addChild(carSprite);
+        that.viewport.addChild(carSprite);
 
 
         var createAnimationAt = (x,y) =>{
@@ -252,26 +260,166 @@ var Menu = {
        // createjs.Ticker.framerate = 60;
 
 
-       var textSample = new PIXI.Text('Pixi.js can has\n multiline text!', {
-        fontFamily: 'Snippet',
-        fontSize: 35,
-        fill: 'white',
-        align: 'left'
-    });
-    //textSample.position.set(20);
-    textSample.x = 20;
-    textSample.y = that.app.screen.height - textSample.height - 20 ;
-    console.log(textSample.x + " fd " + textSample.y);
 
-    that.app.stage.addChild(textSample);
+    that.app.ticker.add(delta => {that.ticker(delta);});
+
+   // var textSample = that.createText(20,0,'Score: 0',35,'left');
+   that.lBoard = Leaderboard.create(that.app);
+   that.sLabel = ScoreLabel.create(that.app);
+     
+   that.lBoard.updateLeaderboard([{name:'nabhan',score:121},{name:"maswood",score:1},{name:"pablo",score:1},]);
+    console.log(that.lBoard.getBounds());
+    
+    
+   
+
+
+
     },
 
+    createLeaderboard: function(){
+
+
+        
+    },
+
+    
+
     ticker: function(delta){
-        console.log(this.app.resolution);
+
+   
+    }
+
+};
+
+var ScoreLabel = {
+    init: function(application){
+        this.app = application;
+
+        var scoreText = new PIXI.Text('Score: 0', {
+            fontFamily: 'Tahoma',
+            fontSize: 35,
+            fill: 'white',
+            strokeThickness: 8,
+            lineJoin: "round",
+            align: 'left'
+        }); 
+
+        scoreText.x = 20;
+        scoreText.y = this.app.screen.height - scoreText.height - 20;
+
+        this.app.stage.addChild(scoreText);
+
+        this.updateScoreLabel = function(score){
+            scoreText.text = 'Score: ' + score;
+        };
+
+    },
+
+    create: function(application){
+        var instance = Object.create(this);
+        instance.init(application);
+        return instance;
+
+    }
+
+
+};
+
+
+//Creates Leaderboard for the game. Can be updated and added on to.
+var Leaderboard = {
+    init: function(application){
+
+        this.board = new PIXI.Container();
+       // this.board.scale = 1;
+        var count = 0; //amount of players on the leaderboard
+
+        //Create Title for the Leaderboard place on the top right of screen
+        var leaderBoardTitle = new PIXI.Text('Leaderboard' , {
+            fontFamily: 'Tahoma',
+            fontSize: 40,
+            fill: 'white',
+            fontWeight: 'bold',
+            strokeThickness: 8,
+            lineJoin: "round",
+            align: 'center'
+        });
+        leaderBoardTitle.anchor.set(0.5);
+        leaderBoardTitle.x = 0 ;
+        leaderBoardTitle.y = 40 ;
+        //
+
+        
+
+        //Name list for LeaderBoard
+       var playerNames = new PIXI.Text('Pixi.js can has\n multiline text!' , {
+            fontFamily: 'Tahoma',
+            fontSize: 35,
+            fill: 'white',
+            strokeThickness: 8,
+            lineJoin: "round",
+            align: 'left'
+        });
+       
+        playerNames.x = -180;
+        playerNames.y = 80;
+    
+       
+        //
+        //Score for each Player on the leaderboard
+        var playerScores = new PIXI.Text('Pixi.js can has\n multiline text!' , {
+            fontFamily: 'Tahoma',
+            fontSize: 35,
+            fill: 'white',
+            strokeThickness: 8,
+            lineJoin: "round",
+            align: 'center'
+        });
+       // console.log(playerScores.width);
+       playerScores.anchor.set(1,0);
+        playerScores.x = 180;
+        playerScores.y = 80 ;
+       
+        //playerScores.zOrder = 100;
+        this.board.addChild(leaderBoardTitle,playerNames,playerScores);
+
+        this.board.addPlayer = function(player){//adds 1 player onto the leaderboard at the end
+            count++;
+            playerNames.text += count + ". " +  player.name + "\n ";
+            playerScores.text += player.score + "\n ";
+            
+
+        };
+     //   console.log(this.app.stage.width);
+     this.board.updateLeaderboard = function(leaderBoardData){ //places entire array of players onto the leaderboard replacing the current leaderboard
+            count = 0;
+            playerNames.text = "";
+            playerScores.text = "";
+
+            leaderBoardData.forEach(element => {
+              this.addPlayer(element);
+            });
+            
+            //leaderBoardTitle.x = this.app.screen.width - leaderBoardTitle.width - ((playerScores.x - playerNames.x)/2) + 10;
+            //console.log( );
+            //console.log(leaderBoardTitle.x + " tite");
+
+        };
+
+
+    },
+
+    create: function(application){
+        var instance = Object.create(this);
+        instance.init(application);
+        application.stage.addChild(instance.board);
+        instance.board.x = application.screen.width - instance.board.width/1.7;
+        instance.board.y = instance.board.height/6;
+        return instance.board;
     }
 
 };
 
 var menu = Object.create(Menu);
 menu.init();
-menu.app.ticker.add(function(delta){menu.ticker(delta);});

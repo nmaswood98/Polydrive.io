@@ -165,8 +165,8 @@ module.exports.Game = {
                 }
 
                 if(currentCar.manaCount == 5){
-                    currentCar.manaCount = 0;
-                    console.log("NEW CAR ALERT NEW CAR ALERT");
+                   // currentCar.manaCount = 0;
+                   // console.log("NEW CAR ALERT NEW CAR ALERT");
                 }
 
 
@@ -435,8 +435,25 @@ module.exports.Game = {
 
     sendUpdates: function () {
         //eventuallly only send cars that are visble to the player
-        // console.log(this);
+       
+        function compare(a,b){
+            
+            if(a.manaCount < b.manaCount)
+                return 1;
+            else if (b.manaCount > a.manaCount)
+                return -1;
+            return 0;
+        };
+
+        this.players.sort(compare);
+        var currentLB = []; //current leaderboard
+
         this.players.forEach((car) => {
+            
+            if(currentLB.length <= 10){ 
+                currentLB.push({name:car.playerName,score:car.manaCount});
+            }
+
             var hDis = 2000; var yDis = 1000;
             var maxX = car.position.x + hDis;
             var maxY = car.position.y + yDis;
@@ -474,7 +491,7 @@ module.exports.Game = {
                 });
 
                 if(onPlayer)
-                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.mana, angle: player.angle, name: player.playerName };
+                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName };
                 else
                     return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName };
             });
@@ -546,6 +563,12 @@ module.exports.Game = {
 
 
         });
+
+        io.emit("leaderboard",currentLB);
+        
+
+
+ 
 
 
     },
