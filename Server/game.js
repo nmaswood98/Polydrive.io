@@ -109,10 +109,11 @@ module.exports.Game = {
 
             });
 
-            socket.on("respawn", (name) => {
+            socket.on("respawn", (name,cI) => {
                 //player enters 
                 console.log("respawn");
                 currentCar.playerName = name;
+                currentCar.carIndex = cI;
                 console.log(currentCar.playerName);
                 socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y }); /// Sends Client initial information about car. 
 
@@ -320,7 +321,7 @@ module.exports.Game = {
 
     },
 
-    playerLost: function (carLost, newCar) {
+    playerLost: function (carLost, newCar) { // BUG IS HERE
 
         console.log(carLost.id);
    //     this.otherCars.push(carLost);
@@ -344,7 +345,7 @@ module.exports.Game = {
 
     addCarFollower: function (playerCar, carFollower, byCrash) {
 
-        if (byCrash == true) {
+        if (byCrash == true) { /// BUG IS HERE
             carFollower.moving = false;
             setTimeout(function () { carFollower.moving = true; 
 
@@ -484,7 +485,7 @@ module.exports.Game = {
                 player.followerArray.forEach((carFollower) => {  
                     sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
                                             angle: carFollower.angle, isFollower: (onPlayer) ? true : false,
-                                            isLaunching: carFollower.launching
+                                            isLaunching: carFollower.launching,carIndex: carFollower.follower.carIndex
                                         
                                         
                                         });
@@ -493,7 +494,7 @@ module.exports.Game = {
                 if(onPlayer)
                     return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName };
                 else
-                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName };
+                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };
             });
 
 

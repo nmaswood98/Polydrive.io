@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 //var PIXI = require('pixi.js');
-var Viewport = new PIXI.extras.Viewport();;
+
 
 
 var Menu = {
@@ -9,7 +9,7 @@ var Menu = {
         
         document.documentElement.clientWidth
         , document.documentElement.clientHeight
-        , { backgroundColor: 0x1099bb, autoResize: true }
+        , { backgroundColor: 0x282525, autoResize: true }
     
     ),
         
@@ -48,18 +48,15 @@ var Menu = {
         
 
     init: function () {
+        TweenMax.ticker.fps(60);
+        this.app.mouse = this.app.renderer.plugins.interaction.mouse.global;
+        var poop = 1 + 'a';
+        console.log(typeof poop);
+        this.stage = new PIXI.Container();
+        this.app.stage.addChild(this.stage);
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         this.app.renderer.resize(this.app.screen.width*2, this.app.screen.height*2);
-      //  this.app.renderer = new PIXI.WebGLRenderer ( this.app.screen.width * 2, this.app.screen.height * 2 );
-       // this.app.screen.width = this.app.screen.width * 2;
-       // this.app.screen.height = this.app.screen.height * 2;
-      //  this.app.renderer.resize(this.app.screen.width * 2, this.app.screen.height * 2);
-    //=  this.app.stage.scale.set(0.51);
-    // this.app.stage.width = this.app.stage.width * 2;
-    // this.app.stage.height = this.app.stage.height * 2;
-     // this.app.stage.x = 0;
-    //  this.app.stage.y = 0;
-     // this.app.renderer.resize(this.app.screen.width, this.app.screen.height);
+
 
      this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
      this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
@@ -85,7 +82,7 @@ var Menu = {
        
         });
 
-        this.viewport = this.app.stage;
+        this.viewport = this.stage;
        
         
       
@@ -112,6 +109,7 @@ var Menu = {
     setup: (a) =>  {
        var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 
         var that = this.menu;
+        that.cCarIndex = 0;
        console.log(this);
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';
@@ -120,7 +118,8 @@ var Menu = {
         that.app.view.style.zIndex = -1;
         that.mouse = that.app.renderer.plugins.interaction.mouse.global;
         
-
+       
+        
         that.tilingSprite = new PIXI.extras.TilingSprite(
             spriteSheet["TextureBackground.png"],
             that.app.screen.width * 20,
@@ -136,6 +135,7 @@ var Menu = {
 
         var startButton = new PIXI.Sprite(spriteSheet["Play.png"]);
         var logo =new PIXI.Sprite(spriteSheet["Polydrivelogo.png"]);
+
         startButton.anchor.set(0.5);
         startButton.x = that.app.screen.width / 2;
         startButton.y = that.app.screen.height / 2;
@@ -148,16 +148,17 @@ var Menu = {
      /* var lb = Object.create(Leaderboard);
       lb.init(that.app);
       lb.updateLeaderboard([{name:'nabhan',score:2232},{name:"maswood",score:3232},{name:"pablo",score:23892}]);
- */
+ textbox.style.display = "none";*/
         startButton.on('pointerdown', ()=>{
-   //         lb.addPlayer({name:"yolo",score:23293});
+   
             textbox.style.display = "none";
             while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
 
 
 
             var gameNet = Object.create(GameNet);
-            gameNet.init(that.app,textbox.value);
+            console.log(that.cCarIndex);
+            gameNet.init(that.app,textbox.value,that.cCarIndex);
             gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
 
         });
@@ -224,8 +225,8 @@ var Menu = {
     
        // let textures = PIXI.loader.resources["car12_blue.png"].texture;
       // console.log(a.resources["/polydriveSpriteSheet.json"].data.animations.nitro);
-      console.log(spriteSheet);
-        var carSprite = new PIXI.Sprite(spriteSheet["car2_neongreen.png"]);
+      
+        var carSprite = new PIXI.Sprite(spriteSheet[that.cCarIndex]);
         //var carSprite = new PIXI.extras.AnimatedSprite()
         carSprite.interactive = false;
         carSprite.anchor.set(0.5,0.5);
@@ -237,6 +238,7 @@ var Menu = {
         carSprite.scale.x = 4.382353;
         //carSprite.scale.x = 4.382353;
         carSprite.scale.y = 4.382353;
+       // carSprite.tint = 0xe100ff;
         that.viewport.addChild(carSprite);
 
 
@@ -264,15 +266,77 @@ var Menu = {
     that.app.ticker.add(delta => {that.ticker(delta);});
 
    // var textSample = that.createText(20,0,'Score: 0',35,'left');
-   that.lBoard = Leaderboard.create(that.app);
-   that.sLabel = ScoreLabel.create(that.app);
+  // that.lBoard = Leaderboard.create(that.app);
+  // that.sLabel = ScoreLabel.create(that.app);
      
-   that.lBoard.updateLeaderboard([{name:'nabhan',score:121},{name:"maswood",score:1},{name:"pablo",score:1},]);
-    console.log(that.lBoard.getBounds());
+  // that.lBoard.updateLeaderboard([{name:'nabhan',score:121},{name:"maswood",score:1},{name:"pablo",score:1},]);
+    //console.log(that.lBoard.getBounds());
     
     
    
+    var carChangeText = new PIXI.Text('Change Car', {
+        fontFamily: 'Tahoma',
+        fontSize: 35,
+        fill: 'white',
+        strokeThickness: 8,
+        lineJoin: "round",
+        align: 'left'
+    }); 
+    carChangeText.interactive = true;
+    carChangeText.x = 20;
+    carChangeText.y = that.app.screen.height - carChangeText.height - 20;
 
+    that.app.stage.addChild(carChangeText);
+    console.log(textbox.style.display);
+    carChangeText.on("pointerdown",function(){
+        console.log("HEHEHHEHHEHHHEHHEHHH");
+        if(carChangeText.carpicker === undefined)
+            carChangeText.carpicker = CarPicker.create(that.app);
+        else
+            carChangeText.carpicker.visible = true;
+
+        textbox.style.display = "none";
+        var blurFilter2 = new PIXI.filters.BlurFilter();
+        blurFilter2.blur = 0;
+      TweenMax.to(blurFilter2 ,0.1,{
+            ease:Linear.easeNone,
+            blur:10
+        });
+
+        TweenMax.to(carChangeText.carpicker ,0.1,{
+            ease:Linear.easeNone,
+            pixi:{alpha:1}
+        });
+        //blurFilter2.blur = 6;
+        that.viewport.filters = [blurFilter2]; 
+        that.viewport.interactive = true;
+
+    });
+
+    that.viewport.on("pointerdown",function(){
+        var blurFilter2 = new PIXI.filters.BlurFilter();
+      //  blurFilter2.blur = 0;
+        that.viewport.filters = [blurFilter2]; 
+       // 
+        //carChangeText.carpicker.alpha = 0;
+        
+        that.cCarIndex = carChangeText.carpicker.getCarIndex();
+        carSprite.texture = spriteSheet[that.cCarIndex];
+        that.viewport.interactive = false;
+
+        TweenMax.to(blurFilter2 ,0.1,{
+            ease:Linear.easeNone,
+            blur:0
+        });
+
+        TweenMax.to(carChangeText.carpicker ,0.1,{
+            ease:Linear.easeNone,
+            pixi:{alpha:0},
+            onComplete:function(){carChangeText.carpicker.visible = false;textbox.style.display = "";}
+        });
+        textbox.style.display = "";
+        
+    });
 
 
     },
@@ -419,6 +483,224 @@ var Leaderboard = {
         return instance.board;
     }
 
+};
+
+var CarPicker = {
+    init: function(application){
+        
+        var spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures;
+        var animationArray = [];
+        
+        PIXI.loader.resources["/polydriveSpriteSheet.json"].data.animations.nitro.forEach(element => {
+            animationArray.push(spriteSheet[element]);
+        }); 
+        this.stage = new PIXI.Container();
+        //this.stage.interactiveChildren = false;
+        //this.stage.visible = false;
+        var graphics = new PIXI.Graphics();
+        graphics.interactive = true;
+        graphics.beginFill(0x242121);
+        graphics.drawRect(0, 0, application.screen.width/2, application.screen.height/2);
+        graphics.endFill();
+        //graphics.anchor.set(0.5);
+        this.stage.addChild(graphics);
+
+        var title = new PIXI.Text('Car Picker' , {
+            fontFamily: 'Tahoma',
+            fontSize: 60,
+            fill: 'white',
+            lineJoin: "round",
+            align: 'center'
+        });
+        title.anchor.set(0.5);
+        title.x = graphics.width/2 ;
+        title.y = 100 ;
+        graphics.addChild(title);
+
+
+        var cColor = 0;
+        var cCar = 0;
+        var carSprite = new PIXI.Sprite(spriteSheet[0]);
+        carSprite.interactive = false;
+        carSprite.anchor.set(0.5,0.5);
+        carSprite.x = graphics.width/2;
+        carSprite.y = graphics.height/2;
+        carSprite.rotation = Math.PI/2;
+        carSprite.scale.x = 4.382353 * 2;
+     
+        carSprite.scale.y = 4.382353 * 2;
+        graphics.addChild(carSprite);
+
+        var nitroSprite = new PIXI.extras.AnimatedSprite(animationArray);
+        nitroSprite.anchor.set(0.5,-0.37);
+        nitroSprite.x = 0;
+        nitroSprite.y = 0;
+       // nitroSprite.rotation = 0;
+        //nitroSprite.scale.set(4.382353);
+        nitroSprite.animationSpeed = 0.18;
+        nitroSprite.loop = true;
+       // nitroSprite.onComplete = function (){this.parent.removeChild(this);};
+       carSprite.addChild(nitroSprite);
+        nitroSprite.play();
+
+        var arrow = new PIXI.Sprite(spriteSheet["arrow"]);
+        arrow.interactive = true;
+        arrow.anchor.set(0.5,0.5);
+        var limit = Math.min(500,graphics.width/2.7155);
+       // console.log();
+        arrow.x = carSprite.x - limit;
+        //console.log(carSprite.x - arrow.x);
+        arrow.y = graphics.height/2;
+        arrow.scale.set(0.4);
+        arrow.rotation = Math.PI;
+        graphics.addChild(arrow);
+
+        var arrow2 = new PIXI.Sprite(spriteSheet["arrow"]);
+        arrow2.interactive = true;
+        arrow2.anchor.set(0.5,0.5);
+        arrow2.x = carSprite.x + limit;
+        arrow2.y = graphics.height/2;
+        arrow2.scale.set(0.4);
+        arrow2.rotation = Math.PI * 2;
+        graphics.addChild(arrow2);
+
+        arrow2.on('pointerdown',(s)=>{
+            if(cCar != 4){
+                cCar++;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+        });
+        arrow.on('pointerdown',(s)=>{
+            if(cCar != 0){
+                cCar--;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+        });
+
+        var colors = new PIXI.Graphics();
+        colors.interactive = true;
+        colors.lineStyle(0);
+        colors.beginFill(0xff0000);
+        colors.drawCircle(graphics.width/9, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0x8e98f2);
+        colors.drawCircle((graphics.width/9) * 2, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xa6f58f);
+        colors.drawCircle((graphics.width/9) * 3, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xcc85fc);
+        colors.drawCircle((graphics.width/9) * 4, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xf68ada);
+        colors.drawCircle((graphics.width/9) * 5, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xa5aa5d);
+        colors.drawCircle((graphics.width/9) * 6, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xfcc884);
+        colors.drawCircle((graphics.width/9) * 7, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.lineStyle(0);
+        colors.beginFill(0xbe9763);
+        colors.drawCircle((graphics.width/9) * 8, graphics.height - 100,30);
+        colors.endFill();
+
+        colors.on('pointerdown',(s)=>{
+            
+            var pos = this.stage.pivot.x + application.mouse.x;
+            var buff = 30;
+           console.log(pos);
+
+           
+           
+
+            if(pos > (graphics.width/9) * 8 - buff){
+                console.log("BROWN");
+                cColor = 35;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > (graphics.width/9) * 7 - buff){
+                console.log("YELLOW");
+                cColor = 15;
+                carSprite.texture = spriteSheet[cCar + cColor];
+                
+            }
+                
+            else if(pos > (graphics.width/9) * 6 - buff){
+                console.log("ARMYGREEN");
+                cColor = 25;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > (graphics.width/9) * 5 - buff){
+                console.log("PINK");
+                cColor = 30;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > (graphics.width/9) * 4 - buff){
+                console.log("PURPLE");
+                cColor = 20;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > (graphics.width/9) * 3 - buff){
+                console.log("GREEN");
+                cColor = 10;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > (graphics.width/9) * 2 - buff){
+                console.log("BLUE");
+                cColor = 5;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+            else if(pos > graphics.width/9 - buff){
+                console.log("RED");
+                cColor = 0;
+                carSprite.texture = spriteSheet[cCar + cColor];
+            }
+                
+                
+
+           
+
+
+        });
+
+        graphics.addChild(colors);
+
+        this.stage.getCarIndex = function(){return cCar + cColor;};
+
+
+    },
+
+    create: function(application){
+        var instance = Object.create(this);
+        instance.init(application);
+        application.stage.addChild(instance.stage);
+       // instance.stage.x = application.screen.width/2;
+        instance.stage.pivot.x = -application.screen.width/4;
+        instance.stage.pivot.y = -application.screen.height/5;
+        instance.stage.alpha = 0;
+        return instance.stage;
+    }
 };
 
 var menu = Object.create(Menu);

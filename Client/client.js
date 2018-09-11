@@ -8,11 +8,11 @@ var GameNet = {
    d: new Date(),
 
     
-    init: function(application,name){
+    init: function(application,name,carIndex){
         this.app = application;
         this.travelTime = 0;
          this.game = Object.create(Game);
-         this.game.init(application,name);
+         this.game.init(application,name,carIndex);
          this.game.app.ticker.add((delta)=>{this.game.ticker(delta);});
          this.game.isDrawing = false;
         this.currentTime = this.d.getTime();
@@ -21,7 +21,7 @@ var GameNet = {
       this.lastServerUpdate = null;
         var canvas = this.game;
         var that = this;
-        socket.emit("respawn",name);
+        socket.emit("respawn",name,carIndex);
 
 
         socket.on("welcome",function(car){

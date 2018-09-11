@@ -10,7 +10,9 @@ var Game = {
      mPlusY : 0,
     amountFollowing : 0,
     
-    init: function(application,name){
+    init: function(application,name,carIndex){
+        this.carIndex = carIndex;
+        
         this.app = application;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
 
@@ -133,7 +135,8 @@ var Game = {
 
     createCar: function(){
         let carName = "car12_blue.png"; //Player eventually gets to choose
-        this.car = new PIXI.Sprite(this.spriteSheet[carName]);
+        console.log(this);
+        this.car = new PIXI.Sprite(this.spriteSheet[this.carIndex]);
         this.car.interactive = true;
         this.car.anchor.set(0.5,0.5);
         this.car.id = -1;
@@ -371,7 +374,7 @@ var Game = {
                 }
                 else{
                     var carName = "car14_red.png";
-                    var carSprite = new PIXI.Sprite(this.spriteSheet[carName]);
+                    var carSprite = new PIXI.Sprite(this.spriteSheet[u.carIndex]);
                     carSprite.interactive = false;
                     carSprite.anchor.set(0.5,0.5);
                     //carSprite.updated = true;
