@@ -100,6 +100,10 @@ module.exports.Game = {
                 if (index > -1) {
                     this.players.splice(index, 1);
                     //console.log(socket.id);
+
+                    currentCar.followerArray.forEach(elem => {
+                        Matter.Composite.remove(this.world, elem);
+                    });
                     
                     Matter.Composite.remove(this.world, currentCar);
                     
@@ -114,6 +118,7 @@ module.exports.Game = {
                 console.log("respawn");
                 currentCar.playerName = name;
                 currentCar.carIndex = cI;
+
                 console.log(currentCar.playerName);
                 socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y }); /// Sends Client initial information about car. 
 
@@ -127,8 +132,10 @@ module.exports.Game = {
 
                 if (index > -1) {
                     this.players.splice(index, 1);
-                    console.log(currentCar.id + "  CURRENTCar");
                     delete this.sockets[currentCar.id];
+                }
+                else{
+                    console.log("ERROR at 135, THIS SHOULDN'T RUN");
                 }
 
                 socket.emit("kicked");
@@ -200,6 +207,7 @@ module.exports.Game = {
                     //this.car.stopped = false; 
                     currentCar.speed = currentCar.speed * 0.95;
                    // this.stopCar(currentCar);
+                   currentCar.stopped = true;
                    this.moveCar(currentCar, carInfo.angle, currentCar.speed);
                 }
 
@@ -212,7 +220,7 @@ module.exports.Game = {
             
 
         });
-
+        this.engine.cc = 0;
         Matter.Events.on(this.engine, 'collisionActive', (event) => { 
            
              var pairs = event.pairs; 
@@ -226,10 +234,12 @@ module.exports.Game = {
                     pair.isActive = false;
                     if(pair.bodyA.collisionType == 0){
                         pair.bodyA.parent.manaCount++;
+                        this.engine.cc++;
                         var pos = this.manaPool.indexOf(pair.bodyB);
                         Matter.Composite.remove(this.world, pair.bodyB);
                         this.manaPool.splice(pos, 1);
-                      //  this.newCarFollower(pair.bodyA.parent.follower);
+                        if(this.engine.cc < 10)
+                            this.newCarFollower(pair.bodyA.parent.follower);
 
 
 
@@ -239,7 +249,8 @@ module.exports.Game = {
                         var pos2 = this.manaPool.indexOf(pair.bodyA);
                         Matter.Composite.remove(this.world, pair.bodyA);
                         this.manaPool.splice(pos2, 1);
-                      // this.newCarFollower(pair.bodyB.parent.follower);
+                        if(this.engine.cc < 10)
+                            this.newCarFollower(pair.bodyB.parent.follower);
                         
 
                     }
@@ -294,13 +305,17 @@ module.exports.Game = {
                         if (pair.bodyA.tag == 1) { //body A caused the collision
                             //console.log(pair.isActive);
                         
-                        
-                            this.playerLost(pair.bodyB.parent, pair.bodyA.parent);
+                            if(pair.bodyA.parent.removed === false){
+                                pair.bodyA.parent.removed = true;
+                                this.playerLost(pair.bodyB.parent, pair.bodyA.parent);
+                            }
                             
                         }
                         else {
-   
-                            this.playerLost(pair.bodyA.parent, pair.bodyB.parent);
+                            if(pair.bodyB.parent.removed === false){
+                                pair.bodyB.parent.removed = true;
+                                this.playerLost(pair.bodyA.parent, pair.bodyB.parent);
+                            }
                            
 
                         }
@@ -323,28 +338,31 @@ module.exports.Game = {
 
     playerLost: function (carLost, newCar) { // BUG IS HERE
 
-        console.log(carLost.id);
+        //console.log(carLost.id);
    //     this.otherCars.push(carLost);
-
-        if (carLost.id.substr(-1) != "%") { //followers have % at the end of their id, playercars don't. This identifies if the carLost is the player
-            this.sockets[carLost.id].kick();
-
+        
+        if (this.sockets.hasOwnProperty(carLost.id)) {
+            var ape = 0; //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
+            console.log(carLost.followerArray.length);
             carLost.followerArray.forEach((car) => { //sends all car followers from player to the new player.
+                ape++;
+                
                 if(car != null){
-                    this.addCarFollower(newCar.follower, car, true);
+                    this.addCarFollower(newCar.follower, car,false, true);
                 }
             });
-
+            carLost.followerArray = [];
+            this.sockets[carLost.id].kick();
         }
-
-        this.addCarFollower(newCar.follower, carLost, true);
+        
+            this.addCarFollower(newCar.follower, carLost,true, true);
 
 
 
     },
 
-    addCarFollower: function (playerCar, carFollower, byCrash) {
-
+    addCarFollower: function (playerCar, carFollower,shouldRemove, byCrash) {
+        
         if (byCrash == true) { /// BUG IS HERE
             carFollower.moving = false;
             setTimeout(function () { carFollower.moving = true; 
@@ -354,16 +372,26 @@ module.exports.Game = {
             }, 750);
 
         }
-
-        playerCar.followerArray.push(carFollower);
-
+        //Changing Car Follower
+        
+      
+        //
+        if(shouldRemove){
         var index = carFollower.follower.followerArray.indexOf(carFollower);
-        if (index > -1)
+        if (index > -1){
             carFollower.follower.followerArray.splice(index,1);
+        }
+        else
+            console.log("ERROR at line 377");
+        }
 
-        carFollower.follower = playerCar;
-        playerCar.followers++;
-        carFollower.id = playerCar.id + "follower" + playerCar.followers + "%";
+            playerCar.followerArray.push(carFollower);
+            playerCar.followers++;
+            carFollower.follower = playerCar;
+            carFollower.id = playerCar.id + "follower" + playerCar.followers + "%";
+        
+        
+        
 
 
     },
@@ -404,13 +432,14 @@ module.exports.Game = {
         playerCar.id = id; //socket id of clien
         playerCar.followerArray = [];
         playerCar.moving = true;
+        playerCar.removed = false;
 
         return playerCar;
     },
 
     newCarFollower: function(playerCar){
         var newCar = this.playerJoined(Math.random().toString(36).substring(7)); //Every car needs a random id in order to function properly
-        //console.log(newCar.followers);
+        console.log("heheh");
         World.add(this.engine.world, newCar);
         this.addCarFollower(playerCar,newCar,false);
       
@@ -576,16 +605,18 @@ module.exports.Game = {
 
     moveCars: function () {
 
-
+        
         this.players.forEach((car) => {
+          // console.log( car.followerArray.length);
             car.followerArray.forEach((carFollower) => {
-              
+               
 
                 if(carFollower.launching){
                     
                     this.moveCar(carFollower,carFollower.launchAngle,20);
                 }
                 else if (carFollower.moving && !carFollower.follower.stopped) {
+                    
                     var angle = Math.atan2((car.position.y - carFollower.position.y), (car.position.x - carFollower.position.x)) - (Math.PI);
                 //    console.log(carFollower.position);
                     this.moveCar(carFollower, angle, 4);
