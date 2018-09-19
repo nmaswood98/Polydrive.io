@@ -27,11 +27,30 @@ var Game = {
             interaction: this.app.renderer.interaction
         });
 
+        
+
         viewport.addChild(this.stage);
         this.app.stage.addChild(viewport);
         //viewport plugins for zooming
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
         viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
+
+        this.hide = ()=>{
+    
+            viewport.visible = false;
+            this.lBoard.visible = false;
+            this.sLabel.visible = false;
+            
+            console.log(this);
+        }
+
+        this.show = ()=>{
+            viewport.visible = true;
+            this.lBoard.visible = true;
+            this.sLabel.visible = true;
+            this.car.visible = true;
+
+        }
         //
 
         //funciton that changes the max zoom
@@ -43,6 +62,7 @@ var Game = {
         TweenMax.ticker.fps(60);
      
         this.lClick = false; 
+        this.rClick = false;
         this.isDrawing = false;
         this.OnScreen = new PIXI.Container();
         this.OffScreen = new PIXI.Container();
@@ -61,7 +81,7 @@ var Game = {
         ///
       
         //document.body.appendChild(this.app.view);
-       
+        this.app.renderer.plugins.interaction.supportsTouchEvents = true;
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         this.stage.addChild(this.OnScreen);
 
@@ -79,7 +99,7 @@ var Game = {
         this.line = new PIXI.Graphics();
         this.line.car = null;
         this.launchedCar = null;
-        this.stage.addChild(this.line);
+        this.app.stage.addChild(this.line);
 
         //LeaderBoard
         this.lBoard = Leaderboard.create(this.app);
@@ -92,8 +112,8 @@ var Game = {
 
         this.tilingSprite = new PIXI.extras.TilingSprite(
             this.spriteSheet["TextureBackground.png"],
-            15000,
-            10000
+            7500,
+            5000
         );
         this.stage.addChild(this.tilingSprite);
         
@@ -101,12 +121,32 @@ var Game = {
 
 
         this.app.renderer.plugins.interaction.on('mousedown',() => {
+            if(this.rClick)
+                this.rClick = false;
+
             this.lClick = true;
            // console.log(this.lClick);
         });
 
+        this.app.renderer.plugins.interaction.on('rightdown',() => {
+            if(this.lClick)
+                this.lClick = false;
+
+            this.rClick = true;
+           // console.log(this.lClick);
+        });
+
+        this.app.renderer.plugins.interaction.on('rightup',() => {
+            this.rClick = false;
+            this.lClick = false;
+           // console.log(this.lClick);
+        });
+
+
+
         this.app.renderer.plugins.interaction.on('mouseup',  () => {
             this.lClick = false;
+            this.rClick = false;
           //  console.log(this.lClick);
         });
 
@@ -135,7 +175,7 @@ var Game = {
 
     createCar: function(){
         let carName = "car12_blue.png"; //Player eventually gets to choose
-        console.log(this);
+        
         this.car = new PIXI.Sprite(this.spriteSheet[this.carIndex]);
         this.car.interactive = true;
         this.car.anchor.set(0.5,0.5);
@@ -157,8 +197,17 @@ var Game = {
            
         }.bind(gameThis));
 
+        this.car.swapTexture = (index)=>{
+            this.carIndex = index;
+            this.car.texture = this.spriteSheet[this.carIndex];
+        };
+
         
     
+    },
+
+    deleteCar: function(){
+        this.stage.removeChild(this.car);
     },
 
    
@@ -185,16 +234,19 @@ var Game = {
 
 
   ticker: function(delta){
-      
+    //  console.log(TweenMax.ticker.fps);
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
       //  console.log(mouseX)
         this.line.clear();
         if(this.line.car != null){
             this.lClick = false;
+            this.rClick = false;
           //  console.log("IT WORKING IT WORKING");
             this.line.lineStyle(10, this.line.color);
-            this.line.moveTo(this.line.car.x,this.line.car.y);
-            this.line.lineTo(mouseX, mouseY);
+           // var pos = this.line.car.parent.toGlobal();
+            var pos = this.line.car.getGlobalPosition();
+            this.line.moveTo(pos.x   ,pos.y  );
+            this.line.lineTo(mouseX - this.mPlusX, mouseY - this.mPlusY);
         }
 
       
@@ -242,10 +294,10 @@ var Game = {
 
       
         
- 
+        if(this.starting)
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick},this.launchedCar);
+            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick,rightClick: this.rClick},this.launchedCar);
             this.launchedCar = null;
         }
         else{
@@ -256,6 +308,7 @@ var Game = {
     }
    
   // console.log(this.app.renderer);
+  if(this.starting)
     this.setStage(this.car.x - (this.app.renderer.width/2 ), this.car.y - (this.app.renderer.height/2),this.car.x - (this.app.screen.width/2 ), this.car.y - (this.app.screen.height/2));
       //  console.log(this.car.rotation);
       
@@ -264,13 +317,19 @@ var Game = {
 
 
   draw: function(cars,environment,timeDelta){
+      var interpolation = true;
+    console.log(this);
   //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
             //need to move sprites
            // console.log(timeDelta);
-           createjs.Tween.removeAllTweens();
-           TweenMax.killAll();
+         //  createjs.Tween.removeAllTweens();
+        // if(this.isDrawing){
+        //TweenMax.killChildTweensOf(this.car);
+          //TweenMax.killAll();
+          // this.isDrawing = false;
+       //  }
             var amount = 0;
             var size = this.OnScreen.children.length; 
             var updatedChildArray = [];
@@ -281,33 +340,44 @@ var Game = {
                
                 if (u.id === this.car.id){
                     //Tween
-                    // createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
+                   //  createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
                     function notDrawing(){
-                      //  this.isDrawing = false;
+                        this.isDrawing = false;
+                        console.log("WHAT");
 
                     }
 
                     
+                    if(interpolation){
+                        TweenMax.to(this.car,timeDelta/1000,{
+                            ease:Linear.easeNone,
+                            pixi:{x:u.x,y:u.y},
+                            directionalRotation:{
+                                rotation: (u.angle - (Math.PI/2)) + "_short",
+                                useRadians: true
+                            },
+                            overwrite:"all",
+                            onComplete:notDrawing
                     
-                    this.car.anim = TweenMax.to(this.car,timeDelta/1000,{
-                        ease:Linear.easeNone,
-                        pixi:{x:u.x,y:u.y},
-                        directionalRotation:{
-                            rotation: (u.angle - (Math.PI/2)) + "_short",
-                            useRadians: true
-                        },
-                        onComplete:notDrawing
                     
+                        });
+                    }
+                    else{
+                        console.log("FJKJKFJDLSAFKDSJFKDJLKJFDS");
+                        this.car.x = u.x;
+                        this.car.y = u.y;
+                        this.car.rotation = (u.angle - (Math.PI/2));
+                    }
+
                     
-                    });
 
 
                  //   console.log((this.car.rotation * 180)/Math.PI +" new " + (u.angle * 180)/Math.PI);
                  //   createjs.Tween.get(this.car).to({rotation:u.angle},timeDelta);
                   // this.car.rotation = 0;
                   //  createjs.Tween.get(this.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
-                  //  this.car.x = u.x;
-                  //  this.car.y = u.y;
+                ///    this.car.x = u.x;
+                ///    this.car.y = u.y;
                   //  this.isDrawing = false;
                  //   console.log(u.x  + "HEL" + u.y);
                  
@@ -317,11 +387,12 @@ var Game = {
                    //Tween
                  //  createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
                   // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
-                   // this.screenSprites[u.id].x = u.x;
-                  //  this.screenSprites[u.id].y = u.y;
+                //    this.screenSprites[u.id].x = u.x;
+                //    this.screenSprites[u.id].y = u.y;
                   TweenMax.to(this.screenSprites[u.id],timeDelta/1000,{
                     ease:Linear.easeNone,
                     pixi:{x:u.x,y:u.y},
+                    overwrite:"all",
                     directionalRotation:{
                         rotation: (u.angle- (Math.PI/2)) + "_short",
                         useRadians: true
@@ -438,10 +509,10 @@ var Game = {
 
                     var style = new PIXI.TextStyle({
                         fontFamily: 'Arial',
-                        fontSize: 20,
+                        fontSize: 25,
                        
                         
-                        fill: ['#9a41c6'], // gradient
+                        fill: ['#ffffff'], // gradient
                         
                         dropShadow: true,
                         dropShadowColor: '#000000',
@@ -515,6 +586,10 @@ var Game = {
            let difference = this.OnScreen.children.filter(x => !updatedChildArray.includes(x.id));
 
            difference.forEach((trash)=>{
+
+            if(trash.nameLabel != undefined)
+                this.stage.removeChild(trash.nameLabel);
+
             this.stage.removeChild(trash);
             delete this.screenSprites[trash.id];
             this.OnScreen.removeChild(trash);

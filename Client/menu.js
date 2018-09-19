@@ -68,6 +68,8 @@ var Menu = {
         var ratio = size[0] / size[1];  
 
         console.log(this.app.screen.width); 
+
+        
         
         
         window.addEventListener('resize',()=>{
@@ -109,8 +111,8 @@ var Menu = {
     setup: (a) =>  {
        var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 
         var that = this.menu;
-        that.cCarIndex = 0;
-       console.log(this);
+        that.cCarIndex = Math.floor(Math.random() * 39);
+      
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';
         that.app.view.style.top = '50%';
@@ -118,13 +120,34 @@ var Menu = {
         that.app.view.style.zIndex = -1;
         that.mouse = that.app.renderer.plugins.interaction.mouse.global;
         
-       
+        var textbox = document.getElementById("nameField");
+
+        that.hideMenu = function(){
+            that.stage.visible = false;
+           
+    
+        };
+    
+        that.showMenu = function(){
+            that.stage.visible = true;
+            console.log(textbox);
+            //textbox.style.display = "";
+        };
+
+        that.manager = Object.create(Manager);
+        console.log(that.cCarIndex);
+        that.manager.init(that.app,textbox.value,that.cCarIndex,that);
+        that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
+
+
+
         
         that.tilingSprite = new PIXI.extras.TilingSprite(
             spriteSheet["TextureBackground.png"],
             that.app.screen.width * 20,
             that.app.screen.height * 20
         );
+       // that.tilingSprite.visible = false;
         that.viewport.addChild(that.tilingSprite);
         
         that.viewport.setChildIndex(that.tilingSprite,0);
@@ -143,7 +166,7 @@ var Menu = {
         startButton.scale.y *= 1.8;
         startButton.interactive = true;
         startButton.buttonMode = true;
-        var textbox = document.getElementById("nameField");
+       
         
      /* var lb = Object.create(Leaderboard);
       lb.init(that.app);
@@ -151,15 +174,18 @@ var Menu = {
  textbox.style.display = "none";*/
         startButton.on('pointerdown', ()=>{
    
-            textbox.style.display = "none";
-            while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
+           // textbox.style.display = "none";
+           // while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
+                that.hideMenu();
 
 
-
-            var gameNet = Object.create(GameNet);
-            console.log(that.cCarIndex);
-            gameNet.init(that.app,textbox.value,that.cCarIndex);
-            gameNet.app.ticker.add(function(delta){gameNet.ticker(delta);});
+            if(!that.manager){
+            
+            }
+            else{
+                that.manager.spawn(that.cCarIndex);
+                
+            }
 
         });
 
@@ -286,7 +312,7 @@ var Menu = {
     carChangeText.x = 20;
     carChangeText.y = that.app.screen.height - carChangeText.height - 20;
 
-    that.app.stage.addChild(carChangeText);
+    that.stage.addChild(carChangeText);
     console.log(textbox.style.display);
     carChangeText.on("pointerdown",function(){
         console.log("HEHEHHEHHEHHHEHHEHHH");
@@ -295,8 +321,10 @@ var Menu = {
         else
             carChangeText.carpicker.visible = true;
 
-        textbox.style.display = "none";
+      //  textbox.style.display = "none";
         var blurFilter2 = new PIXI.filters.BlurFilter();
+        blurFilter2.resolution = 0.5;
+        //that.viewport.filterArea = new PIXI.Rectangle(0, 0, that.app.screen.width,that.app.screen.height);
         blurFilter2.blur = 0;
       TweenMax.to(blurFilter2 ,0.1,{
             ease:Linear.easeNone,
@@ -314,10 +342,13 @@ var Menu = {
     });
 
     that.viewport.on("pointerdown",function(){
-        var blurFilter2 = new PIXI.filters.BlurFilter();
+        
       //  blurFilter2.blur = 0;
+        //blurFilter2.autoFit = true;
+      //that.viewport.filterArea = new PIXI.Rectangle(0, 0, 100,100);
+      var blurFilter2 = new PIXI.filters.BlurFilter();
+        blurFilter2.resolution = 0.5;
         that.viewport.filters = [blurFilter2]; 
-       // 
         //carChangeText.carpicker.alpha = 0;
         
         that.cCarIndex = carChangeText.carpicker.getCarIndex();
@@ -337,6 +368,7 @@ var Menu = {
         textbox.style.display = "";
         
     });
+
 
 
     },
@@ -359,8 +391,8 @@ var Menu = {
 var ScoreLabel = {
     init: function(application){
         this.app = application;
-
-        var scoreText = new PIXI.Text('Score: 0', {
+        
+        this.scoreText = new PIXI.Text('Score: 0', {
             fontFamily: 'Tahoma',
             fontSize: 35,
             fill: 'white',
@@ -369,21 +401,25 @@ var ScoreLabel = {
             align: 'left'
         }); 
 
-        scoreText.x = 20;
-        scoreText.y = this.app.screen.height - scoreText.height - 20;
+        this.scoreText.x = 20;
+        this.scoreText.y = this.app.screen.height - this.scoreText.height - 20;
 
-        this.app.stage.addChild(scoreText);
+        this.app.stage.addChild(this.scoreText);
 
-        this.updateScoreLabel = function(score){
-            scoreText.text = 'Score: ' + score;
+        this.scoreText.updateScoreLabel = function(score){
+            this.text = 'Score: ' + score;
         };
+
+        
+
+
 
     },
 
     create: function(application){
         var instance = Object.create(this);
         instance.init(application);
-        return instance;
+        return instance.scoreText;
 
     }
 
@@ -676,7 +712,8 @@ var CarPicker = {
                 cColor = 0;
                 carSprite.texture = spriteSheet[cCar + cColor];
             }
-                
+
+    
                 
 
            

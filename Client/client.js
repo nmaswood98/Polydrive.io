@@ -3,54 +3,81 @@
 
 var socket = io({transports: ['websocket'], upgrade: false});
 
-var GameNet = {
+var Manager = {
     
    d: new Date(),
 
     
-    init: function(application,name,carIndex){
+    init: function(application,name,carIndex,menu){
         this.app = application;
+
         this.travelTime = 0;
-         this.game = Object.create(Game);
-         this.game.init(application,name,carIndex);
-         this.game.app.ticker.add((delta)=>{this.game.ticker(delta);});
-         this.game.isDrawing = false;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
-         this.serverUpdates = [];
-      this.lastServerUpdate = null;
-        var canvas = this.game;
-        var that = this;
-        socket.emit("respawn",name,carIndex);
+        this.serverUpdates = [];
+        this.lastServerUpdate = null;
+        
+        var game = Object.create(Game);
+        game.init(application,name,carIndex);
+        game.app.ticker.add((delta)=>{game.ticker(delta);});
+        game.isDrawing = false;
+        game.hide();
 
+        this.drawFrame = game.draw.bind(game); 
 
-        socket.on("welcome",function(car){
-            canvas.car.x = car.x;
-            canvas.car.y = car.y;
-            canvas.car.id = car.id;
+        this.spawn = (carIndex)=>{
+             game.starting =true;
+             socket.emit("spawn",name,carIndex);
+             game.show();
+             game.car.swapTexture(carIndex);
+        };
+
+        this.hideGame = game.hide.bind(game);
+        console.log(menu);
+        this.hideMenu = menu.hideMenu.bind(menu);
+        this.showMenu = menu.showMenu.bind(menu);
+
+        
+
+        socket.on("welcome",(car)=>{
+            game.car.x = car.x;
+            game.car.y = car.y;
+            game.car.id = car.id;
             socket.emit("ready");
-        //  console.log(car.id);
         });
 
-        socket.on("kicked",function(){
+        socket.on("kicked",()=>{
 
-            canvas.starting = false;
+            game.starting = false;
+            
+            //game.deleteCar();
+            var blurFilter2 = new PIXI.filters.BlurFilter();
+            
+            blurFilter2.resolution = 0.5;
+            blurFilter2.blur = 0;
+            this.app.stage.filters = [blurFilter2]; 
+            setTimeout( () => {TweenMax.to(blurFilter2 ,1.5,{
+                ease:Linear.easeNone,
+                blur:10
+            }); }, 1500);
+            setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
             console.log("KCIKECKJEKCJEKJELC:JEKJCL:KEJCLEJM");
+            game.car.visible = false;
         });
         
-        socket.on("draw",function(cars,environment,timeStamp){
+        socket.on("draw",(cars,environment,timeStamp)=>{
             var d = new Date();
-           var currentTime = d.getTime() - that.travelTime; //add /2
-           that.travelTime =  Date.now() - timeStamp;
-         //  console.log(that.travelTime); //outputs travel time
+           var currentTime = d.getTime() - this.travelTime; //add /2
+           this.travelTime =  Date.now() - timeStamp;
+         //  console.log(this.travelTime); //outputs travel time
             var serverUpdate = [timeStamp ,cars,environment];
-            that.serverUpdates.push(serverUpdate);
-           // console.log(that.travelTime);
+            this.serverUpdates.push(serverUpdate);
+           // console.log(this.travelTime);
             
-                if(that.lastTime === 0)
+                if(this.lastTime === 0)
 
-                if(that.serverUpdates.length >= (3000)) {
-                   // that.serverUpdates.splice(0,1);
+                if(this.serverUpdates.length >= (3000)) {
+                   // this.serverUpdates.splice(0,1);
                 }
 
              
@@ -62,7 +89,7 @@ var GameNet = {
 
         socket.on("leaderboard",(a)=>{
 
-            that.game.lBoard.updateLeaderboard(a);
+            game.lBoard.updateLeaderboard(a);
         });
 
         socket.on("moveCar2",function(carPositions){
@@ -84,6 +111,7 @@ var GameNet = {
                var offset = 100;
            
                var canDraw = false;
+               
                if(true){
                   for(var i = 0; i < this.serverUpdates.length;i++ ) {
                       
@@ -91,8 +119,8 @@ var GameNet = {
                       var currentRenderingTime = currentTime - offset;
                       
                       if(element[0] >= currentRenderingTime ){
-                        this.game.isDrawing = true;
-                       this.game.draw(element[1],element[2],element[0] - currentRenderingTime);
+                        
+                       this.drawFrame(element[1],element[2],element[0] - currentRenderingTime);
                       
                        this.serverUpdates.splice(0,i + 1 );
                       break;
@@ -101,24 +129,6 @@ var GameNet = {
                   }
                }
 
-
-        /*
-        var nextFrame = null;
-        for(var i = (this.serverUpdates.length - 1); i >= 0; i--){
-            var timeD = currentTime - this.serverUpdates[i][0];
-            if(timeD <= (offset + 20 ) && timeD >= (offset -20  ))
-                {
-                    canDraw = true;
-                    this.game.isDrawing = true;
-                    nextFrame = this.serverUpdates[i];
-                 //   console.log(timeD);
-                    this.game.draw(nextFrame[1],nextFrame[2],timeD);
-                    break;
-
-
-                }
-            }
-            */
 
 
     }
