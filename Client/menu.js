@@ -123,6 +123,7 @@ var Menu = {
         var textbox = document.getElementById("nameField");
 
         that.hideMenu = function(){
+            textbox.style.display = "none";
             that.stage.visible = false;
            
     
@@ -131,7 +132,7 @@ var Menu = {
         that.showMenu = function(){
             that.stage.visible = true;
             console.log(textbox);
-            //textbox.style.display = "";
+            textbox.style.display = "";
         };
 
         that.manager = Object.create(Manager);
@@ -140,7 +141,8 @@ var Menu = {
         that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
 
 
-
+        //document.body.focus();
+        
         
         that.tilingSprite = new PIXI.extras.TilingSprite(
             spriteSheet["TextureBackground.png"],
@@ -183,7 +185,7 @@ var Menu = {
             
             }
             else{
-                that.manager.spawn(that.cCarIndex);
+                that.manager.spawn(textbox.value,that.cCarIndex);
                 
             }
 
@@ -315,13 +317,13 @@ var Menu = {
     that.stage.addChild(carChangeText);
     console.log(textbox.style.display);
     carChangeText.on("pointerdown",function(){
-        console.log("HEHEHHEHHEHHHEHHEHHH");
+        
         if(carChangeText.carpicker === undefined)
             carChangeText.carpicker = CarPicker.create(that.app);
         else
             carChangeText.carpicker.visible = true;
 
-      //  textbox.style.display = "none";
+        textbox.style.display = "none";
         var blurFilter2 = new PIXI.filters.BlurFilter();
         blurFilter2.resolution = 0.5;
         //that.viewport.filterArea = new PIXI.Rectangle(0, 0, that.app.screen.width,that.app.screen.height);
@@ -366,6 +368,8 @@ var Menu = {
             onComplete:function(){carChangeText.carpicker.visible = false;textbox.style.display = "";}
         });
         textbox.style.display = "";
+
+       
         
     });
 

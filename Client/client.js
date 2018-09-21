@@ -25,7 +25,7 @@ var Manager = {
 
         this.drawFrame = game.draw.bind(game); 
 
-        this.spawn = (carIndex)=>{
+        this.spawn = (name,carIndex)=>{
              game.starting =true;
              socket.emit("spawn",name,carIndex);
              game.show();

@@ -42,6 +42,8 @@ module.exports.Game = {
         this.world = this.engine.world;
         // this.engine.world.
 
+        //this.engine.enableSleeping = true;
+
         this.worldY = 5000;
         this.worldX = 7500;
 
@@ -69,7 +71,7 @@ module.exports.Game = {
 
         this.addMana = () =>{
 
-            var mana =  Matter.Bodies.circle(getRndInteger(0,this.worldX ),getRndInteger(0,this.worldY),20); 
+            var mana =  Matter.Bodies.circle(getRndInteger(0,this.worldX/4 ),getRndInteger(0,this.worldY/4),20); 
             // var mana =  Matter.Bodies.circle(getRndInteger(0,1000 ),getRndInteger(0,1000),20); 
              mana.isStatic = true;
              mana.isMana = true;
@@ -151,6 +153,8 @@ module.exports.Game = {
                       }, 5000);
 
             };
+
+            
 
             socket.on("ready", (car) => {
 
@@ -245,31 +249,33 @@ module.exports.Game = {
                 if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
                   //  console.log("HIT MANA");
                     pair.isActive = false;
-                    if(pair.bodyA.collisionType == 0){
+                    if(pair.bodyA.collisionType == 0 ){
                         var pCar = pair.bodyA.parent.follower; //The car of the player
                         pCar.manaCount++;
+                        
                         this.engine.cc++;
                         var pos = this.manaPool.indexOf(pair.bodyB);
                         Matter.Composite.remove(this.world, pair.bodyB);
                         this.manaPool.splice(pos, 1);
-                        if( (pCar.manaCount % ( (pCar.followerArray.length * 10) + 10) ) === 0 )
+                       // if( (pCar.manaCount % ( (pCar.followerArray.length * 10) + 10) ) === 0 )
                             this.newCarFollower(pCar);
 
 
 
                     }
-                    else if(pair.bodyB.collisionType == 0){
+                    else if(pair.bodyB.collisionType == 0 ){
                         var pCar = pair.bodyB.parent.follower; //The car of the player
                         pCar.manaCount++;
+                        
                         var pos2 = this.manaPool.indexOf(pair.bodyA);
                         Matter.Composite.remove(this.world, pair.bodyA);
                         this.manaPool.splice(pos2, 1);
-                        if( (pCar.manaCount % ( (pCar.followerArray.length + 1) * 10) ) === 0)
+                      //  if( (pCar.manaCount % ( (pCar.followerArray.length + 1) * 10) ) === 0)
                             this.newCarFollower(pCar);
                         
 
                     }
-                    //this.addMana();
+                   // this.addMana();
                     
                     
                     break;
@@ -497,7 +503,7 @@ module.exports.Game = {
         Matter.Body.setAngle(car, angle);
 
         var movementSpeed = speed;
-        if(!(car === car.follower) && !(car.isLaunching)){
+        if(!(car === car.follower) && !(car.launching)){
         if(car.follower.rClick)
             movementSpeed = speed;
         else 

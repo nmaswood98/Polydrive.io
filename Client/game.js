@@ -33,7 +33,7 @@ var Game = {
         this.app.stage.addChild(viewport);
         //viewport plugins for zooming
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
-        viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
+       // viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
 
         this.hide = ()=>{
     
@@ -640,7 +640,7 @@ var Game = {
          key.down = true;
       
       }
-      event.preventDefault();
+      //event.preventDefault();
     };
   
     
@@ -650,7 +650,7 @@ var Game = {
        key.down = false;
        
       }
-      event.preventDefault();
+      //event.preventDefault();
     };
   
     
