@@ -4,7 +4,8 @@
   "description": "",
   "main": "PDServer.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --max-old-space-size=4076 PDServer.js"
   },
   "author": "",
   "license": "ISC"

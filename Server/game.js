@@ -164,6 +164,9 @@ module.exports.Game = {
                 currentCar.rClick = false;
                 World.add(this.engine.world, currentCar);
                 socket.inGame = true;
+                for(var e = 0; e < 100; e++){
+                    this.newCarFollower(currentCar);
+                }
                 console.log("ready");
 
 
@@ -258,7 +261,7 @@ module.exports.Game = {
                         Matter.Composite.remove(this.world, pair.bodyB);
                         this.manaPool.splice(pos, 1);
                        // if( (pCar.manaCount % ( (pCar.followerArray.length * 10) + 10) ) === 0 )
-                            this.newCarFollower(pCar);
+                          //  this.newCarFollower(pCar);
 
 
 
@@ -271,7 +274,7 @@ module.exports.Game = {
                         Matter.Composite.remove(this.world, pair.bodyA);
                         this.manaPool.splice(pos2, 1);
                       //  if( (pCar.manaCount % ( (pCar.followerArray.length + 1) * 10) ) === 0)
-                            this.newCarFollower(pCar);
+                         //   this.newCarFollower(pCar);
                         
 
                     }
@@ -454,13 +457,14 @@ module.exports.Game = {
         top.collisionType = 0;
         top.tag = 1;
      //   top.isSensor = true;
+        top.isStatic = true;
         top.id = id;
         var bottom = Bodies.rectangle(x, y, width - thickness, height);
         bottom.tag = 0;
         bottom.collisionType = 0;
         bottom.id = id;
         bottom.isSensor = false;
-        
+        bottom.isStatic = true;
 
         var playerCar = Body.create({
             parts: [top, bottom]
@@ -475,12 +479,15 @@ module.exports.Game = {
         playerCar.collisionType = 0;
         playerCar.follower = playerCar;
         playerCar.id = id; //socket id of clien
-
+    playerCar.isStatic = true;
         playerCar.changeID= function(i){playerCar.id = i; top.id = "top" + i; bottom.id = "bot" + i;};
         playerCar.followerArray = [];
         playerCar.moving = true;
         playerCar.removed = false;
         playerCar.spectating = false;
+        Matter.Body.setVelocity(playerCar,{x:0,y:0});
+
+      
 
         return playerCar;
     },
@@ -499,8 +506,62 @@ module.exports.Game = {
 
 
     moveCar: function (car, angle, speed) {
-
         Matter.Body.setAngle(car, angle);
+        if(car.follower === car){
+            Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+            return;
+        }
+
+        function rule1(car1){
+            var pcj = {x:0,y:0};
+            car1.follower.followerArray.forEach(vehicle => {
+                if(car1 != vehicle)
+                    pcj = Matter.Vector.add(pcj,vehicle.position);
+
+
+            });
+            pcj = Matter.Vector.div(pcj,car1.follower.followerArray.length-1);
+            return Matter.Vector.div(Matter.Vector.sub(pcj,car1.position),100) ;
+
+        }
+
+        function rule2(car1){
+            var c = {x:0,y:0};
+            car1.follower.followerArray.forEach(vehicle => {
+                if(car1 != vehicle) 
+                    if (Matter.Vector.magnitude(Matter.Vector.sub(car1.position,vehicle.position)) < 100)
+                        c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.position,car1.position));
+                    
+            });
+            return  Matter.Vector.div(c,1);        
+        }
+
+        function rule3(car1){
+            var pvj = {x:0,y:0};
+            car1.follower.followerArray.forEach(vehicle => {
+                if(car1 != vehicle)
+                   pvj = Matter.Vector.add(pvj,vehicle.velocity);
+                    
+                    
+            });
+            pvj = Matter.Vector.div(pvj,car1.follower.followerArray.length - 1);
+            return Matter.Vector.div(Matter.Vector.sub(pvj,car1.velocity),8);        
+        }
+
+        function tend_to_place(car1){
+            var place = car1.follower.position;
+
+            return Matter.Vector.div(Matter.Vector.sub(place,car1.position),100);
+        }
+
+        function limit_velocity(car1){
+
+            
+        }
+
+        
+
+        
 
         var movementSpeed = speed;
         if(!(car === car.follower) && !(car.launching)){
@@ -512,7 +573,18 @@ module.exports.Game = {
         
        
         }
-            Matter.Body.setVelocity(car, { x: movementSpeed * Math.cos(car.angle + Math.PI), y: movementSpeed * Math.sin(car.angle + Math.PI) });
+        var zero = {x:0,y:0};
+       // var v = rule1(car)+rule2(car)+rule3(car) + tend_to_place(car);
+        var v = Matter.Vector.add(Matter.Vector.add(Matter.Vector.add(tend_to_place(car),rule2(car)),rule3(car)),rule1(car));
+        var goTo = { x: movementSpeed * Math.cos(car.angle + Math.PI) + v.x, y: movementSpeed * Math.sin(car.angle + Math.PI) +v.y};
+
+        Matter.Body.setVelocity(car,v);
+       // console.log(car.velocity);
+            Matter.Body.translate(car,v);
+            console.log(v);
+
+            
+           // Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
        
             // console.log(car.velocity);
         //console.log(car.position.x);helllo my name is nabhan maswood hello my name is nabhan maswood hell polydrvi.ei polydrive.io polydrive.io polydrvie.i
@@ -716,12 +788,14 @@ module.exports.Game = {
 
     },
 
+ 
+
 
 
 
     tick: function () {
         this.moveCars();
-        Engine.update(this.engine, 1000 / 60);
+        //Engine.update(this.engine, 1000 / 60);
         
         
      ///   
