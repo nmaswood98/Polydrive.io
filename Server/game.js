@@ -1,5 +1,5 @@
 /*jshint esversion: 6 */
-
+var Car = require('./Worlditems.js').WorldItems.Car;
 global.document = {
     createElement: function () {
         // Canvas
@@ -60,7 +60,7 @@ module.exports.Game = {
 
         setInterval(this.tick.bind(this), 1000 / 60);
         setInterval(this.tick2.bind(this), 1000 / this.updateRate);
-        this.playerJoined();
+       // this.playerJoined();
         this.players = []; 
         this.spectating = [];
         this.otherCars = [];
@@ -124,7 +124,10 @@ module.exports.Game = {
           
 
             socket.on("spawn",(name,cI) =>{
-                currentCar = this.playerJoined(socket.id);
+               // currentCar.body = currentCar;
+              //  currentCar = this.playerJoined(socket.id);
+              //var x = , y = ;
+                currentCar = Car.create(socket.id,true,{x:(getRndInteger(0,this.worldX)),y:(getRndInteger(0,this.worldY))});
                 currentCar.playerName = name;
                 currentCar.carIndex = cI;
                 socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y });
@@ -158,13 +161,13 @@ module.exports.Game = {
 
             socket.on("ready", (car) => {
 
-                this.sockets[socket.id] = socket;
+                this.sockets[socket.id] = socket; 
                 this.players.push(currentCar);
                 currentCar.speed = 5;
                 currentCar.rClick = false;
-                World.add(this.engine.world, currentCar);
+                World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 100; e++){
+                for(var e = 0; e < 500; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -485,7 +488,7 @@ module.exports.Game = {
         playerCar.moving = true;
         playerCar.removed = false;
         playerCar.spectating = false;
-        Matter.Body.setVelocity(playerCar,{x:0,y:0});
+        Matter.Body.setVelocity(playerCar,{x:4,y:4});
 
       
 
@@ -495,10 +498,10 @@ module.exports.Game = {
     newCarFollower: function(playerCar){
         //console.log(playerCar.);
         var carLoc = Matter.Vector.rotate({x:150,y:0}, playerCar.angle);
-        var newCar = this.playerJoined(Math.random().toString(36).substring(7),playerCar.position.x + carLoc.x,playerCar.position.y + carLoc.y); //Every car needs a random id in order to function properly
-        
+        //var newCar = this.playerJoined(Math.random().toString(36).substring(7),playerCar.position.x + carLoc.x,playerCar.position.y + carLoc.y); //Every car needs a random id in order to function properly
+        var newCar = Car.create(Math.random().toString(36).substring(7),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y});
         console.log("heheh");
-        World.add(this.engine.world, newCar);
+        World.add(this.engine.world, newCar.body);
         this.addCarFollower(playerCar,newCar,false);
       
        // newCar.moving = true;
@@ -506,62 +509,25 @@ module.exports.Game = {
 
 
     moveCar: function (car, angle, speed) {
-        Matter.Body.setAngle(car, angle);
+        Matter.Body.setAngle(car.body, angle);
+       // car.body.angle = angle;
         if(car.follower === car){
-            Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+           // console.log(car.position);
+          //  Matter.Body.setVelocity(car.body, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+            car.velocity = { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) };
+          //  Matter.Body.translate(car.body, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+            car.translate({ x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
             return;
         }
 
-        function rule1(car1){
-            var pcj = {x:0,y:0};
-            car1.follower.followerArray.forEach(vehicle => {
-                if(car1 != vehicle)
-                    pcj = Matter.Vector.add(pcj,vehicle.position);
-
-
-            });
-            pcj = Matter.Vector.div(pcj,car1.follower.followerArray.length-1);
-            return Matter.Vector.div(Matter.Vector.sub(pcj,car1.position),100) ;
-
+        if(car.launching){
+            console.log(car.velocity);
+           // Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+           // Matter.Body.setVelocity(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+            car.velocity = { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) };
+            car.translate({ x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
+            return;
         }
-
-        function rule2(car1){
-            var c = {x:0,y:0};
-            car1.follower.followerArray.forEach(vehicle => {
-                if(car1 != vehicle) 
-                    if (Matter.Vector.magnitude(Matter.Vector.sub(car1.position,vehicle.position)) < 100)
-                        c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.position,car1.position));
-                    
-            });
-            return  Matter.Vector.div(c,1);        
-        }
-
-        function rule3(car1){
-            var pvj = {x:0,y:0};
-            car1.follower.followerArray.forEach(vehicle => {
-                if(car1 != vehicle)
-                   pvj = Matter.Vector.add(pvj,vehicle.velocity);
-                    
-                    
-            });
-            pvj = Matter.Vector.div(pvj,car1.follower.followerArray.length - 1);
-            return Matter.Vector.div(Matter.Vector.sub(pvj,car1.velocity),8);        
-        }
-
-        function tend_to_place(car1){
-            var place = car1.follower.position;
-
-            return Matter.Vector.div(Matter.Vector.sub(place,car1.position),100);
-        }
-
-        function limit_velocity(car1){
-
-            
-        }
-
-        
-
-        
 
         var movementSpeed = speed;
         if(!(car === car.follower) && !(car.launching)){
@@ -573,15 +539,164 @@ module.exports.Game = {
         
        
         }
-        var zero = {x:0,y:0};
-       // var v = rule1(car)+rule2(car)+rule3(car) + tend_to_place(car);
-        var v = Matter.Vector.add(Matter.Vector.add(Matter.Vector.add(tend_to_place(car),rule2(car)),rule3(car)),rule1(car));
-        var goTo = { x: movementSpeed * Math.cos(car.angle + Math.PI) + v.x, y: movementSpeed * Math.sin(car.angle + Math.PI) +v.y};
 
-        Matter.Body.setVelocity(car,v);
+        function rule2(car1){
+            var c = {x:0,y:0};
+            var d = 1; 
+            var multiplier = 1;
+            car1.follower.followerArray.forEach(vehicle => {
+                 
+                if(car1 != vehicle){
+                    d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,vehicle.position));
+                    if (d < 150 && d > 100){
+                        c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.position,car1.position));
+                        multiplier = 0.05;
+                    }
+                    else if (d < 50 )
+                    c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.position,car1.position));
+                }
+                else{
+                    d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,vehicle.follower.position));
+                    if (d < 150 && d > 100){
+                        c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.follower.position,car1.position));
+                        multiplier = 0.05;
+                    }
+                    else if (d < 50 )
+                    c = Matter.Vector.sub(c,Matter.Vector.sub(vehicle.follower.position,car1.position));
+                }
+                    
+            });
+
+
+
+            return  Matter.Vector.mult(c,1);        
+        }
+        
+
+        function avoidDir(car1,speed){
+            var steer = {x:0,y:0};
+            var count = 0;
+            car1.follower.followerArray.forEach(element => {
+                 var d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,element.position));
+                if(element != car1){
+                 if((d > 0)&&(d < (150))){
+                     
+                    var diff = Matter.Vector.sub(car1.position,element.position);
+                    diff = Matter.Vector.normalise(diff);
+                    diff = Matter.Vector.div(diff, d);
+                    steer = Matter.Vector.add(steer,diff);
+                    count++;
+
+                 }
+                }
+                else{
+                    d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,car1.follower.position));
+                    if((d >= 0)&&(d < (150))){
+                        
+                    var diff = Matter.Vector.sub(car1.position,car1.follower.position);
+                    
+                    diff = Matter.Vector.normalise(diff);
+                    diff = Matter.Vector.div(diff, d);
+                    steer = Matter.Vector.add(steer,diff);
+                    count++;
+                    }
+                }
+            });
+
+            if(count > 0){
+                steer = Matter.Vector.div(steer,count);
+                steer = Matter.Vector.normalise(steer);
+                steer = Matter.Vector.mult(steer,speed);
+                steer = Matter.Vector.sub(steer,car1.velocity);
+
+                if(Matter.Vector.magnitude(steer) >5)
+                    steer = Matter.Vector.mult(Matter.Vector.normalise(steer),5);
+
+            }
+
+            return steer;
+
+        }
+
+        function cohesion(car2){
+            var nDist = 50;
+            var sum = {x:0, y:0};
+            var count1 = 0;
+            car2.follower.followerArray.forEach(element => {
+                var d1 = Matter.Vector.magnitude(Matter.Vector.sub(car2.position,element.position));
+
+                if((d1 > 0)&&(d1 < 300)){
+                    sum = Matter.Vector.add(sum,element.position);
+                    count1++;
+
+                }
+
+            });
+
+            if(count1 > 0){
+                sum = Matter.Vector.div(sum,count1);
+                var des = Matter.Vector.sub(sum,car2.position);
+                return Matter.Vector.mult(Matter.Vector.normalise(des),0.5);
+            }
+            else
+                return {x:0,y:0};
+            
+
+
+        }
+
+        function avgDist(car3){
+            var sum1 = {x:0, y:0};
+            var count2 = 0;
+            car3.follower.followerArray.forEach(element => {
+                var d2 = Matter.Vector.magnitude(Matter.Vector.sub(car3.position,element.position));
+
+                if((d2 > 0)&&(d2 < 100)){
+                    var copy = Matter.Vector.clone(car3.velocity);
+                    copy = Matter.Vector.normalise(copy);
+                    copy = Matter.Vector.div(copy,d2);
+                    sum1 = Matter.Vector.add(sum1,copy);
+                    count2++;
+                }
+            });
+            return sum1;
+
+        }
+
+        function tend_to_place(car1,speed){
+            var place = Matter.Vector.sub(car1.follower.position,car1.position);
+
+            place = Matter.Vector.normalise(place);
+            place = Matter.Vector.mult(place,speed);
+
+            var steer = Matter.Vector.sub(place,car1.velocity);
+            if(Matter.Vector.magnitude(steer) >2)
+                steer = Matter.Vector.mult(Matter.Vector.normalise(steer),2);
+            return steer;
+        }
+        
+
+        
+
+      
+        var zero = {x:0,y:0};
+        var s = avoidDir(car,movementSpeed);
+        var c = avgDist(car);
+        var a = cohesion(car);
+        var t = tend_to_place(car,movementSpeed);
+        var cc = car.velocity;
+      // var v = zero;
+        var v = {x:(cc.x + s.x + t.x ),y:(cc.y + s.y + t.y)};
+       // v = Matter.Vector.normalise(v);
+        v = {x:(v.x ),y:(v.y)};
+       // v = {x:(v.x * speed * Math.cos(car.angle + Math.PI)),y:(v.y * speed * Math.sin(car.angle + Math.PI) )}
+        //var goTo = { x: movementSpeed * Math.cos(car.angle + Math.PI) + v.x, y: movementSpeed * Math.sin(car.angle + Math.PI) +v.y};
+
+      //  Matter.Body.setVelocity(car,v);
+        car.velocity = v;
        // console.log(car.velocity);
-            Matter.Body.translate(car,v);
-            console.log(v);
+            car.translate(v);
+          //  console.log(v);
 
             
            // Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
@@ -617,7 +732,7 @@ module.exports.Game = {
                 currentLB.push({name:car.playerName,score:car.manaCount});
             }
 
-            var hDis = 2000; var yDis = 1200;
+            var hDis = 4000; var yDis = 2200;
             var maxX = car.position.x + hDis;
             var maxY = car.position.y + yDis;
             var minX = car.position.x - hDis;
@@ -625,7 +740,7 @@ module.exports.Game = {
         }
         else{
 
-            var hDis = 2000; var yDis = 1200;
+            var hDis = 4000; var yDis = 2200;
             var maxX = car.x + hDis;
             var maxY = car.y + yDis;
             var minX = car.x - hDis;
@@ -795,7 +910,7 @@ module.exports.Game = {
 
     tick: function () {
         this.moveCars();
-        //Engine.update(this.engine, 1000 / 60);
+    //Engine.update(this.engine, 1000 / 60);
         
         
      ///   
@@ -810,5 +925,3 @@ module.exports.Game = {
     }
 
 };
-
- 
