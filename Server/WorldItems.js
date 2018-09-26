@@ -9,7 +9,7 @@ var Engine = Matter.Engine,
     World = Matter.World;
 module.exports.WorldItems = {
 Car:  {
-    init: function(id,isPlayer,spawnPosition){
+    init: function(id,isPlayer,spawnPosition,system){
         var width = 149, height = 70, thickness = 10;
         
         
@@ -17,7 +17,8 @@ Car:  {
              
         
          
-
+        this.cBody = system.createPolygon(spawnPosition.x, spawnPosition.y, [[-width/2, -height/2], [width/2, -height/2], [width/2, height/2], [-width/2, height/2]]);
+        this.cBody.par = this;
         var top = Bodies.rectangle(spawnPosition.x - ((width - thickness) / 2 + thickness / 2),spawnPosition.y, thickness, height);
             top.collisionType = 0;
             top.tag = 1;
@@ -54,18 +55,23 @@ Car:  {
        // Matter.Body.setVelocity(car,{x:4,y:4});
         Object.defineProperty(this, 'position', {
             get: function() {
+               // console.log(this.cBody.parent);
                 return car.position;
             },
             set: function(pos) {
+                this.cBody.x = pos.x;
+                this.cBody.y = pos.y;
                 car.position = pos;
             }
         });
 
         Object.defineProperty(this, 'angle', {
             get: function() {
+               // console.log(car.angle + " a " + this.cBody.angle);
                 return car.angle;
             },
             set: function(a) {
+                this.cBody.angle = a;
                 Matter.Body.setAngle(car, a);
             }
         });
@@ -74,6 +80,7 @@ Car:  {
 
         Object.defineProperty(this, 'velocity', {
             get: function() {
+             //   console.log(this.cBody.x + " adsf " +  car.position.x);
                 return car.velocity;
             },
             set: function(v) {
@@ -81,15 +88,15 @@ Car:  {
             }
         });
 
-        this.translate = function(pos){Matter.Body.translate(car,pos);};
+        this.translate = function(pos){Matter.Body.translate(car,pos); this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;};
 
     
     
     },
 
-    create: function(id,isPlayer,spawnPosition){
+    create: function(id,isPlayer,spawnPosition,system){
         var instance = Object.create(this);
-        instance.init(id,isPlayer,spawnPosition);
+        instance.init(id,isPlayer,spawnPosition,system);
         return instance;
     }
 

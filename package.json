@@ -8,5 +8,8 @@
     "start": "node --max-old-space-size=4076 PDServer.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "detect-collisions": "^2.3.2"
+  }
 }
