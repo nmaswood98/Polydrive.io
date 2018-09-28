@@ -1,4 +1,6 @@
 
+var Polygon = require('detect-collisions').Polygon;
+
 var Matter = require('../Assets/matter.js');
 var Engine = Matter.Engine,
     Render = Matter.Render,
@@ -16,8 +18,9 @@ Car:  {
       
              
         
-         
+        var head = new Polygon(spawnPosition.x,spawnPosition.y,[[-width/2, -height/2],[-width/2, height/2]]);
         this.cBody = system.createPolygon(spawnPosition.x, spawnPosition.y, [[-width/2, -height/2], [width/2, -height/2], [width/2, height/2], [-width/2, height/2]]);
+        this.cBody.head = head;
         this.cBody.par = this;
         var top = Bodies.rectangle(spawnPosition.x - ((width - thickness) / 2 + thickness / 2),spawnPosition.y, thickness, height);
             top.collisionType = 0;
@@ -59,6 +62,8 @@ Car:  {
                 return car.position;
             },
             set: function(pos) {
+                head.x = pos.x;
+                head.y = pos.y;
                 this.cBody.x = pos.x;
                 this.cBody.y = pos.y;
                 car.position = pos;
@@ -71,6 +76,7 @@ Car:  {
                 return car.angle;
             },
             set: function(a) {
+                head.angle = a;
                 this.cBody.angle = a;
                 Matter.Body.setAngle(car, a);
             }
@@ -88,7 +94,10 @@ Car:  {
             }
         });
 
-        this.translate = function(pos){Matter.Body.translate(car,pos); this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;};
+        this.translate = function(pos){Matter.Body.translate(car,pos); this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;
+        head.x = head.x + pos.x; head.y = head.y + pos.y;
+        
+        };
 
     
     
@@ -100,6 +109,14 @@ Car:  {
         return instance;
     }
 
+
+},
+
+Vector: {
+    change: function(v){
+        v.x += 1;
+        v.y += 1;
+    }
 
 }
 };

@@ -4,6 +4,7 @@
 var Collisions = require('detect-collisions').Collisions;
 
 var Car = require('./Worlditems.js').WorldItems.Car;
+var Vector = require('./Worlditems.js').WorldItems.Vector;
 global.document = {
     createElement: function () {
         // Canvas
@@ -39,6 +40,11 @@ var io;
 module.exports.Game = {
 
     init: function (server) {
+        var nop = {x:0,y:0};
+        Vector.change(nop);
+        console.log(nop);
+
+
         io = socketIO(server);
         this.updateRate = 20;
         this.engine = Engine.create();
@@ -175,7 +181,7 @@ module.exports.Game = {
                 currentCar.rClick = false;
                 World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 100; e++){
+                for(var e = 0; e < 0; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -842,9 +848,9 @@ module.exports.Game = {
         var dt = (now - this.lastUpdate)/1000;
         this.lastUpdate = now;
         this.system.update();
-        //this.collisionD();
+        this.collisionD();
       //  console.log(dt);
-        this.moveCars(dt*50);
+       // this.moveCars(dt*50);
     //Engine.update(this.engine, 1000 / 60);
         
         
@@ -859,27 +865,28 @@ module.exports.Game = {
         this.players.forEach(element => {
             let potentials = element.cBody.potentials();
             potentials.forEach(e => {
-                if(element.cBody.collides(e,this.result)) {
-                    // Push the player out of the wall
-                   // console.log("NABHAN");
-                   // element.cBody.x -= this.result.overlap * this.result.overlap_x;
-                   // element.cBody.y -= this.result.overlap * this.result.overlap_y;
-                   // element.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
+                var diff1 = 0;
+                if(element.cBody.head.collides(e,this.result)) {
+                    if(element.cBody.head.collides(e.head)){
+                        console.log("ERROR");
+                    }else{
+
+                        console.log(element.playerName);
+                    }
+                    element.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
+                    
                 }
+
+                
+             
+
+
+
+
+
             });
 
-            element.followerArray.forEach(element => {
-                let potentials = element.cBody.potentials();
-                potentials.forEach(e => {
-                    if(element.cBody.collides(e,this.result)) {
-                        // Push the player out of the wall
-                       // console.log("NABHAN");
-                       // element.cBody.x -= this.result.overlap * this.result.overlap_x;
-                       // element.cBody.y -= this.result.overlap * this.result.overlap_y;
-                        
-                    }
-                });
-            });
+     
         });
 
         
