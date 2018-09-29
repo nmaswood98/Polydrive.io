@@ -1,44 +1,20 @@
 
 var Polygon = require('detect-collisions').Polygon;
 
-var Matter = require('../Assets/matter.js');
-var Engine = Matter.Engine,
-    Render = Matter.Render,
-    Bodies = Matter.Bodies,
-    Runner = Matter.Runner,
-    Body = Matter.Body,
-    Mouse = Matter.Mouse,
-    World = Matter.World;
+
 module.exports.WorldItems = {
 Car:  {
     init: function(id,isPlayer,spawnPosition,system){
         var width = 149, height = 70, thickness = 10;
-        
-        
-      
-             
-        
+        var velocity = {x:0,y:0};
+    
         var head = new Polygon(spawnPosition.x,spawnPosition.y,[[-width/2, -height/2],[-width/2, height/2]]);
+
         this.cBody = system.createPolygon(spawnPosition.x, spawnPosition.y, [[-width/2, -height/2], [width/2, -height/2], [width/2, height/2], [-width/2, height/2]]);
         this.cBody.head = head;
         this.cBody.par = this;
-        var top = Bodies.rectangle(spawnPosition.x - ((width - thickness) / 2 + thickness / 2),spawnPosition.y, thickness, height);
-            top.collisionType = 0;
-            top.tag = 1;
-        //   top.isSensor = true;
-            top.isStatic = true;
-            top.id = id;
-        var bottom = Bodies.rectangle(spawnPosition.x,spawnPosition.y, width - thickness, height);
-            bottom.tag = 0;
-            bottom.collisionType = 0;
-            bottom.id = id;
-            bottom.isSensor = false;
-            bottom.isStatic = true;
-
-        var car = Body.create({
-            parts: [top, bottom]
-        });
-        Matter.Body.setStatic(car, true);
+    
+        
          if(isPlayer)
             this.follower = this;
         else 
@@ -53,13 +29,12 @@ Car:  {
         this.moving = true;
         this.removed = false;
         this.spectating = false;
-        this.body = car;
-        this.changeID= (i)=>{this.id = i; top.id = "top" + i; bottom.id = "bot" + i;};
-       // Matter.Body.setVelocity(car,{x:4,y:4});
+        
+        this.changeID= (i)=>{this.id = i; };
+
         Object.defineProperty(this, 'position', {
             get: function() {
-               // console.log(this.cBody.parent);
-                return car.position;
+                return {x: this.cBody.x , y: this.cBody.y };
             },
             set: function(pos) {
                 head.x = pos.x;
@@ -72,34 +47,29 @@ Car:  {
 
         Object.defineProperty(this, 'angle', {
             get: function() {
-               // console.log(car.angle + " a " + this.cBody.angle);
-                return car.angle;
+                return this.cBody.angle;
             },
             set: function(a) {
                 head.angle = a;
                 this.cBody.angle = a;
-                Matter.Body.setAngle(car, a);
+                
             }
         });
-
-        
 
         Object.defineProperty(this, 'velocity', {
             get: function() {
-             //   console.log(this.cBody.x + " adsf " +  car.position.x);
-                return car.velocity;
+                return velocity;
             },
             set: function(v) {
-                Matter.Body.setVelocity(car,v);
+                
+                velocity = v;
             }
         });
 
-        this.translate = function(pos){Matter.Body.translate(car,pos); this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;
+        this.translate = function(pos){this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;
         head.x = head.x + pos.x; head.y = head.y + pos.y;
         
         };
-
-    
     
     },
 
@@ -112,10 +82,37 @@ Car:  {
 
 },
 
-Vector: {
-    change: function(v){
-        v.x += 1;
-        v.y += 1;
+Vector: { //Used to perform Vector Calculations, v is a vector, s is  a scalar
+    magnitude: function(v){
+        return Math.sqrt((v.x * v.x) + (v.y * v.y));
+    },
+
+    normalise: function(v){
+        var m = this.magnitude(v);
+        if (m === 0)
+            return {x:0,y:0};
+        return { x:v.x/m , y: v.y/m };
+    },
+
+    rotate: function(v,angle){
+        var cos = Math.cos(angle), sin = Math.sin(angle);
+        return { x:(v.x * cos - v.y * sin), y:(v.x * sin + v.y * cos) };
+    },
+
+    add: function(v1,v2){
+        return { x:(v1.x + v2.x), y:(v1.y + v2.y) };
+    },
+
+    sub: function(v1,v2){
+        return { x:(v1.x - v2.x), y:(v1.y - v2.y) };
+    },
+
+    mult: function(v,s){
+        return { x:(v.x * s), y:(v.y * s) };
+    },
+
+    div: function(v,s){
+        return { x:(v.x/s), y:(v.y/s) };
     }
 
 }

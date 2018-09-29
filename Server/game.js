@@ -18,17 +18,11 @@ global.document = {
 global.window = {};
 
 
-var Matter = require('../Assets/matter.js');
+
 var socketIO = require('socket.io');
 
 
-var Engine = Matter.Engine,
-    Render = Matter.Render,
-    Bodies = Matter.Bodies,
-    Runner = Matter.Runner,
-    Body = Matter.Body,
-    Mouse = Matter.Mouse,
-    World = Matter.World;
+
 
 
 function getRndInteger(min, max) {
@@ -40,41 +34,25 @@ var io;
 module.exports.Game = {
 
     init: function (server) {
-        var nop = {x:0,y:0};
-        Vector.change(nop);
-        console.log(nop);
+     
 
 
         io = socketIO(server);
         this.updateRate = 20;
-        this.engine = Engine.create();
-        this.engine.world.gravity.y = 0;
-        this.world = this.engine.world;
+        
+        
+     
         this.system = new Collisions();
        // console.log(Collisions);
         this.result = this.system.createResult();
 
-        // this.engine.world.
-
-        //this.engine.enableSleeping = true;
-
         this.worldY = 5000;
         this.worldX = 7500;
-
-        World.add(this.world, [
     
-            Bodies.rectangle(this.worldX/2, 0, this.worldX, 50, { isStatic: true }),
-            Bodies.rectangle(this.worldX/2, this.worldY, this.worldX, 50, { isStatic: true }),
-            Bodies.rectangle(this.worldX, this.worldY/2, 50, this.worldY, { isStatic: true }),
-            Bodies.rectangle(0, this.worldY/2, 50, this.worldY, { isStatic: true })
-        ]);
-       
-        
-
         var lastUpdate = Date.now();
         setInterval(this.tick.bind(this), 1000 / 60);
         setInterval(this.tick2.bind(this), 1000 / this.updateRate);
-       // this.playerJoined();
+    
         this.players = []; 
         this.spectating = [];
         this.otherCars = [];
@@ -83,8 +61,8 @@ module.exports.Game = {
 
 ///GameBoardasdfasdfasfdadf
 
-        this.addMana = () =>{
-
+        this.addMana = () =>{ //Fix for new system
+            /*
             var mana =  Matter.Bodies.circle(getRndInteger(0,this.worldX/4 ),getRndInteger(0,this.worldY/4),20); 
             // var mana =  Matter.Bodies.circle(getRndInteger(0,1000 ),getRndInteger(0,1000),20); 
              mana.isStatic = true;
@@ -93,11 +71,12 @@ module.exports.Game = {
              mana.collisionType = 1;
              this.manaPool.push(mana);
              World.add(this.engine.world, mana);
+             */
         };
 
 
         for(var i = 0;i < 500;i++){
-            this.addMana();
+           // this.addMana();
    
 
         }
@@ -124,10 +103,10 @@ module.exports.Game = {
                     //console.log(socket.id);
 
                     currentCar.followerArray.forEach(elem => {
-                        Matter.Composite.remove(this.world, elem);
+                        /// NEED TO REMOVE 
                     });
                     
-                    Matter.Composite.remove(this.world, currentCar);
+                   //NEED TO REMOVE FROM COLLISION ENGINE
                     
                     delete this.sockets[currentCar.id];
                 }
@@ -138,9 +117,7 @@ module.exports.Game = {
           
 
             socket.on("spawn",(name,cI) =>{
-               // currentCar.body = currentCar;
-              //  currentCar = this.playerJoined(socket.id);
-              //var x = , y = ;
+            
                 currentCar = Car.create(socket.id,true, {x:(getRndInteger(0,this.worldX)),y:(getRndInteger(0,this.worldY))},this.system);
                 currentCar.playerName = name;
                 currentCar.carIndex = cI;
@@ -179,9 +156,9 @@ module.exports.Game = {
                 this.players.push(currentCar);
                 currentCar.speed = 5;
                 currentCar.rClick = false;
-                World.add(this.engine.world, currentCar.body);
+               // World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 0; e++){
+                for(var e = 0; e < 100; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -257,135 +234,10 @@ module.exports.Game = {
             
 
         });
-        this.engine.cc = 0;
-        Matter.Events.on(this.engine, 'collisionActive', (event) => { 
-           
-             var pairs = event.pairs; 
-             
-            for (var i = 0; i < pairs.length; i++) {
-                var pair = pairs[i];
-
-                //Doesn't Follow DRY need to fix
-                if(pair.bodyA.collisionType == 1  || pair.bodyB.collisionType == 1){
-                  //  console.log("HIT MANA");
-                    pair.isActive = false;
-                    if(pair.bodyA.collisionType == 0 ){
-                        var pCar = pair.bodyA.parent.follower; //The car of the player
-                        pCar.manaCount++;
-                        
-                        this.engine.cc++;
-                        var pos = this.manaPool.indexOf(pair.bodyB);
-                        Matter.Composite.remove(this.world, pair.bodyB);
-                        this.manaPool.splice(pos, 1);
-                       // if( (pCar.manaCount % ( (pCar.followerArray.length * 10) + 10) ) === 0 )
-                          //  this.newCarFollower(pCar);
-
-
-
-                    }
-                    else if(pair.bodyB.collisionType == 0 ){
-                        var pCar = pair.bodyB.parent.follower; //The car of the player
-                        pCar.manaCount++;
-                        
-                        var pos2 = this.manaPool.indexOf(pair.bodyA);
-                        Matter.Composite.remove(this.world, pair.bodyA);
-                        this.manaPool.splice(pos2, 1);
-                      //  if( (pCar.manaCount % ( (pCar.followerArray.length + 1) * 10) ) === 0)
-                         //   this.newCarFollower(pCar);
-                        
-
-                    }
-                   // this.addMana();
-                    
-                    
-                    break;
-                }
-                else{
-
-            
-                }
-
-                
-            
-
-            }
         
-        });
+       
 
-        Matter.Events.on(this.engine, 'collisionStart', (event) => {
-            var pairs = event.pairs; 
-             
-            for (var i = 0; i < pairs.length; i++) {
-                var pair = pairs[i];
-
-              
-                
-
-                if(pair.bodyA.isMana || pair.bodyB.isMana){
-                    pair.isActive = false;
-                    
-                    return;
-                }
-                
-                if(pair.bodyA.isStatic || pair.bodyB.isStatic)
-                    return;
-                  
-                if(pair.bodyB.parent.follower == pair.bodyA.parent.follower  && (pair.bodyA.parent.moving && pair.bodyB.parent.moving)){
-                    //problem was that the moment it collided it then became another follower so it followed the other rooms
-                    pair.isActive = true;
-                }
-                if (pair.bodyA.parent.id != pair.bodyB.parent.id && (pair.bodyB.parent.follower != pair.bodyA.parent.follower )) {
-                  //console.log("POOPPOOPO");
-
-
-
-
-
-
-                    
-                    if (pair.bodyA.tag == pair.bodyB.tag) {
-                        
-                       // console.log(pair.bodyA.tag + " HEYO ");
-
-                    } else {
-                        
-                        if (pair.bodyA.tag == 1) { //body A caused the collision
-                            //console.log(pair.isActive);
-                          //  console.log("AAAA");
-                          //  if(pair.bodyB.parent.removed === false){
-                             //   pair.bodyB.parent.removed = true;
-                                this.playerLost(pair.bodyB.parent, pair.bodyA.parent);
-                           // }
-                            
-                        }
-                        else {
-                            //console.log("BBBB");
-                         //   if(pair.bodyA.parent.removed === false){
-                             //   pair.bodyA.parent.removed = true;
-                                this.playerLost(pair.bodyA.parent, pair.bodyB.parent);
-                          //  }
-                           
-
-                        }
-                    }
-
-
-
-
-
-
-
-
-
-
-
-                }
-            
-            
-            }
-
-        });
-
+       
 
 
 
@@ -455,67 +307,17 @@ module.exports.Game = {
 
     },
 
-    clap: function () { console.log("please clap"); },
-
-    playerJoined: function (id,x1,y1) {
-        //Position On Board
-       // var x = getRndInteger(0,this.worldX), y = getRndInteger(0,this.worldY);
-       if(x1 == undefined)
-       var x = getRndInteger(0,this.worldX), y = getRndInteger(0,this.worldY);
-        else{
-            x = x1;
-            y = y1;
-        }
-        //position on board
-
-        
-        var width = 149, height = 70, thickness = 10;
-        var top = Bodies.rectangle(x - ((width - thickness) / 2 + thickness / 2), y, thickness, height);
-        top.collisionType = 0;
-        top.tag = 1;
-     //   top.isSensor = true;
-        top.isStatic = true;
-        top.id = id;
-        var bottom = Bodies.rectangle(x, y, width - thickness, height);
-        bottom.tag = 0;
-        bottom.collisionType = 0;
-        bottom.id = id;
-        bottom.isSensor = false;
-        bottom.isStatic = true;
-
-        var playerCar = Body.create({
-            parts: [top, bottom]
-        });
+  
 
 
-        Matter.Body.setStatic(playerCar, false);
-      //  playerCar.isSensor = true;
-        playerCar.followers = 0;
-        playerCar.manaCount = 0;
-        playerCar.carMeter = 0;
-        playerCar.collisionType = 0;
-        playerCar.follower = playerCar;
-        playerCar.id = id; //socket id of clien
-    playerCar.isStatic = true;
-        playerCar.changeID= function(i){playerCar.id = i; top.id = "top" + i; bottom.id = "bot" + i;};
-        playerCar.followerArray = [];
-        playerCar.moving = true;
-        playerCar.removed = false;
-        playerCar.spectating = false;
-        Matter.Body.setVelocity(playerCar,{x:4,y:4});
-
-      
-
-        return playerCar;
-    },
 
     newCarFollower: function(playerCar){
         //console.log(playerCar.);
-        var carLoc = Matter.Vector.rotate({x:150,y:0}, playerCar.angle);
+        var carLoc = Vector.rotate({x:150,y:0}, playerCar.angle);
         //var newCar = this.playerJoined(Math.random().toString(36).substring(7),playerCar.position.x + carLoc.x,playerCar.position.y + carLoc.y); //Every car needs a random id in order to function properly
         var newCar = Car.create(Math.random().toString(36).substring(7),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y},this.system);
        
-        World.add(this.engine.world, newCar.body);
+       // World.add(this.engine.world, newCar.body);
         this.addCarFollower(playerCar,newCar,false);
       
        // newCar.moving = true;
@@ -567,40 +369,40 @@ module.exports.Game = {
             console.log(potentials.length);
             potentials.forEach(element1 => {
                 var element = element1.par;
-                 var d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,element.position));
+                 var d = Vector.magnitude(Vector.sub(car1.position,element.position));
                 if(element != car1){
                  if((d > 0)&&(d < (1000))){
                      
-                    var diff = Matter.Vector.sub(car1.position,element.position);
-                    diff = Matter.Vector.normalise(diff);
-                    diff = Matter.Vector.div(diff, d);
-                    steer = Matter.Vector.add(steer,diff);
+                    var diff = Vector.sub(car1.position,element.position);
+                    diff = Vector.normalise(diff);
+                    diff = Vector.div(diff, d);
+                    steer = Vector.add(steer,diff);
                     count++;
 
                  }
                 }
                 else{
-                    d = Matter.Vector.magnitude(Matter.Vector.sub(car1.position,car1.follower.position));
+                    d = Vector.magnitude(Vector.sub(car1.position,car1.follower.position));
                     if((d >= 0)&&(d < (200))){
                         
-                    var diff = Matter.Vector.sub(car1.position,car1.follower.position);
+                    var diff = Vector.sub(car1.position,car1.follower.position);
                     
-                    diff = Matter.Vector.normalise(diff);
-                    diff = Matter.Vector.div(diff, d);
-                    steer = Matter.Vector.add(steer,diff);
+                    diff = Vector.normalise(diff);
+                    diff = Vector.div(diff, d);
+                    steer = Vector.add(steer,diff);
                     count++;
                     }
                 }
             });
 
             if(count > 0){
-                steer = Matter.Vector.div(steer,count);
-                steer = Matter.Vector.normalise(steer);
-                steer = Matter.Vector.mult(steer,speed);
-                steer = Matter.Vector.sub(steer,car1.velocity);
+                steer = Vector.div(steer,count);
+                steer = Vector.normalise(steer);
+                steer = Vector.mult(steer,speed);
+                steer = Vector.sub(steer,car1.velocity);
 
-                if(Matter.Vector.magnitude(steer) >5)
-                    steer = Matter.Vector.mult(Matter.Vector.normalise(steer),5);
+                if(Vector.magnitude(steer) >5)
+                    steer = Vector.mult(Vector.normalise(steer),5);
 
             }
 
@@ -613,14 +415,14 @@ module.exports.Game = {
   
 
         function tend_to_place(car1,speed){
-            var place = Matter.Vector.sub(car1.follower.position,car1.position);
+            var place = Vector.sub(car1.follower.position,car1.position);
 
-            place = Matter.Vector.normalise(place);
-            place = Matter.Vector.mult(place,speed);
+            place = Vector.normalise(place);
+            place = Vector.mult(place,speed);
 
-            var steer = Matter.Vector.sub(place,car1.velocity);
-            if(Matter.Vector.magnitude(steer) >2)
-                steer = Matter.Vector.mult(Matter.Vector.normalise(steer),2);
+            var steer = Vector.sub(place,car1.velocity);
+            if(Vector.magnitude(steer) >2)
+                steer = Vector.mult(Vector.normalise(steer),2);
             return steer;
         }
         
@@ -631,7 +433,7 @@ module.exports.Game = {
         var cc = car.velocity;
       // var v = zero;
         var v = {x:(cc.x + s.x +  t.x ),y:(cc.y +s.y +  t.y)};
-       // v = Matter.Vector.normalise(v);
+       // v = Vector.normalise(v);
         
 
         car.velocity = v;
@@ -640,11 +442,7 @@ module.exports.Game = {
           
 
     },
-    stopCar: function (car) {
-        Matter.Body.setVelocity(car, { x: 0, y: 0 });
-        car.stopped = true;
-
-    },
+  
 
     sendUpdates: function () {
         //eventuallly only send cars that are visble to the player
@@ -848,10 +646,10 @@ module.exports.Game = {
         var dt = (now - this.lastUpdate)/1000;
         this.lastUpdate = now;
         this.system.update();
-        this.collisionD();
-      //  console.log(dt);
-       // this.moveCars(dt*50);
-    //Engine.update(this.engine, 1000 / 60);
+        //this.collisionD();
+     
+        this.moveCars(dt*100);
+
         
         
      ///   
