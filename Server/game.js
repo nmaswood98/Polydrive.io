@@ -103,11 +103,11 @@ module.exports.Game = {
                     //console.log(socket.id);
 
                     currentCar.followerArray.forEach(elem => {
-                        /// NEED TO REMOVE 
+                        elem.cBody.remove();
                     });
                     
-                   //NEED TO REMOVE FROM COLLISION ENGINE
-                    
+                   
+                    currentCar.cBody.remove(); //removes body from collision system
                     delete this.sockets[currentCar.id];
                 }
                 //this.sockets[socket.id].disconnect();
@@ -158,7 +158,7 @@ module.exports.Game = {
                 currentCar.rClick = false;
                // World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 100; e++){
+                for(var e = 0; e < 50; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -645,10 +645,11 @@ module.exports.Game = {
         var now = Date.now();
         var dt = (now - this.lastUpdate)/1000;
         this.lastUpdate = now;
+        this.moveCars(dt*50);
         this.system.update();
-        //this.collisionD();
+        this.processCollisions();
      
-        this.moveCars(dt*100);
+        
 
         
         
@@ -658,31 +659,27 @@ module.exports.Game = {
 
     },
 
-    collisionD: function (){
+    processCollisions: function (){
         
-        this.players.forEach(element => {
-            let potentials = element.cBody.potentials();
-            potentials.forEach(e => {
-                var diff1 = 0;
-                if(element.cBody.head.collides(e,this.result)) {
-                    if(element.cBody.head.collides(e.head)){
+        this.players.forEach(player => {
+            let potentials = player.cBody.potentials();
+            potentials.forEach(body => { //Player is a Car object while body is just a collision body. body.par gives you the Car object 
+                if(player.follower.id != body.par.follower.id)
+                if(player.cBody.head.collides(body,this.result)) {
+                    if(player.cBody.head.collides(body.head)){
                         console.log("ERROR");
                     }else{
-
-                        console.log(element.playerName);
+                        this.playerLost(body.par,player);
+                        console.log(player.playerName);
                     }
-                    element.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
+                    player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
                     
                 }
-
-                
-             
-
-
-
-
-
             });
+
+        this.players.followerArray.forEach(element => {
+            
+        });
 
      
         });
@@ -690,6 +687,19 @@ module.exports.Game = {
         
 
     },
+
+    shouldCheckCollision: function(player,body){
+        var result = 0;
+        if(body.par === undefined)
+            return 1;   //Is a mana. Compute Mana Collision
+
+        if(player.follower.id === body.par.id)
+            return 0; // Is your own car ignore collision
+
+            return 2; // Is another player's Car compute collision
+    },
+
+
 
     tick2: function () {
         this.sendUpdates();
