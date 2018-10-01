@@ -488,10 +488,10 @@ var Game = {
                         console.log("qwertyuiopasdfghjkl");
                         this.line.car = null;
                         carSprite.alpha = 1;
-                        
+                        var pos = carSprite.getGlobalPosition();
                         var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
                       //  socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
-                        this.launchedCar = {id:carSprite.id, x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY};
+                        this.launchedCar = {id:carSprite.id, x:pos.x,y:pos.y,mX:mouseX - this.mPlusX,mY:mouseY - this.mPlusY};
             
                     });
 

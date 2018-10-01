@@ -62,21 +62,15 @@ module.exports.Game = {
 ///GameBoardasdfasdfasfdadf
 
         this.addMana = () =>{ //Fix for new system
-            /*
-            var mana =  Matter.Bodies.circle(getRndInteger(0,this.worldX/4 ),getRndInteger(0,this.worldY/4),20); 
-            // var mana =  Matter.Bodies.circle(getRndInteger(0,1000 ),getRndInteger(0,1000),20); 
-             mana.isStatic = true;
-             mana.isMana = true;
-             mana.id = "mana" + i.toString();
-             mana.collisionType = 1;
-             this.manaPool.push(mana);
-             World.add(this.engine.world, mana);
-             */
+            var mana = this.system.createCircle(getRndInteger(0,this.worldX/4 ), getRndInteger(0,this.worldY/4), 20);
+            mana.id = "mana" + (this.manaPool.length + 1).toString();
+            this.manaPool.push(mana);
+
         };
 
 
         for(var i = 0;i < 500;i++){
-           // this.addMana();
+            this.addMana();
    
 
         }
@@ -158,7 +152,7 @@ module.exports.Game = {
                 currentCar.rClick = false;
                // World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 50; e++){
+                for(var e = 0; e < 0; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -368,6 +362,7 @@ module.exports.Game = {
             var count = 0;
             console.log(potentials.length);
             potentials.forEach(element1 => {
+                if(element1.par.follower != undefined){
                 var element = element1.par;
                  var d = Vector.magnitude(Vector.sub(car1.position,element.position));
                 if(element != car1){
@@ -393,6 +388,8 @@ module.exports.Game = {
                     count++;
                     }
                 }
+            }
+
             });
 
             if(count > 0){
@@ -556,7 +553,7 @@ module.exports.Game = {
                 var inView = false;
                 
                 
-                if( (player.position.x < maxX && player.position.x > minX) &&  (player.position.y < maxY && player.position.y > minY))
+                if( (player.x < maxX && player.x > minX) &&  (player.y < maxY && player.y > minY))
                     inView = true;
                 else
                     inView = false;
@@ -569,7 +566,7 @@ module.exports.Game = {
             
             
             }).map(function (mana) {
-                return { id: mana.id, x: mana.position.x, y: mana.position.y };
+                return { id: mana.id, x: mana.x, y: mana.y };
 
 
 
@@ -664,22 +661,72 @@ module.exports.Game = {
         this.players.forEach(player => {
             let potentials = player.cBody.potentials();
             potentials.forEach(body => { //Player is a Car object while body is just a collision body. body.par gives you the Car object 
-                if(player.follower.id != body.par.follower.id)
-                if(player.cBody.head.collides(body,this.result)) {
-                    if(player.cBody.head.collides(body.head)){
-                        console.log("ERROR");
-                    }else{
-                        this.playerLost(body.par,player);
-                        console.log(player.playerName);
-                    }
-                    player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
-                    
+
+                if(body.par === undefined){ //Is Mana
+                    //handle mana collision
+
+                    body.remove();
+                    player.manaCount++;
+                    var manaIndex = this.manaPool.indexOf(body);
+                    this.manaPool.splice(manaIndex, 1);
+
+                    if(player.manaCount % 100 === 0)
+                        this.newCarFollower(player);
+
+
+
                 }
+                else if(player.follower.id != body.par.follower.id){ //Enemy Car Collision
+
+                    if(player.cBody.head.collides(body,this.result)) {
+                        if(player.cBody.head.collides(body.head)){
+                            console.log("ERROR");
+                        }else{
+                            this.playerLost(body.par,player);
+                            console.log(player.playerName);
+                        }
+                        player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
+
+                    }
+
+                }
+
             });
 
-        this.players.followerArray.forEach(element => {
-            
+        player.followerArray.forEach(childCar => {
+            potentials = childCar.cBody.potentials();
+            potentials.forEach(body => {
+                if(body.par === undefined){ //Is Mana
+                    //handle mana collision
+                    body.remove();
+                    player.manaCount++;
+                    var manaIndex = this.manaPool.indexOf(body);
+                    this.manaPool.splice(manaIndex, 1);
+
+                    if(player.manaCount % 100 === 0)
+                        this.newCarFollower(player);
+
+
+                }
+                else if(childCar.follower.id != body.par.follower.id){ //Enemy Car Collision
+
+                    if(childCar.cBody.head.collides(body,this.result)) {
+                        if(childCar.cBody.head.collides(body.head)){
+                                console.log("ERROR");
+                        }else{
+                                this.playerLost(body.par,player);
+                                console.log(childCar.playerName);
+                        }
+                        childCar.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
+
+                    }
+
+                }
+
         });
+
+    
+    });
 
      
         });
@@ -688,16 +735,6 @@ module.exports.Game = {
 
     },
 
-    shouldCheckCollision: function(player,body){
-        var result = 0;
-        if(body.par === undefined)
-            return 1;   //Is a mana. Compute Mana Collision
-
-        if(player.follower.id === body.par.id)
-            return 0; // Is your own car ignore collision
-
-            return 2; // Is another player's Car compute collision
-    },
 
 
 
