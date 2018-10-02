@@ -35,6 +35,8 @@ var Game = {
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
        // viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
 
+       
+
         this.hide = ()=>{
     
             viewport.visible = false;
@@ -302,7 +304,7 @@ var Game = {
         }
         else{
            
-            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: false},this.launchedCar);
+            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: this.lClick},this.launchedCar);
             this.launchedCar = null;
         }
     }

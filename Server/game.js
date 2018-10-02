@@ -5,25 +5,8 @@ var Collisions = require('detect-collisions').Collisions;
 
 var Car = require('./Worlditems.js').WorldItems.Car;
 var Vector = require('./Worlditems.js').WorldItems.Vector;
-global.document = {
-    createElement: function () {
-        // Canvas
-        return {
-            getContext: function () {
-                return {};
-            }
-        };
-    }
-};
-global.window = {};
-
-
 
 var socketIO = require('socket.io');
-
-
-
-
 
 function getRndInteger(min, max) {
         return Math.floor(Math.random() * (max - min + 1) ) + min;
@@ -33,17 +16,13 @@ var io;
 
 module.exports.Game = {
 
-    init: function (server) {
+    init: function (server) { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
      
-
-
         io = socketIO(server);
         this.updateRate = 20;
-        
-        
-     
+        this.carLimit = 10;
+             
         this.system = new Collisions();
-       // console.log(Collisions);
         this.result = this.system.createResult();
 
         this.worldY = 5000;
@@ -53,16 +32,19 @@ module.exports.Game = {
         setInterval(this.tick.bind(this), 1000 / 60);
         setInterval(this.tick2.bind(this), 1000 / this.updateRate);
     
-        this.players = []; 
-        this.spectating = [];
-        this.otherCars = [];
-        this.manaPool = [];
-        this.sockets = {};
+        //Everything in these arrays are sent to the clients to be drawned in the world. 
+        this.players = []; //Players
+        this.spectating = []; //Spectators 
+        this.miscObjects = []; //Objects
+        this.manaPool = []; //Mana
+        //
+
+        this.sockets = {}; // Stores the sockets to the players in the game
 
 ///GameBoardasdfasdfasfdadf
 
         this.addMana = () =>{ //Fix for new system
-            var mana = this.system.createCircle(getRndInteger(0,this.worldX/4 ), getRndInteger(0,this.worldY/4), 20);
+            var mana = this.system.createCircle(getRndInteger(0,this.worldX ), getRndInteger(0,this.worldY), 20);
             mana.id = "mana" + (this.manaPool.length + 1).toString();
             this.manaPool.push(mana);
 
@@ -70,7 +52,7 @@ module.exports.Game = {
 
 
         for(var i = 0;i < 500;i++){
-            this.addMana();
+          //  this.addMana();
    
 
         }
@@ -79,7 +61,7 @@ module.exports.Game = {
 
 ////GameBoard
 
-
+///Need to seperate WEb Socket logic from game logic. 
 
         io.on("connection", (socket) => {
             // socket.emit("moveCar",socket.id);
@@ -125,7 +107,7 @@ module.exports.Game = {
                 
                 var tempId = currentCar.id;
                 if (index > -1) {
-                    this.spectating.push({spectating:true, x:currentCar.position.x, y:currentCar.position.y,id: socket.id}); 
+                    this.spectating.push({spectating:true, position: {x:currentCar.position.x, y:currentCar.position.y},id: socket.id, manaCount:currentCar.manaCount}); 
                     var sIndex = this.spectating.length - 1;
                     this.players.splice(index, 1);
                   this.sockets[currentCar.id].inGame = false;
@@ -152,7 +134,7 @@ module.exports.Game = {
                 currentCar.rClick = false;
                // World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 0; e++){
+                for(var e = 0; e < 100; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -184,6 +166,8 @@ module.exports.Game = {
                    // console.log("NEW CAR ALERT NEW CAR ALERT");
                 }
 
+                currentCar.rClick = carInfo.rightClick;
+                currentCar.lClick = carInfo.leftClick;
 
                 if (carInfo.stop == false){
                     currentCar.stopped = false;
@@ -191,8 +175,7 @@ module.exports.Game = {
                     if (currentCar.speed >= 4.8 && currentCar.speed <= 5.1) {
                         currentCar.speed = 5;
                     }
-                    currentCar.rClick = carInfo.rightClick;
-                    currentCar.lClick = carInfo.leftClick;
+                    
                     if (currentCar.speed < 5) { currentCar.speed += 0.2; }
                     else if (carInfo.leftClick === true || carInfo.rightClick === true) {
                         if (currentCar.speed <= 15) {
@@ -241,10 +224,15 @@ module.exports.Game = {
 
     },
 
-    playerLost: function (carLost, newCar) { // BUG IS HERE
+    deleteCarFollower: function(car){
 
-        //console.log(carLost.id);
-   //     this.otherCars.push(carLost);
+
+    },
+
+    playerLost: function (carLost, newCar) { // BUG IS HERE
+        /* newCar hit carLost. If carLost is a player then we should kick them from the game while transfering all cars the player had to the new player
+            If carLost is just an enemy car then we should just call addCarFollower which will result in carLost tranfering ownership to newCar */
+  
         newCar.manaCount += 10;
         if (this.sockets.hasOwnProperty(carLost.id)) {
              //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
@@ -267,19 +255,17 @@ module.exports.Game = {
     },
 
     addCarFollower: function (playerCar, carFollower,shouldRemove, byCrash) {
-        
+        /* Takes carFollower and makes it follow playerCar. If shouldRemove is true then carFollower is part currently following another car 
+            so we should change which car owns the carFollower i.e following it. If the amount of cars following playerCar === the car limit
+            then we should not make carFollower follow playerCar instead remove it from the game. */
+
         if (byCrash == true) { /// BUG IS HERE
             carFollower.moving = false;
             setTimeout(function () { carFollower.moving = true; 
-
-
-                
             }, 750);
 
         }
         //Changing Car Follower
-        
-      
         //
         if(shouldRemove){
         var index = carFollower.follower.followerArray.indexOf(carFollower);
@@ -289,13 +275,16 @@ module.exports.Game = {
         else
             console.log("ERROR at line 377");
         }
-
+        if(playerCar.followerArray.length < this.carLimit){
             playerCar.followerArray.push(carFollower);
             playerCar.followers++;
             carFollower.follower = playerCar;
             carFollower.changeID(Math.random().toString(36).substring(7));
         
-        
+        }
+        else {
+            carFollower.cBody.remove();
+        }
         
 
 
@@ -305,38 +294,27 @@ module.exports.Game = {
 
 
 
-    newCarFollower: function(playerCar){
-        //console.log(playerCar.);
+    newCarFollower: function(playerCar){ //Creates a new car and adds to the playerCar follower pool
+        if(playerCar.followerArray.length < this.carLimit){
         var carLoc = Vector.rotate({x:150,y:0}, playerCar.angle);
-        //var newCar = this.playerJoined(Math.random().toString(36).substring(7),playerCar.position.x + carLoc.x,playerCar.position.y + carLoc.y); //Every car needs a random id in order to function properly
         var newCar = Car.create(Math.random().toString(36).substring(7),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y},this.system);
-       
-       // World.add(this.engine.world, newCar.body);
         this.addCarFollower(playerCar,newCar,false);
-      
-       // newCar.moving = true;
+        }
     },
 
 
-    moveCar: function (dt,car, angle, speed) {
-       // Matter.Body.setAngle(car.body, angle);
+    moveCar: function (dt,car, angle, speed) { //Moves the cars. IF Follower moves it according to boids algorithm 
+    
        car.angle = angle;
-       // console.log(angle * (180/Math.PI)) + 360;
-       // car.body.angle = angle;
+
         if(car.follower === car){
-           // console.log(car.position);
-          //  Matter.Body.setVelocity(car.body, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
             car.velocity = { x: speed * Math.cos(car.angle + Math.PI) * dt , y: speed * Math.sin(car.angle + Math.PI) * dt };
-          //  Matter.Body.translate(car.body, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
             car.translate(car.velocity);
             return;
         }
 
         if(car.launching){
-           // console.log(car.velocity);
-           // Matter.Body.translate(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
-           // Matter.Body.setVelocity(car, { x: speed * Math.cos(car.angle + Math.PI), y: speed * Math.sin(car.angle + Math.PI) });
-           car.velocity = {x:0,y:0};
+            car.velocity = {x:0,y:0};
             car.velocity = { x: speed * Math.cos(car.angle + Math.PI) * dt, y: speed * Math.sin(car.angle + Math.PI) * dt };
             car.translate(car.velocity);
             return;
@@ -346,10 +324,12 @@ module.exports.Game = {
         if(!(car === car.follower) && !(car.launching)){
         if(car.follower.rClick)
             movementSpeed = speed * dt;
-        else 
+        else if(car.follower.lClick && car.follower.stopped)
+            movementSpeed = 30 * dt;
+        else
             movementSpeed = car.follower.speed * dt;
             
-        
+        //console.log(movementSpeed);
        
         }
 
@@ -360,7 +340,7 @@ module.exports.Game = {
             let potentials = car1.cBody.potentials();
             var steer = {x:0,y:0};
             var count = 0;
-            console.log(potentials.length);
+           // console.log(potentials.length);
             potentials.forEach(element1 => {
                 if(element1.par.follower != undefined){
                 var element = element1.par;
@@ -442,7 +422,7 @@ module.exports.Game = {
   
 
     sendUpdates: function () {
-        //eventuallly only send cars that are visble to the player
+        //Sends Snapshots of the world to clients. Only sends the part that is visible to the client.Also updates the games leaderboard
        
         function compare(a,b){
             
@@ -456,28 +436,29 @@ module.exports.Game = {
         this.players.sort(compare);
         var currentLB = []; //current leaderboard
         
-        var createUpdate = (car) => {
+        var createSnapShot = (car) => {
+            
             if(!car.spectating){
             if(currentLB.length <= 10){ 
                 currentLB.push({name:car.playerName,score:car.manaCount});
             }
+        }
+        
+         //   if(car.manaCount < 50){
+             //   var hDis = 500/1; var yDis = 600/1;}
+           // else{
 
-            var hDis = 4000/1; var yDis = 2200/1;
+
+           //NEED TO CHANGE CANVAS SIZE BASED ON AMOUNT OF CARS
+                var hDis = 10000/1; var yDis = 10000/1;
+            //} 
             var maxX = car.position.x + hDis;
             var maxY = car.position.y + yDis;
             var minX = car.position.x - hDis;
             var minY = car.position.y - yDis;
-        }
-        else{
-
-            var hDis = 4000/1; var yDis = 2200/1;
-            var maxX = car.x + hDis;
-            var maxY = car.y + yDis;
-            var minX = car.x - hDis;
-            var minY = car.y - yDis;
-        }
+            
+        
             var sentOtherCars = [];
-
             
 
             var sentUsers = this.players.filter((player)=>{ 
@@ -519,21 +500,7 @@ module.exports.Game = {
                     return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };
             });
 
-
-           
-/*
-            this.players.forEach((car1) => {
-                car1.followerArray.forEach((carFollower) => {  
-                    sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
-                                            angle: carFollower.angle, isFollower: (car === car1) ? true : false,
-                                            isLaunching: carFollower.isLaunching
-                                        
-                                        
-                                        });
-                });
-            });
-*/
-            var tempCars = this.otherCars.map(function (player) {
+            var tempCars = this.miscObjects.map(function (player) {
 
                 return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
 
@@ -588,11 +555,11 @@ module.exports.Game = {
         };
 
         this.players.forEach((car)=>{
-            createUpdate(car);
+            createSnapShot(car);
 
         });
 
-        this.spectating.forEach((car)=>{createUpdate(car);});
+        this.spectating.forEach((car)=>{createSnapShot(car);});
 
         io.emit("leaderboard",currentLB);
         
@@ -603,9 +570,8 @@ module.exports.Game = {
 
     },
 
-    moveCars: function (dt) {
+    moveCars: function (dt) { //calls moveCar on all cars with the appropiate direction and speed 
 
-        
         this.players.forEach((car) => {
           // console.log( car.followerArray.length);
           if(car.spectating)
@@ -633,11 +599,6 @@ module.exports.Game = {
 
     },
 
- 
-
-
-
-
     tick: function () {
         var now = Date.now();
         var dt = (now - this.lastUpdate)/1000;
@@ -645,18 +606,11 @@ module.exports.Game = {
         this.moveCars(dt*50);
         this.system.update();
         this.processCollisions();
-     
-        
 
-        
-        
      ///   
-
-
-
     },
 
-    processCollisions: function (){
+    processCollisions: function (){ //CHecks for collisions between the cars. Need to improve double checking. 
         
         this.players.forEach(player => {
             let potentials = player.cBody.potentials();
@@ -693,7 +647,7 @@ module.exports.Game = {
 
             });
 
-        player.followerArray.forEach(childCar => {
+        player.followerArray.forEach(childCar => { //CHecks all the car Followers. 
             potentials = childCar.cBody.potentials();
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana
@@ -734,9 +688,6 @@ module.exports.Game = {
         
 
     },
-
-
-
 
     tick2: function () {
         this.sendUpdates();
