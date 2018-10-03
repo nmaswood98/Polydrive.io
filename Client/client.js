@@ -32,6 +32,19 @@ var Manager = {
              game.car.swapTexture(carIndex);
         };
 
+        window.addCars = (amount)=>{
+            var sc = 0.009467213*amount + 1.090164;
+            if(amount < 15)
+                sc = 1;
+            else if (amount >=200)
+                sc = 0.005*amount + 2;
+
+          //  game.zoomTo(sc);
+            console.log(sc);
+            for(var i = 0; i < amount; i++)
+                socket.emit("newC");
+        };
+
         this.hideGame = game.hide.bind(game);
         console.log(menu);
         this.hideMenu = menu.hideMenu.bind(menu);
@@ -86,6 +99,10 @@ var Manager = {
 
             
         });
+
+        
+
+
 
         socket.on("leaderboard",(a)=>{
 

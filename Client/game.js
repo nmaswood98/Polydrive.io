@@ -12,7 +12,7 @@ var Game = {
     
     init: function(application,name,carIndex){
         this.carIndex = carIndex;
-        
+        this.followerCount = 0;
         this.app = application;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
 
@@ -33,9 +33,26 @@ var Game = {
         this.app.stage.addChild(viewport);
         //viewport plugins for zooming
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
-       // viewport.clampZoom({maxWidth: this.app.renderer.width,maxHeight: this.app.renderer.height});
+        viewport.clampZoom({maxWidth: this.app.renderer.width * 1,maxHeight: this.app.renderer.height * 1});
 
-       
+        this.zoomTo = (amount)=>{
+            var sc = 0.009467213*amount + 1.090164;
+            if(amount < 15)
+                sc = 1;
+            else if (amount >=200)
+                sc = 0.005*amount + 2;
+            viewport.clampZoom({maxWidth: this.app.renderer.width * sc,maxHeight: this.app.renderer.height * sc});
+            viewport.snapZoom({width: this.app.renderer.width * sc,height: this.app.renderer.height * sc,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
+        };
+        
+
+
+       this.consoleZoom = ()=>{
+           
+            console.log(viewport.hitArea);
+
+
+       };
 
         this.hide = ()=>{
     
@@ -236,7 +253,8 @@ var Game = {
 
 
   ticker: function(delta){
-    //  console.log(TweenMax.ticker.fps);
+      //  this.consoleZoom();
+      console.log(this.followerCount);
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
       //  console.log(mouseX)
         this.line.clear();
@@ -320,7 +338,7 @@ var Game = {
 
   draw: function(cars,environment,timeDelta){
       var interpolation = true;
-    console.log(this);
+    //console.log(this);
   //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
             //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
             //need to reuse sprites
@@ -349,6 +367,11 @@ var Game = {
 
                     }
 
+                    if(u.followerCount != this.followerCount){
+                        this.followerCount = u.followerCount;
+                        this.zoomTo(u.followerCount);
+                    }
+
                     
                     if(interpolation){
                         TweenMax.to(this.car,timeDelta/1000,{
@@ -374,23 +397,11 @@ var Game = {
                     
 
 
-                 //   console.log((this.car.rotation * 180)/Math.PI +" new " + (u.angle * 180)/Math.PI);
-                 //   createjs.Tween.get(this.car).to({rotation:u.angle},timeDelta);
-                  // this.car.rotation = 0;
-                  //  createjs.Tween.get(this.stage.pivot).to({x:u.x - (this.app.renderer.width / 2),y: u.y - (this.app.renderer.height / 2)},timeDelta);
-                ///    this.car.x = u.x;
-                ///    this.car.y = u.y;
-                  //  this.isDrawing = false;
-                 //   console.log(u.x  + "HEL" + u.y);
-                 
+          
                  this.sLabel.updateScoreLabel(u.manaCount);
                 }
                 else if(this.screenSprites.hasOwnProperty(u.id)){
-                   //Tween
-                 //  createjs.Tween.get(this.screenSprites[u.id]).to({x:u.x,y:u.y},timeDelta);
-                  // TweenLite.to(demo, 20, {score:100, onUpdate:showScore})
-                //    this.screenSprites[u.id].x = u.x;
-                //    this.screenSprites[u.id].y = u.y;
+        
                   TweenMax.to(this.screenSprites[u.id],timeDelta/1000,{
                     ease:Linear.easeNone,
                     pixi:{x:u.x,y:u.y},
@@ -422,12 +433,7 @@ var Game = {
 
 
                    
-                    if(u.isFollower === true){
-                        this.screenSprites[u.id].interactive = true;
-                    }
-                    else{
-                        this.screenSprites[u.id].interactive = false;
-                    }
+                    
                     updatedChildArray.push(u.id);
                   
                     
@@ -504,6 +510,14 @@ var Game = {
                     updatedChildArray.push(u.id);
                     amount++;
                     ayy++;
+
+                    if(u.isFollower === true){
+                        
+                        carSprite.interactive = true;
+                    }
+                    else{
+                        carSprite.interactive = false;
+                    }
 
                   
 

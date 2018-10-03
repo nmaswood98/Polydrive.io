@@ -8,6 +8,8 @@ var Vector = require('./Worlditems.js').WorldItems.Vector;
 
 var socketIO = require('socket.io');
 
+
+
 function getRndInteger(min, max) {
         return Math.floor(Math.random() * (max - min + 1) ) + min;
     }
@@ -20,7 +22,7 @@ module.exports.Game = {
      
         io = socketIO(server);
         this.updateRate = 20;
-        this.carLimit = 10;
+        this.carLimit = 500;
              
         this.system = new Collisions();
         this.result = this.system.createResult();
@@ -52,7 +54,7 @@ module.exports.Game = {
 
 
         for(var i = 0;i < 500;i++){
-          //  this.addMana();
+            this.addMana();
    
 
         }
@@ -102,12 +104,17 @@ module.exports.Game = {
 
             });
 
-            socket.kick = () => {
-                var index = this.players.indexOf(currentCar);
+            socket.on("newC",()=>{
+                this.newCarFollower(currentCar);
+            
+            });
+
+            socket.kick = (folowerCount) => { //Removes Player from the game. Allows player to spectate for 5 seconds after death. follower count is the amount of follower at death 
                 
                 var tempId = currentCar.id;
                 if (index > -1) {
-                    this.spectating.push({spectating:true, position: {x:currentCar.position.x, y:currentCar.position.y},id: socket.id, manaCount:currentCar.manaCount}); 
+                    //Creates object containg information from the dead player in order to continue sending updates to client that is spectating. 
+                    this.spectating.push({spectating:true, position: {x:currentCar.position.x, y:currentCar.position.y},id: socket.id, followerCountAtDeath:folowerCount}); 
                     var sIndex = this.spectating.length - 1;
                     this.players.splice(index, 1);
                   this.sockets[currentCar.id].inGame = false;
@@ -134,7 +141,7 @@ module.exports.Game = {
                 currentCar.rClick = false;
                // World.add(this.engine.world, currentCar.body);
                 socket.inGame = true;
-                for(var e = 0; e < 100; e++){
+                for(var e = 0; e < 0; e++){
                     this.newCarFollower(currentCar);
                 }
                 console.log("ready");
@@ -236,7 +243,8 @@ module.exports.Game = {
         newCar.manaCount += 10;
         if (this.sockets.hasOwnProperty(carLost.id)) {
              //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
-            console.log(carLost.followerArray.length);
+            console.log(carLost.followerArray.length + "asdf");
+            var followerCountAtDeath = carLost.followerArray.length;
             carLost.followerArray.forEach((car) => { //sends all car followers from player to the new player.
                 
                 newCar.manaCount += 10;
@@ -245,7 +253,7 @@ module.exports.Game = {
                 }
             });
             carLost.followerArray = [];
-            this.sockets[carLost.id].kick();
+            this.sockets[carLost.id].kick(followerCountAtDeath);
         }
             
             this.addCarFollower(newCar.follower, carLost,true, true);
@@ -325,7 +333,7 @@ module.exports.Game = {
         if(car.follower.rClick)
             movementSpeed = speed * dt;
         else if(car.follower.lClick && car.follower.stopped)
-            movementSpeed = 30 * dt;
+            movementSpeed = 20 * dt;
         else
             movementSpeed = car.follower.speed * dt;
             
@@ -342,7 +350,7 @@ module.exports.Game = {
             var count = 0;
            // console.log(potentials.length);
             potentials.forEach(element1 => {
-                if(element1.par.follower != undefined){
+                if(element1.par != undefined){
                 var element = element1.par;
                  var d = Vector.magnitude(Vector.sub(car1.position,element.position));
                 if(element != car1){
@@ -448,14 +456,21 @@ module.exports.Game = {
              //   var hDis = 500/1; var yDis = 600/1;}
            // else{
 
+            var scale = 1;
+            
+            var amount = (car.spectating) ?  car.followerCountAtDeath : car.followerArray.length;
+            if(amount > 15 && amount < 200)
+                scale = 0.009467213*amount + 1.090164;
+            else if (amount >=200)
+                scale = 0.005*amount + 2;
+           
+           
+            var drawWidth = 2000 * scale ; var drawHeight = 1000 * scale; //Default Draw Distance betwen cars.
 
-           //NEED TO CHANGE CANVAS SIZE BASED ON AMOUNT OF CARS
-                var hDis = 10000/1; var yDis = 10000/1;
-            //} 
-            var maxX = car.position.x + hDis;
-            var maxY = car.position.y + yDis;
-            var minX = car.position.x - hDis;
-            var minY = car.position.y - yDis;
+            var maxX = car.position.x + drawWidth;
+            var maxY = car.position.y + drawHeight;
+            var minX = car.position.x - drawWidth;
+            var minY = car.position.y - drawHeight;
             
         
             var sentOtherCars = [];
@@ -495,7 +510,7 @@ module.exports.Game = {
             }).map( (player) => {
                 let onPlayer = car === player;
                 if(onPlayer)
-                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName };
+                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName, followerCount:player.followerArray.length };
                 else
                     return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };
             });
@@ -582,7 +597,7 @@ module.exports.Game = {
 
                 if(carFollower.launching){
                     
-                    this.moveCar(dt,carFollower,carFollower.launchAngle,20);
+                    this.moveCar(dt,carFollower,carFollower.launchAngle,30);
                 }
                 else {
                     
@@ -619,13 +634,13 @@ module.exports.Game = {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
 
-                    body.remove();
-                    player.manaCount++;
-                    var manaIndex = this.manaPool.indexOf(body);
-                    this.manaPool.splice(manaIndex, 1);
+                    //body.remove();
+                   // player.manaCount++;
+                  //  var manaIndex = this.manaPool.indexOf(body);
+                  //  this.manaPool.splice(manaIndex, 1);
 
-                    if(player.manaCount % 100 === 0)
-                        this.newCarFollower(player);
+                   // if(player.manaCount % 100 === 0)
+                      //  this.newCarFollower(player);
 
 
 
@@ -652,13 +667,13 @@ module.exports.Game = {
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
-                    body.remove();
-                    player.manaCount++;
-                    var manaIndex = this.manaPool.indexOf(body);
-                    this.manaPool.splice(manaIndex, 1);
+                  //  body.remove();
+                   // player.manaCount++;
+                    //var manaIndex = this.manaPool.indexOf(body);
+                    //this.manaPool.splice(manaIndex, 1);
 
-                    if(player.manaCount % 100 === 0)
-                        this.newCarFollower(player);
+                   // if(player.manaCount % 100 === 0)
+                        //this.newCarFollower(player);
 
 
                 }
