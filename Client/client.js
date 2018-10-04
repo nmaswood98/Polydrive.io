@@ -59,6 +59,10 @@ var Manager = {
             socket.emit("ready");
         });
 
+        socket.on("asdf",(asd)=>{
+            console.log("ASDAFA");
+        });
+
         socket.on("kicked",()=>{
 
             game.starting = false;

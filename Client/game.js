@@ -28,21 +28,33 @@ var Game = {
         });
 
         
-
+        viewport.onMax = true;
         viewport.addChild(this.stage);
         this.app.stage.addChild(viewport);
         //viewport plugins for zooming
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
         viewport.clampZoom({maxWidth: this.app.renderer.width * 1,maxHeight: this.app.renderer.height * 1});
 
-        this.zoomTo = (amount)=>{
+        viewport.on("zoomed",(info)=>{
+            if(info.type === "wheel"){
+                viewport.onMax = false;
+            }   
+            else{
+                viewport.onMax = true;
+            }
+        
+        });
+
+        this.zoomTo = (amount)=>{ //Scales canvas height and width based on amount of carss you have
             var sc = 0.009467213*amount + 1.090164;
             if(amount < 15)
                 sc = 1;
             else if (amount >=200)
                 sc = 0.005*amount + 2;
             viewport.clampZoom({maxWidth: this.app.renderer.width * sc,maxHeight: this.app.renderer.height * sc});
-            viewport.snapZoom({width: this.app.renderer.width * sc,height: this.app.renderer.height * sc,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
+
+            if(viewport.onMax)
+                viewport.snapZoom({width: this.app.renderer.width * sc,height: this.app.renderer.height * sc,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
         };
         
 
@@ -254,7 +266,7 @@ var Game = {
 
   ticker: function(delta){
       //  this.consoleZoom();
-      console.log(this.followerCount);
+     // console.log(this.followerCount);
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
       //  console.log(mouseX)
         this.line.clear();
