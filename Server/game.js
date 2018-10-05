@@ -3,8 +3,8 @@
 
 var Collisions = require('detect-collisions').Collisions;
 
-var Car = require('./Worlditems.js').WorldItems.Car;
-var Vector = require('./Worlditems.js').WorldItems.Vector;
+var Car = require('./WorldItems.js').WorldItems.Car;
+var Vector = require('./WorldItems.js').WorldItems.Vector;
 
 var socketIO = require('socket.io');
 

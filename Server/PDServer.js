@@ -1,5 +1,5 @@
 /// <reference path="game.js"/>
-/// <reference path="Worlditems.js"/>
+/// <reference path="WorldItems.js"/>
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var ayy = require('./game.js');
