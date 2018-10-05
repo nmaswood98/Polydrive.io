@@ -110,7 +110,7 @@ module.exports.Game = {
             });
 
             socket.kick = (folowerCount) => { //Removes Player from the game. Allows player to spectate for 5 seconds after death. follower count is the amount of follower at death 
-                
+                var index = this.players.indexOf(currentCar);
                 var tempId = currentCar.id;
                 if (index > -1) {
                     //Creates object containg information from the dead player in order to continue sending updates to client that is spectating. 
@@ -634,13 +634,13 @@ module.exports.Game = {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
 
-                    //body.remove();
-                   // player.manaCount++;
-                  //  var manaIndex = this.manaPool.indexOf(body);
-                  //  this.manaPool.splice(manaIndex, 1);
+                    body.remove();
+                    player.manaCount++;
+                    var manaIndex = this.manaPool.indexOf(body);
+                    this.manaPool.splice(manaIndex, 1);
 
-                   // if(player.manaCount % 100 === 0)
-                      //  this.newCarFollower(player);
+                    if(player.manaCount % 100 === 0)
+                        this.newCarFollower(player);
 
 
 
@@ -667,13 +667,13 @@ module.exports.Game = {
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
-                  //  body.remove();
-                   // player.manaCount++;
-                    //var manaIndex = this.manaPool.indexOf(body);
-                    //this.manaPool.splice(manaIndex, 1);
+                    body.remove();
+                    player.manaCount++;
+                    var manaIndex = this.manaPool.indexOf(body);
+                    this.manaPool.splice(manaIndex, 1);
 
-                   // if(player.manaCount % 100 === 0)
-                        //this.newCarFollower(player);
+                    if(player.manaCount % 100 === 0)
+                        this.newCarFollower(player);
 
 
                 }
