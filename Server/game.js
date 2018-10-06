@@ -512,7 +512,7 @@ module.exports.Game = {
                 if(onPlayer)
                     return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName, followerCount:player.followerArray.length };
                 else
-                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };
+                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };decodeURI
             });
 
             var tempCars = this.miscObjects.map(function (player) {
@@ -575,8 +575,21 @@ module.exports.Game = {
         });
 
         this.spectating.forEach((car)=>{createSnapShot(car);});
-
-        io.emit("leaderboard",currentLB);
+        var bufArr = new ArrayBuffer(1);
+        var bufView = new Uint8Array(bufArr);
+        bufView[0]=1;
+        bufView[1]=7;
+        bufView[2]=8;
+        bufView[3]=9;
+        bufView[4]=10;
+        bufView[5]=11;
+        bufView[6]=12;
+        bufView[7]=13;
+        bufView[8]=14;
+        bufView[9]=15;
+        bufView[10]=16;
+        bufView[11]=17;
+        io.emit(bufArr);
         
 
 

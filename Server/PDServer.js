@@ -4,7 +4,7 @@
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var ayy = require('./game.js');
 
-
+var Primus = require('primus')
 
 var path = require('path');
 var express = require('express');
@@ -31,8 +31,26 @@ app.use("/polydriveSpriteSheet.json", express.static(publicPath + '/Assets/polyd
 
 
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
+app.use("/primus/primus.js", express.static(publicPath + 'node_modules/primus/primus.js'));
 
+var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'JSON',pingInterval:0});
 
+primus.on('connection', function (spark) {
+  var bufArr = new ArrayBuffer(4);
+        var bufView = new Uint8Array(bufArr);
+        bufView[0]=6;
+        bufView[1]=7;
+        bufView[2]=8;
+        bufView[3]=9;
+        var arr = [];
+        arr.push(100000);
+        for(var i = 0;i< 10000;i++)
+          arr.push(i);
+          var bufArr = new ArrayBuffer(1);
+        var bufView = new Uint8Array(bufArr);
+        bufView[0]=1;
+  spark.write(arr);
+});
 
 app.get('/', function(req, res) {
 
@@ -50,7 +68,7 @@ app.get('/', function(req, res) {
 
 
 
-server.listen(3000, function () {
+server.listen(80, function () {
   //  console.log('server is up biath');
 
 });

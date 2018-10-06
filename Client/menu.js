@@ -42,12 +42,13 @@ var Menu = {
         }
     
     
-    
+
       },
      
         
 
     init: function () {
+        
         TweenMax.ticker.fps(60);
         this.app.mouse = this.app.renderer.plugins.interaction.mouse.global;
         var poop = 1 + 'a';
@@ -109,6 +110,14 @@ var Menu = {
     },
 
     setup: (a) =>  {
+        var primus = new Primus("http://192.168.1.217/");
+        primus.on('open', function open() {
+            console.log('Connection is alive and kicking');
+          });
+          primus.on('data', function message(data) {
+            // the message we've received.
+            console.log(data);
+          });
        var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 
         var that = this.menu;
         that.cCarIndex = Math.floor(Math.random() * 39);
