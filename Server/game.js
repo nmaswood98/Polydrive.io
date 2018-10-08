@@ -100,7 +100,16 @@ module.exports.Game = {
                 currentCar.playerName = name;
                 currentCar.carIndex = cI;
                 socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y });
-
+                this.sockets[socket.id] = socket; 
+                this.players.push(currentCar);
+                currentCar.speed = 5;
+                currentCar.rClick = false;
+               // World.add(this.engine.world, currentCar.body);
+                socket.inGame = true;
+                for(var e = 0; e < 0; e++){
+                    this.newCarFollower(currentCar);
+                }
+                console.log("ready");
 
             });
 
@@ -135,16 +144,7 @@ module.exports.Game = {
 
             socket.on("ready", (car) => {
 
-                this.sockets[socket.id] = socket; 
-                this.players.push(currentCar);
-                currentCar.speed = 5;
-                currentCar.rClick = false;
-               // World.add(this.engine.world, currentCar.body);
-                socket.inGame = true;
-                for(var e = 0; e < 0; e++){
-                    this.newCarFollower(currentCar);
-                }
-                console.log("ready");
+                
 
 
             });
@@ -196,17 +196,15 @@ module.exports.Game = {
     
                     }
 
-                    //console.log(currentCar.speed);
+
                         this.moveCar(1,currentCar, carInfo.angle, currentCar.speed);
 
                     
                 }
-                else{
-                    //this.car.stopped = false; 
+                else{ 
                     currentCar.speed = currentCar.speed * 0.95;
-                   // this.stopCar(currentCar);
-                   currentCar.stopped = true;
-                   this.moveCar(1,currentCar, carInfo.angle, currentCar.speed);
+                    currentCar.stopped = true;
+                    this.moveCar(1,currentCar, carInfo.angle, currentCar.speed);
                 }
             }
             });

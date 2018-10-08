@@ -10,6 +10,11 @@ var Manager = {
     
     init: function(application,name,carIndex,menu){
         this.app = application;
+        var primus = new Primus();
+
+
+
+
 
         this.travelTime = 0;
         this.currentTime = this.d.getTime();
@@ -46,12 +51,32 @@ var Manager = {
         };
 
         this.hideGame = game.hide.bind(game);
-        console.log(menu);
+        console.log(menu + "49");
         this.hideMenu = menu.hideMenu.bind(menu);
         this.showMenu = menu.showMenu.bind(menu);
 
         
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         socket.on("welcome",(car)=>{
             game.car.x = car.x;
             game.car.y = car.y;
@@ -156,3 +181,5 @@ var Manager = {
  
 
 };
+
+

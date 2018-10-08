@@ -428,7 +428,6 @@ var Game = {
            
 
                 if(u.isLaunching){
-                    //console.log(this.screenSprites[u.id].anim);
                     if(this.screenSprites[u.id].anim == null && !(this.screenSprites[u.id].isLaunching) ){
                         this.screenSprites[u.id].isLaunching = true;
                         this.screenSprites[u.id].launchAnimation();
@@ -468,7 +467,6 @@ var Game = {
                     var carSprite = new PIXI.Sprite(this.spriteSheet[u.carIndex]);
                     carSprite.interactive = false;
                     carSprite.anchor.set(0.5,0.5);
-                    //carSprite.updated = true;
                     carSprite.x = u.x;
                     carSprite.y = u.y;
                     carSprite.scale.x = 4.382353;
