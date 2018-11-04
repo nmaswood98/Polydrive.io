@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 
 
-var socket = io({transports: ['websocket'], upgrade: false});
+
 
 var Manager = {
     
@@ -11,7 +11,7 @@ var Manager = {
     init: function(application,name,carIndex,menu){
         this.app = application;
         var primus = new Primus();
-
+        var socket = {};
         this.travelTime = 0;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
@@ -19,7 +19,7 @@ var Manager = {
         this.lastServerUpdate = null;
         
         var game = Object.create(Game);
-        game.init(application,name,carIndex);
+        game.init(primus,application,name,carIndex);
         game.app.ticker.add((delta)=>{game.ticker(delta);});
         game.isDrawing = false;
         game.hide();
@@ -31,8 +31,9 @@ var Manager = {
         this.hideMenu = menu.hideMenu.bind(menu);
         this.showMenu = menu.showMenu.bind(menu);
 
-        primus.on('data', function (data) {
-            console.log('Received a new message from the server');
+        primus.on('data',  (data) => {
+           
+            
             switch(data[0]) {
                     case 0: //draw
                         var d = new Date();
@@ -70,7 +71,7 @@ var Manager = {
 
         this.spawn = (name,carIndex)=>{
              game.starting =true;
-             socket.emit("spawn",name,carIndex);
+             primus.write(["spawn",name,carIndex]);
              game.show();
              game.car.swapTexture(carIndex);
         };
@@ -93,55 +94,7 @@ var Manager = {
         
         
         
-        
-        socket.on("welcome",(car)=>{
-            game.car.x = car.x;
-            game.car.y = car.y;
-            game.car.id = car.id;
-           
-        });
-
-        socket.on("asdf",(asd)=>{
-            console.log("ASDAFA");
-        });
-
-        socket.on("kicked",()=>{
-
-            game.starting = false;
-            var blurFilter2 = new PIXI.filters.BlurFilter();
-            blurFilter2.resolution = 0.5;
-            blurFilter2.blur = 0;
-            this.app.stage.filters = [blurFilter2]; 
-            setTimeout( () => {TweenMax.to(blurFilter2 ,1.5,{
-                ease:Linear.easeNone,
-                blur:10
-            }); }, 1500);
-            setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
-            game.car.visible = false;
-        });
-        
-        socket.on("draw",(cars,environment,timeStamp)=>{
-            var d = new Date();
-            var currentTime = d.getTime() - this.travelTime; //add /2
-            this.travelTime =  Date.now() - timeStamp;
-            var serverUpdate = [timeStamp ,cars,environment];
-            this.serverUpdates.push(serverUpdate);
-    
-        });
-
-        
-
-
-
-        socket.on("leaderboard",(a)=>{
-
-            game.lBoard.updateLeaderboard(a);
-        });
-
-        socket.on("moveCar2",function(carPositions){
-            
-          //  console.log(carPositions);
-     });
+       
 
         
           
@@ -166,7 +119,8 @@ var Manager = {
                       
                       if(element[0] >= currentRenderingTime ){
                         
-                       this.drawFrame(element[1],element[2],element[0] - currentRenderingTime);
+                      // this.drawFrame(element[1],element[2],element[0] - currentRenderingTime);
+                      this.drawFrame(element[1],element[0] - currentRenderingTime);
                       
                        this.serverUpdates.splice(0,i + 1 );
                       break;

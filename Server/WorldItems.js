@@ -66,7 +66,10 @@ Car:  {
             }
         });
 
-        this.translate = function(pos){this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;
+        this.translate = function(pos){
+            
+            
+            this.cBody.x = this.cBody.x + pos.x; this.cBody.y = this.cBody.y + pos.y;
         head.x = head.x + pos.x; head.y = head.y + pos.y;
         
         };

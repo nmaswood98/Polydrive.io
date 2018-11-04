@@ -10,7 +10,8 @@ var Game = {
      mPlusY : 0,
     amountFollowing : 0,
     
-    init: function(application,name,carIndex){
+    init: function(primus,application,name,carIndex){
+        this.primus = primus;
         this.carIndex = carIndex;
         this.followerCount = 0;
         this.app = application;
@@ -329,12 +330,14 @@ var Game = {
         if(this.starting)
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick,rightClick: this.rClick},this.launchedCar);
+            //socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick,rightClick: this.rClick},this.launchedCar);
+            this.primus.write(["playerTick",this.carrotation,false,this.lClick,this.rClick,this.launchedCar]);
             this.launchedCar = null;
         }
         else{
            
-            socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: this.lClick},this.launchedCar);
+         //   socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: this.lClick},this.launchedCar);
+            this.primus.write(["playerTick",this.carrotation,true,this.lClick,this.rClick,this.launchedCar]);
             this.launchedCar = null;
         }
     }
@@ -347,286 +350,216 @@ var Game = {
     
   },
 
+  draw: function(snapShot,timeDelta) {
+      console.log(snapShot);
+            /* snapShot is an array of the world given by the server. A cursor is used to iterate over the array and draw it on screen. Item is the element which the cursor points to. 
+                If item is -1 then the next 6 elemnts including item is the player Information so we process and add 6 to the cursor then continue the loop.
+                If item is a string then we know that it's a enemy player in the game and the next 6 elments including item is the info to draw the enemyPlayer, Process then, cursor +6
+                If item is a number then we know its a car follower which is associated to the most recent enemy player or the player. The next 4 elements are the information. Process and
+                then move cursor + 4; 
+            */
 
-  draw: function(cars,environment,timeDelta){
-      var interpolation = true;
-    //console.log(this);
-  //Server sends positions of all objects. Client updates position placing the recently updates at the end of an array. Amount of sprites updated
-            //is tracked in amount. If the array isn't = to the tracked amount this means the sprite should be removed. The front of the arry has the correct sprite
-            //need to reuse sprites
-            //need to move sprites
-           // console.log(timeDelta);
-         //  createjs.Tween.removeAllTweens();
-        // if(this.isDrawing){
-        //TweenMax.killChildTweensOf(this.car);
-          //TweenMax.killAll();
-          // this.isDrawing = false;
-       //  }
-            var amount = 0;
-            var size = this.OnScreen.children.length; 
-            var updatedChildArray = [];
-           // console.log("size" + size);
-           cars.forEach((u) => {
+           let amount = 0;
            
-           var ayy = 0;
-               
-                if (u.id === this.car.id){
-                    //Tween
-                   //  createjs.Tween.get(this.car).to({x:u.x,y:u.y},timeDelta).call(()=>{});
-                    function notDrawing(){
-                        this.isDrawing = false;
-                        console.log("WHAT");
-
-                    }
-
-                    if(u.followerCount != this.followerCount){
-                        this.followerCount = u.followerCount;
-                        this.zoomTo(u.followerCount);
-                    }
-
-                    
-                    if(interpolation){
-                        TweenMax.to(this.car,timeDelta/1000,{
-                            ease:Linear.easeNone,
-                            pixi:{x:u.x,y:u.y},
-                            directionalRotation:{
-                                rotation: (u.angle - (Math.PI/2)) + "_short",
-                                useRadians: true
-                            },
-                            overwrite:"all",
-                            onComplete:notDrawing
-                    
-                    
-                        });
-                    }
-                    else{
-                        console.log("FJKJKFJDLSAFKDSJFKDJLKJFDS");
-                        this.car.x = u.x;
-                        this.car.y = u.y;
-                        this.car.rotation = (u.angle - (Math.PI/2));
-                    }
-
-                    
-
-
-          
-                 this.sLabel.updateScoreLabel(u.manaCount);
-                }
-                else if(this.screenSprites.hasOwnProperty(u.id)){
-        
-                  TweenMax.to(this.screenSprites[u.id],timeDelta/1000,{
-                    ease:Linear.easeNone,
-                    pixi:{x:u.x,y:u.y},
-                    overwrite:"all",
-                    directionalRotation:{
-                        rotation: (u.angle- (Math.PI/2)) + "_short",
-                        useRadians: true
-                    }
-                
-                
-                });
+           let size = this.OnScreen.children.length; 
+           let updatedChildArray = [];
+           let lastUpdatedIsPlayer = false;
+           let cursor = 1;
+           let carIndex = 0;
+           while(cursor < snapShot.length){
+               let item = snapShot[cursor];
            
+               if(item === -1){ //[-1,manaCount,followerCount,playerX,playerY,angle]
+               //Player 
+                   carIndex = this.carIndex;
+                   if(snapShot[cursor+2] != this.followerCount){
+                       this.followerCount = snapShot[cursor+2];
+                       this.zoomTo(u.followerCount);
+                   }
+                   console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
+                   TweenMax.to(this.car,timeDelta/1000,{
+                       ease:Linear.easeNone,
+                       pixi:{x:snapShot[cursor+3],y:snapShot[cursor+4]},
+                       directionalRotation:{
+                           rotation: (snapShot[cursor+5] - (Math.PI/2)) + "_short",
+                           useRadians: true
+                       },
+                       overwrite:"all"
+                   });
 
-                if(u.isLaunching){
-                    if(this.screenSprites[u.id].anim == null && !(this.screenSprites[u.id].isLaunching) ){
-                        this.screenSprites[u.id].isLaunching = true;
-                        this.screenSprites[u.id].launchAnimation();
-                    }
-                }
-                else{
-                    this.screenSprites[u.id].isLaunching = false;
-                }
-                
+                   lastUpdatedIsPlayer = true;
+                   cursor = cursor + 6;
+                   continue;
+               }
+               else if (item === -2){ //[-2,manaId,X,Y]
+               //mana
+               if(this.manaSprites.hasOwnProperty(snapShot[cursor+1])){
+                   this.manaSprites[sprites.id].x =  snapShot[cursor+2];
+                   this.manaSprites[sprites.id].y = snapShot[cursor+3];
+                   updatedChildArray.push(snapShot[cursor+1]);
 
-            
-                    amount++;
-                    ayy++;
-
-
-                   
-                    
-                    updatedChildArray.push(u.id);
-                  
-                    
-                    
-                    if(u.name != undefined){
-                        console.log("helhelfhelf");
-                        //Tween
-                   
-                        createjs.Tween.get(this.screenSprites[u.id].nameLabel).to({x:u.x,y:u.y - 110},timeDelta);
-                        
-                       // this.screenSprites[u.id].nameLabel.x = u.x ;
-                       // this.screenSprites[u.id].nameLabel.y = u.y - 110;
-
-                    }
-                    
-
-                }
-                else{
-                    var carName = "car14_red.png";
-                    var carSprite = new PIXI.Sprite(this.spriteSheet[u.carIndex]);
-                    carSprite.interactive = false;
-                    carSprite.anchor.set(0.5,0.5);
-                    carSprite.x = u.x;
-                    carSprite.y = u.y;
-                    carSprite.scale.x = 4.382353;
-                    carSprite.scale.y = 4.382353;
-                    carSprite.id = u.id;
-                    carSprite.rotation = (u.angle - (Math.PI/2));
-                    
-                    carSprite.launchAnimation = () =>{
-                        
-                        carSprite.anim = new PIXI.extras.AnimatedSprite(this.animationArray);
-                        carSprite.anim.anchor.set(0.5,-0.37);
-                        carSprite.anim.x = 0;
-                        carSprite.anim.y = 0;
-                        carSprite.anim.animationSpeed = 0.15;
-                        carSprite.anim.loop = false;
-                        carSprite.anim.onComplete = function (){this.parent.anim = null; this.parent.removeChild(this); };
-                        carSprite.addChild(carSprite.anim);
-                        carSprite.anim.play();
-                    };
-
-                    
-
-                    carSprite.on('pointerdown', () => {
-                        console.log("PEPEfasdfasdfsafdasdfasdfsadfsa");
-                        this.line.car = carSprite;
-                        this.line.color = this.randomColor();
-                        carSprite.alpha = 0.5;
-                    });
-                    carSprite.on('pointerup', ()=>{
-                        console.log("!@#$%^&");
-                        this.line.car = null;
-                        carSprite.alpha = 1;
-            
-                    });
-            
-                    carSprite.on('pointerupoutside', ()=>{
-                        console.log("qwertyuiopasdfghjkl");
-                        this.line.car = null;
-                        carSprite.alpha = 1;
-                        var pos = carSprite.getGlobalPosition();
-                        var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
-                      //  socket.emit("launch",{x:carSprite.x,y:carSprite.y,mX:mouseX,mY:mouseY}); //launching car
-                        this.launchedCar = {id:carSprite.id, x:pos.x,y:pos.y,mX:mouseX - this.mPlusX,mY:mouseY - this.mPlusY};
-            
-                    });
-
-
-
-                    this.OnScreen.addChild(carSprite);
-                    this.screenSprites[u.id] = carSprite;
-                    updatedChildArray.push(u.id);
-                    amount++;
-                    ayy++;
-
-                    if(u.isFollower === true){
-                        
-                        carSprite.interactive = true;
-                    }
-                    else{
-                        carSprite.interactive = false;
-                    }
-
-                  
-
-                 
-
-                    var style = new PIXI.TextStyle({
-                        fontFamily: 'Arial',
-                        fontSize: 25,
-                       
-                        
-                        fill: ['#ffffff'], // gradient
-                        
-                        dropShadow: true,
-                        dropShadowColor: '#000000',
-                        dropShadowBlur: 4,
-                        dropShadowAngle: Math.PI / 6,
-                        dropShadowDistance: 6,
-                        wordWrap: true,
-                        wordWrapWidth: 440
-                    });
-
-                    if(u.name != undefined){
-
-                        console.log("helhelfhelf");
-                        var playerName = new PIXI.Text(u.name,style); 
-                        playerName.x = carSprite.x;
-                        playerName.y = carSprite.y  - 110;
-                        carSprite.nameLabel = playerName;
-                      
-                        this.stage.addChild(playerName);
-                        //this.stage.setChildIndex(this.tilingSprite,0);
-                    }
-
-                    //this.OnScreen.setChildIndex(this.car ,size - 1);
-
-                }
-               // console.log(ayy);
-
-            });
-
-            environment.forEach((sprites) => {
-                
-                if(this.screenSprites.hasOwnProperty(sprites.id)){
-                    //Tween
-                   
-               //     createjs.Tween.get(this.screenSprites[sprites.id]).to({x:sprites.x,y:sprites.y},timeDelta);
-                    
-                    this.screenSprites[sprites.id].x = sprites.x ;
-                    this.screenSprites[sprites.id].y = sprites.y ;
-                    updatedChildArray.push(sprites.id);
-                   // this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,this.OnScreen.children.length - 1);
-                    amount++;
-
-                }
-                else{
-                    //temp circle going to change to sprites eventually
-
-                    var manaSprite = new PIXI.Graphics();
-                   // manaSprite.anchor.set(0.5,0.5);
-                    manaSprite.id = sprites.id;
-                    manaSprite.x = sprites.x;
-                    manaSprite.y = sprites.y;
-                    manaSprite.beginFill(this.randomColor());
-                  //  console.log("MANA DRAWN" + sprites.id);
+               }
+               else{
+                   var manaSprite = new PIXI.Graphics();
+                    manaSprite.isMana = true;
+                    manaSprite.id = snapShot[cursor+1];
+                    manaSprite.x = snapShot[cursor+2];
+                    manaSprite.y = snapShot[cursor+3];
+                    manaSprite.beginFill(this.randomolor());
                     manaSprite.drawCircle(0,0,10);
                     manaSprite.endFill();
+
                     this.OnScreen.addChild(manaSprite);
-                  
-                    this.screenSprites[sprites.id] = manaSprite;
-                    updatedChildArray.push(sprites.id);
-                    //this.OnScreen.setChildIndex(this.screenSprites[sprites.id] ,this.OnScreen.children.length - 1);
+                    this.manaSprites[snapShot[cursor+1]] = manaSprite;
+                    updatedChildArray.push(snapShot[cursor+1]);
                     amount++;
-                }
-            });
+               }
+                   cursor = cursor + 4;
+                   continue;
+               }
+               else if(typeof item === 'string' || typeof item === 'number'){ //[name,X,Y,angle,carIndex]  //[id,X,Y,angle,isLaunching]
+               //EnemyPlayer
+                   if(this.screenSprites.hasOwnProperty( item )){
+                       TweenMax.to(this.screenSprites[item],timeDelta/1000,{
+                           ease:Linear.easeNone,
+                           pixi:{x:snapShot[cursor+1],y:snapShot[cursor+2]},
+                           overwrite:"all",
+                           directionalRotation:{
+                               rotation: (snapShot[cursor+3]- (Math.PI/2)) + "_short",
+                               useRadians: true
+                           }
+                       });
 
+                       if( typeof item === 'string'){
+                           carIndex = snapShot[cursor + 4];
+                           TweenMax.to(this.screenSprites[item].nameLabel,timeDelta/1000,{
+                               ease:Linear.easeNone,
+                               pixi:{x:snapShot[cursor+1],y:snapShot[cursor+2] - 110},
+                               overwrite:"all"
+                           });
+                       }
+                       else{
+                           if(snapShot[cursor+4]){
+                               if(this.screenSprites[item].anim == null && !(this.screenSprites[item].isLaunching) ){
+                                   this.screenSprites[item].isLaunching = true;
+                                   this.screenSprites[item].launchAnimation();
+                               }
+                           }
+                           else{
+                               this.screenSprites[item].isLaunching = false;
+                           }
+                       }
 
+                       amount++;
+                       updatedChildArray.push(item);
+                      // createjs.Tween.get(this.screenSprites[u.id].nameLabel).to({x:u.x,y:u.y - 110},timeDelta);
+                   }
+                   else{
+                    if( typeof item === 'string'){carIndex = snapShot[cursor + 4];}
 
-            
+                       var carSprite = new PIXI.Sprite(this.spriteSheet[carIndex]);
+                       carSprite.interactive = false;
+                       carSprite.anchor.set(0.5,0.5);
+                       carSprite.scale.x = 4.382353; carSprite.scale.y = 4.382353;
+                       carSprite.x = snapShot[cursor+1];
+                       carSprite.y = snapShot[cursor+2];
+                       carSprite.id = item;
+                       carSprite.rotation = (snapShot[cursor+3] - (Math.PI/2));
 
-         //   console.log(this.OnScreen.children.length);
-            amount = this.OnScreen.children.length - amount;
+                       this.OnScreen.addChild(carSprite);
+                       this.screenSprites[item] = carSprite;
+                       updatedChildArray.push(item);
+                       amount++;
+
+                       carSprite.launchAnimation = () =>{
+                           carSprite.anim = new PIXI.extras.AnimatedSprite(this.animationArray);
+                           carSprite.anim.anchor.set(0.5,-0.37);
+                           carSprite.anim.x = 0;
+                           carSprite.anim.y = 0;
+                           carSprite.anim.animationSpeed = 0.15;
+                           carSprite.anim.loop = false;
+                           carSprite.anim.onComplete = function (){this.parent.anim = null; this.parent.removeChild(this); };
+                           carSprite.addChild(carSprite.anim);
+                           carSprite.anim.play();
+                       };
+
+           
+                      if( typeof item === 'string'){
+                           var style = new PIXI.TextStyle({
+                               fontFamily: 'Arial',
+                               fontSize: 25,
+                               fill: ['#ffffff'], // gradient
+                               dropShadow: true,
+                               dropShadowColor: '#000000',
+                               dropShadowBlur: 4,
+                               dropShadowAngle: Math.PI / 6,
+                               dropShadowDistance: 6,
+                               wordWrap: true,
+                               wordWrapWidth: 440
+                           });
+
+                           var playerName = new PIXI.Text(item,style); //Change to rotation
+                           playerName.x = carSprite.x;
+                           playerName.y = carSprite.y  - 110;
+                           carSprite.nameLabel = playerName;
+                           this.stage.addChild(playerName);
+                           lastUpdatedIsPlayer = false;
+                      }
+                      else if (!lastUpdatedIsPlayer){
+                           carSprite.interactive = true;
+                           carSprite.on('pointerdown', () => {
+                               this.line.car = carSprite;
+                               this.line.color = this.randomColor();
+                               carSprite.alpha = 0.5;
+                           });
+                           carSprite.on('pointerup', ()=>{
+                               this.line.car = null;
+                               carSprite.alpha = 1;
+                           });
+           
+                           carSprite.on('pointerupoutside', ()=>{
+                               this.line.car = null;
+                               carSprite.alpha = 1;
+                               var pos = carSprite.getGlobalPosition();
+                               var mouseX = this.mouse.x + this.mPlusX, mouseY = this.mouse.y + this.mPlusY;
+                               this.launchedCar = {id:carSprite.id, x:pos.x,y:pos.y,mX:mouseX - this.mPlusX,mY:mouseY - this.mPlusY};
+           
+                           });
+                      }
+
+                   }
+                   
+                   cursor = cursor + 5;
+                   continue;
+               }
+               else{
+
+               }
+               
+           } ///while end
+
+           amount = this.OnScreen.children.length - amount;
            let difference = this.OnScreen.children.filter(x => !updatedChildArray.includes(x.id));
 
            difference.forEach((trash)=>{
 
-            if(trash.nameLabel != undefined)
-                this.stage.removeChild(trash.nameLabel);
+               if(trash.nameLabel !== undefined)
+                   this.stage.removeChild(trash.nameLabel);
+   
+               this.stage.removeChild(trash);
+               if(!trash.isMana)
+                   delete this.screenSprites[trash.id];
+               else
+                   delete this.manaSprites[trash.id];
+               this.OnScreen.removeChild(trash);
+   
+              });
 
-            this.stage.removeChild(trash);
-            delete this.screenSprites[trash.id];
-            this.OnScreen.removeChild(trash);
 
-           });
-         
-           
+
 
   },
 
-  
 
   moveOnScreen: function(id,x,y){
     // {isPlayer:false, id:true, x: 120, y:5, angle:180}

@@ -63,6 +63,4 @@ HTTPserver.listen(80, function () {
 var server = Object.create(Server);
 server.init(HTTPserver);
 
-var game = Object.create(Game);
-game.init(HTTPserver);
-game.tick();
+

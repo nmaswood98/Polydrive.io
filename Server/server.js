@@ -1,29 +1,44 @@
 //Server ReWrite using Primus. 
+/// <reference path="game.js"/>
 
+var Collisions = require('detect-collisions').Collisions;
 
+var Game = require('./game.js').Game;
 var Primus = require('primus');
+
+var Car = require('./WorldItems.js').WorldItems.Car;
+var Vector = require('./WorldItems.js').WorldItems.Vector;
+
+function getRndInteger(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
 
 module.exports.Server = {
     init: function(server){
-        var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'binary',pingInterval:0}); //Need To Change to uws
-        var game = {};
+        this.updateRate = 20;
+        var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'JSON',pingInterval:0}); //Need To Change to uws
+        var game = Object.create(Game);
+        game.init();
 
+        
         primus.on('connection', function (socket) {
             socket.inGame = false; 
             socket.spectating = false;
             socket.car = null;
             console.log("Client Connected");
-            socket.write([2,"KICKED"]);
+            
             sendUpdates();
             socket.on('data', function (data) {///data should always be an array
                 switch(data[0]) {
                     case "spawn": ///might need to wait until recieved cilent movement to add into the world // ["spawn"]
                         
-                        socket.car = Car.create(socket.id,true, {x:(getRndInteger(0,this.worldX)),y:(getRndInteger(0,this.worldY))},this.system);
-                        socket.car.name = name;
-                        socket.car.carIndex = data[1];
+                        socket.car = Car.create(socket.id,true, {x:(getRndInteger(0,game.worldX)),y:(getRndInteger(0,game.worldY))},game.system);
+                        socket.car.followerArray = [];
+                        socket.socket = socket; 
+                        socket.car.name = data[1];
+                        socket.car.carIndex = data[2];
 
-                        socket.write(["Welcome",socket.car.position.x,socket.car.position.y]); //Replace with actual Welcome Message
+                        socket.write([1,socket.car.position.x,socket.car.position.y]); //Replace with actual Welcome Message
                         socket.inGame = true;
                         socket.car.speed = 5;
                         socket.car.rClick = false;
@@ -36,7 +51,7 @@ module.exports.Server = {
                         let carInfo = data[1];
 
                         if(socket.inGame){
-                            if(carInfo.launchedCar != null){
+                            if(data[5] != null){
                                 var carFound = socket.car.followerArray.find(c => c.id === launchedCar.id);
                                 if(carFound != undefined){
                                     carFound.launching = true;
@@ -47,10 +62,10 @@ module.exports.Server = {
                                       console.log("ERROR: CLIENT SENT NONEXISTANT ID");
                                   }
                             }
-                            socket.car.rClick = carInfo.rightClick;
-                            socket.car.lClick = carInfo.leftClick;
+                            socket.car.rClick = data[4];
+                            socket.car.lClick = data[3];
 
-                            if (carInfo.stop == false){
+                            if (data[2] == false){
                                 socket.car.stopped = false;
             
                                 if (socket.car.speed >= 4.8 && socket.car.speed <= 5.1) {
@@ -60,7 +75,7 @@ module.exports.Server = {
                                 if (socket.car.speed < 5) { 
                                     socket.car.speed += 0.2; 
                                 }
-                                else if (carInfo.leftClick === true || carInfo.rightClick === true) {
+                                else if (data[3] === true || data[4] === true) {
                                     if (socket.car.speed <= 15) {
                                     socket.car.speed += 0.35;
                                     }
@@ -68,12 +83,12 @@ module.exports.Server = {
                                 else if (socket.car.speed > 5) {
                                     socket.car.speed = socket.car.speed * 0.96;
                                 }
-                                    game.moveCar(1,socket.car, carInfo.angle, socket.car.speed);
+                                    game.moveCar(1,socket.car, data[1], socket.car.speed);
                             }
                             else{ 
                                 socket.car.speed = socket.car.speed * 0.95;
                                 socket.car.stopped = true;
-                                game.moveCar(1,socket.car, carInfo.angle, socket.car.speed);
+                                game.moveCar(1,socket.car, data[1], socket.car.speed);
                             }
                         }
 
@@ -115,10 +130,10 @@ module.exports.Server = {
            //disconnect code
            console.log("Disconnecting Socket0");
            if(socket.inGame){
-           var index = this.players.indexOf(socket.car);
+           var index = game.players.indexOf(socket.car);
 
            if (index > -1) {
-            this.players.splice(index, 1);
+            game.players.splice(index, 1);
             socket.car.followerArray.forEach(elem => {
                 elem.cBody.remove();
             });
@@ -135,7 +150,7 @@ module.exports.Server = {
               if(socket.inGame || socket.spectating ){
                 var d = new Date();
                 let snapShot = createSnapShot(socket.car);
-                snapShot.push(d);
+                snapShot.push(Date.now());
 
                 socket.write(snapShot);
               }
@@ -144,6 +159,7 @@ module.exports.Server = {
         };
 
         const createSnapShot = (car)=>{
+            
             let snapShot = [0];
 
             let scale = 1, amount = (car.spectating) ?  car.followerCountAtDeath : car.followerArray.length;
@@ -158,13 +174,16 @@ module.exports.Server = {
             primus.forEach(function (socket, id, connections) {
                 if(socket.inGame){ //Checks if the Socket is in the game
                     let enemyCar = socket.car;
-
-                    if(car != enemyCar){
+                   
+                    if(car !== enemyCar){
                         if((enemyCar.position.x < maxX && enemyCar.position.x > minX) && (enemyCar.position.y < maxY && enemyCar.position.y > minY))
                             snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y,enemyCar.angle,enemyCar.carIndex); //[...name,x,y,angle,carIndex...]
+                            //need to send carIndex
                     }
                     else{
-                        snapShot.push(-1,car.manaCount,car.folowerArray.length,car.position.x,car.position.y,car.angle); //[...-1,manaCount,followerLength,X,Y,Angle]
+                        
+                        snapShot.push(-1,car.manaCount,car.followerArray.length,car.position.x,car.position.y,car.angle); //[...-1,manaCount,followerLength,X,Y,Angle]
+                        
                     }
 
                     enemyCar.followerArray.forEach(function(follower){
@@ -177,11 +196,16 @@ module.exports.Server = {
 
             ///Add Mana 
 
-
+            
             return snapShot;
+            
         };
 
-        
+        const tick = function(){
+            sendUpdates();
+        };
+
+        setInterval(tick.bind(this), 1000 / this.updateRate);
 
     }
 

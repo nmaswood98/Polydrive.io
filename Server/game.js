@@ -18,10 +18,10 @@ var io;
 
 module.exports.Game = {
 
-    init: function (server) { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
+    init: function () { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
      
-        io = socketIO(server);
-        this.updateRate = 20;
+        
+        
         this.carLimit = 500;
              
         this.system = new Collisions();
@@ -32,7 +32,7 @@ module.exports.Game = {
     
         var lastUpdate = Date.now();
         setInterval(this.tick.bind(this), 1000 / 60);
-        setInterval(this.tick2.bind(this), 1000 / this.updateRate);
+        
     
         //Everything in these arrays are sent to the clients to be drawned in the world. 
         this.players = []; //Players
@@ -65,164 +65,6 @@ module.exports.Game = {
 
 ///Need to seperate WEb Socket logic from game logic. 
 
-        io.on("connection", (socket) => {
-            // socket.emit("moveCar",socket.id);
-            var currentCar = null;
-            //console.log(socket.id);
-
-            socket.on("disconnect", () => {
-                console.log(socket.id + "  DISCONNETC");
-
-                var index = this.players.indexOf(currentCar);
-                // console.log(index);
-
-                if (index > -1) {
-                    this.players.splice(index, 1);
-                    //console.log(socket.id);
-
-                    currentCar.followerArray.forEach(elem => {
-                        elem.cBody.remove();
-                    });
-                    
-                   
-                    currentCar.cBody.remove(); //removes body from collision system
-                    delete this.sockets[currentCar.id];
-                }
-                //this.sockets[socket.id].disconnect();
-
-            });
-
-          
-
-            socket.on("spawn",(name,cI) =>{
-            
-                currentCar = Car.create(socket.id,true, {x:(getRndInteger(0,this.worldX)),y:(getRndInteger(0,this.worldY))},this.system);
-                currentCar.playerName = name;
-                currentCar.carIndex = cI;
-                socket.emit("welcome", { id: currentCar.id, x: currentCar.position.x, y: currentCar.position.y });
-                this.sockets[socket.id] = socket; 
-                this.players.push(currentCar);
-                currentCar.speed = 5;
-                currentCar.rClick = false;
-               // World.add(this.engine.world, currentCar.body);
-                socket.inGame = true;
-                for(var e = 0; e < 0; e++){
-                    this.newCarFollower(currentCar);
-                }
-                console.log("ready");
-
-            });
-
-            socket.on("newC",()=>{
-                this.newCarFollower(currentCar);
-            
-            });
-
-            socket.kick = (folowerCount) => { //Removes Player from the game. Allows player to spectate for 5 seconds after death. follower count is the amount of follower at death 
-                var index = this.players.indexOf(currentCar);
-                var tempId = currentCar.id;
-                if (index > -1) {
-                    //Creates object containg information from the dead player in order to continue sending updates to client that is spectating. 
-                    this.spectating.push({spectating:true, position: {x:currentCar.position.x, y:currentCar.position.y},id: socket.id, followerCountAtDeath:folowerCount}); 
-                    var sIndex = this.spectating.length - 1;
-                    this.players.splice(index, 1);
-                  this.sockets[currentCar.id].inGame = false;
-                }
-                else{
-                    console.log("ERROR at 135, THIS SHOULDN'T RUN");
-                }
-
-                socket.emit("kicked");
-                
-                currentCar = null;
-                setTimeout( () => {  this.spectating.splice(sIndex, 1);
-                      }, 5000);
-
-            };
-
-            
-
-            socket.on("ready", (car) => {
-
-                
-
-
-            });
-
-            socket.on("playerTick", (carInfo,launchedCar) => {
-                if(socket.inGame){
-                if(launchedCar != null){
-                    console.log("Hello");
-                    var bodies;
-                  //var carFound =   Matter.Query.point(currentCar.followerArray, { x:launchedCar.x, y: launchedCar.y });
-                    var carFound = currentCar.followerArray.find(c => c.id === launchedCar.id);
-                  
-                if(carFound != undefined){
-                  carFound.launching = true;
-                  carFound.launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
-                  setTimeout(function () { carFound.launching = false; }, 1000); //amount of time the car will launch for
-                }
-                else{
-                    console.log("ERROR: CLIENT SENT NONEXISTANT ID");
-                }
-
-                }
-
-                if(currentCar.manaCount == 5){
-                   // currentCar.manaCount = 0;
-                   // console.log("NEW CAR ALERT NEW CAR ALERT");
-                }
-
-                currentCar.rClick = carInfo.rightClick;
-                currentCar.lClick = carInfo.leftClick;
-
-                if (carInfo.stop == false){
-                    currentCar.stopped = false;
-
-                    if (currentCar.speed >= 4.8 && currentCar.speed <= 5.1) {
-                        currentCar.speed = 5;
-                    }
-                    
-                    if (currentCar.speed < 5) { currentCar.speed += 0.2; }
-                    else if (carInfo.leftClick === true || carInfo.rightClick === true) {
-                        if (currentCar.speed <= 15) {
-                        currentCar.speed += 0.35;
-    
-                        }
-    
-                    }
-                    else if (currentCar.speed > 5) {
-                        currentCar.speed = currentCar.speed * 0.96;
-    
-                    }
-
-
-                        this.moveCar(1,currentCar, carInfo.angle, currentCar.speed);
-
-                    
-                }
-                else{ 
-                    currentCar.speed = currentCar.speed * 0.95;
-                    currentCar.stopped = true;
-                    this.moveCar(1,currentCar, carInfo.angle, currentCar.speed);
-                }
-            }
-            });
-
-            socket.on("launch", (mouseInfo) => {
-
-
-            });
-            
-
-        });
-        
-       
-
-       
-
-
-
     },
     createCarObject: function (player, carID, car) {
         return { isPlayer: player, ID: carID, x: car.position.x, y: car.position.y, angle: car.angle };
@@ -239,7 +81,7 @@ module.exports.Game = {
             If carLost is just an enemy car then we should just call addCarFollower which will result in carLost tranfering ownership to newCar */
   
         newCar.manaCount += 10;
-        if (this.sockets.hasOwnProperty(carLost.id)) {
+        if (carLost.follower.id === carLost.id) {
              //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
             console.log(carLost.followerArray.length + "asdf");
             var followerCountAtDeath = carLost.followerArray.length;
@@ -251,7 +93,7 @@ module.exports.Game = {
                 }
             });
             carLost.followerArray = [];
-            this.sockets[carLost.id].kick(followerCountAtDeath);
+            carLost.socket.kick(followerCountAtDeath);
         }
             
             this.addCarFollower(newCar.follower, carLost,true, true);
@@ -310,11 +152,12 @@ module.exports.Game = {
 
 
     moveCar: function (dt,car, angle, speed) { //Moves the cars. IF Follower moves it according to boids algorithm 
-    
+        
        car.angle = angle;
-
+        
         if(car.follower === car){
             car.velocity = { x: speed * Math.cos(car.angle + Math.PI) * dt , y: speed * Math.sin(car.angle + Math.PI) * dt };
+            
             car.translate(car.velocity);
             return;
         }
@@ -427,174 +270,7 @@ module.exports.Game = {
     },
   
 
-    sendUpdates: function () {
-        //Sends Snapshots of the world to clients. Only sends the part that is visible to the client.Also updates the games leaderboard
-       
-        function compare(a,b){
-            
-            if(a.manaCount < b.manaCount)
-                return 1;
-            else if (b.manaCount > a.manaCount)
-                return -1;
-            return 0;
-        };
 
-        this.players.sort(compare);
-        var currentLB = []; //current leaderboard
-        
-        var createSnapShot = (car) => {
-            
-            if(!car.spectating){
-            if(currentLB.length <= 10){ 
-                currentLB.push({name:car.playerName,score:car.manaCount});
-            }
-        }
-        
-         //   if(car.manaCount < 50){
-             //   var hDis = 500/1; var yDis = 600/1;}
-           // else{
-
-            var scale = 1;
-            
-            var amount = (car.spectating) ?  car.followerCountAtDeath : car.followerArray.length;
-            if(amount > 15 && amount < 200)
-                scale = 0.009467213*amount + 1.090164;
-            else if (amount >=200)
-                scale = 0.005*amount + 2;
-           
-           
-            var drawWidth = 2000 * scale ; var drawHeight = 1000 * scale; //Default Draw Distance betwen cars.
-
-            var maxX = car.position.x + drawWidth;
-            var maxY = car.position.y + drawHeight;
-            var minX = car.position.x - drawWidth;
-            var minY = car.position.y - drawHeight;
-            
-        
-            var sentOtherCars = [];
-            
-
-            var sentUsers = this.players.filter((player)=>{ 
-                var inView = false;
-
-                if(player.spectating)
-                    return false;
-                
-                
-                if( (player.position.x < maxX && player.position.x > minX) &&  (player.position.y < maxY && player.position.y > minY))
-                    inView = true;
-                else
-                    inView = false;
-
-                    let onPlayer = car === player;
-                    player.followerArray.forEach((carFollower) => {
-
-                        if( (carFollower.position.x < maxX && carFollower.position.x > minX) &&  (carFollower.position.y < maxY && carFollower.position.y > minY))  
-                            sentOtherCars.push({ id: carFollower.id, x: carFollower.position.x, y: carFollower.position.y, 
-                                                angle: carFollower.angle, isFollower: (onPlayer) ? true : false,
-                                                isLaunching: carFollower.launching,carIndex: carFollower.follower.carIndex
-                                            
-                                            
-                                            });
-                    });
-                
-            
-                
-                return inView;       
-            
-            
-            
-            
-            }).map( (player) => {
-                let onPlayer = car === player;
-                if(onPlayer)
-                    return { id: player.id, x: player.position.x, y: player.position.y,manaCount: player.manaCount, angle: player.angle, name: player.playerName, followerCount:player.followerArray.length };
-                else
-                    return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle, name: player.playerName,carIndex: player.carIndex };decodeURI
-            });
-
-            var tempCars = this.miscObjects.map(function (player) {
-
-                return { id: player.id, x: player.position.x, y: player.position.y, angle: player.angle };
-
-
-            });
-
-
-
-            sentUsers = sentUsers.concat(sentOtherCars);
-
-            //amount of cars sent to the user
-
-
-
-
-            var sentMana = this.manaPool.filter((player)=>{ 
-                var inView = false;
-                
-                
-                if( (player.x < maxX && player.x > minX) &&  (player.y < maxY && player.y > minY))
-                    inView = true;
-                else
-                    inView = false;
-                
-            
-                
-                return inView;       
-            
-            
-            
-            
-            }).map(function (mana) {
-                return { id: mana.id, x: mana.x, y: mana.y };
-
-
-
-
-            });
-
-
-            var word = "";
-
-
-
-            
-            var d = new Date();
-            this.sockets[car.id].emit("draw", sentUsers, sentMana,Date.now());
-            
-           // console.log(Date.now());
-
-
-        };
-
-        this.players.forEach((car)=>{
-            createSnapShot(car);
-
-        });
-
-        this.spectating.forEach((car)=>{createSnapShot(car);});
-        var bufArr = new ArrayBuffer(1);
-        var bufView = new Uint8Array(bufArr);
-        bufView[0]=1;
-        bufView[1]=7;
-        bufView[2]=8;
-        bufView[3]=9;
-        bufView[4]=10;
-        bufView[5]=11;
-        bufView[6]=12;
-        bufView[7]=13;
-        bufView[8]=14;
-        bufView[9]=15;
-        bufView[10]=16;
-        bufView[11]=17;
-        io.emit(bufArr);
-        
-
-
- 
-
-
-    },
 
     moveCars: function (dt) { //calls moveCar on all cars with the appropiate direction and speed 
 
