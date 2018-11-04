@@ -12,10 +12,6 @@ var Manager = {
         this.app = application;
         var primus = new Primus();
 
-
-
-
-
         this.travelTime = 0;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
@@ -29,6 +25,48 @@ var Manager = {
         game.hide();
 
         this.drawFrame = game.draw.bind(game); 
+
+        this.hideGame = game.hide.bind(game);
+        console.log(menu + "49");
+        this.hideMenu = menu.hideMenu.bind(menu);
+        this.showMenu = menu.showMenu.bind(menu);
+
+        primus.on('data', function (data) {
+            console.log('Received a new message from the server');
+            switch(data[0]) {
+                    case 0: //draw
+                        var d = new Date();
+                        let timeStamp = data[data.length - 1];
+                        var currentTime = d.getTime() - this.travelTime; //add /2
+                        this.travelTime =  Date.now() - timeStamp;
+                        var serverUpdate = [timeStamp, data];
+                        this.serverUpdates.push(serverUpdate);
+                        break;
+                    case 1: //Welcome
+                        game.car.x = data[1];
+                        game.car.y = data[2];
+                        game.car.id = data[3];
+                        break;
+                    case 2: //kicked
+                        game.starting = false;
+                        //blur
+                        var blurFilter2 = new PIXI.filters.BlurFilter();
+                        blurFilter2.resolution = 0.5;
+                        blurFilter2.blur = 0;
+                        this.app.stage.filters = [blurFilter2]; 
+                        setTimeout( () => {TweenMax.to(blurFilter2 ,1.5,{
+                            ease:Linear.easeNone,
+                            blur:10
+                        }); }, 1500);
+                        //b
+                        setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
+
+                        game.car.visible = false;
+                        break;
+                    default:
+                        console.log("ERROR: Unrecognized packet from the server");
+            }
+          });
 
         this.spawn = (name,carIndex)=>{
              game.starting =true;
@@ -50,29 +88,8 @@ var Manager = {
                 socket.emit("newC");
         };
 
-        this.hideGame = game.hide.bind(game);
-        console.log(menu + "49");
-        this.hideMenu = menu.hideMenu.bind(menu);
-        this.showMenu = menu.showMenu.bind(menu);
+    
 
-        
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         
         
@@ -81,7 +98,7 @@ var Manager = {
             game.car.x = car.x;
             game.car.y = car.y;
             game.car.id = car.id;
-            socket.emit("ready");
+           
         });
 
         socket.on("asdf",(asd)=>{
@@ -91,10 +108,7 @@ var Manager = {
         socket.on("kicked",()=>{
 
             game.starting = false;
-            
-            //game.deleteCar();
             var blurFilter2 = new PIXI.filters.BlurFilter();
-            
             blurFilter2.resolution = 0.5;
             blurFilter2.blur = 0;
             this.app.stage.filters = [blurFilter2]; 
@@ -103,30 +117,16 @@ var Manager = {
                 blur:10
             }); }, 1500);
             setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
-            console.log("KCIKECKJEKCJEKJELC:JEKJCL:KEJCLEJM");
             game.car.visible = false;
         });
         
         socket.on("draw",(cars,environment,timeStamp)=>{
             var d = new Date();
-           var currentTime = d.getTime() - this.travelTime; //add /2
-           this.travelTime =  Date.now() - timeStamp;
-         //  console.log(this.travelTime); //outputs travel time
+            var currentTime = d.getTime() - this.travelTime; //add /2
+            this.travelTime =  Date.now() - timeStamp;
             var serverUpdate = [timeStamp ,cars,environment];
             this.serverUpdates.push(serverUpdate);
-           // console.log(this.travelTime);
-            
-                if(this.lastTime === 0)
-
-                if(this.serverUpdates.length >= (3000)) {
-                   // this.serverUpdates.splice(0,1);
-                }
-
-             
-
-
-
-            
+    
         });
 
         

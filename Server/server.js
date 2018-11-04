@@ -13,6 +13,7 @@ module.exports.Server = {
             socket.spectating = false;
             socket.car = null;
             console.log("Client Connected");
+            socket.write([2,"KICKED"]);
             sendUpdates();
             socket.on('data', function (data) {///data should always be an array
                 switch(data[0]) {
@@ -143,7 +144,7 @@ module.exports.Server = {
         };
 
         const createSnapShot = (car)=>{
-            let snapShot = [];
+            let snapShot = [0];
 
             let scale = 1, amount = (car.spectating) ?  car.followerCountAtDeath : car.followerArray.length;
             if(amount > 15 && amount < 200)

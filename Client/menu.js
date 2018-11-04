@@ -329,14 +329,7 @@ var Menu = {
     },
 
     setup: (a) =>  {
-        var primus = new Primus();
-        primus.on('open', function open() {
-            console.log('Connection is alive and kicking');
-          });
-          primus.on('data', function message(data) {
-            // the message we've received.
-            console.log(data);
-          });
+       
 
           
         //primus.write(["spawn"]);
