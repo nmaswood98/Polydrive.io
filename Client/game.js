@@ -374,9 +374,9 @@ var Game = {
                    carIndex = this.carIndex;
                    if(snapShot[cursor+2] != this.followerCount){
                        this.followerCount = snapShot[cursor+2];
-                       this.zoomTo(u.followerCount);
+                       this.zoomTo(u.followerCount); ///ERROR HERE 
                    }
-                   console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
+                 //  console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
                    TweenMax.to(this.car,timeDelta/1000,{
                        ease:Linear.easeNone,
                        pixi:{x:snapShot[cursor+3],y:snapShot[cursor+4]},
@@ -393,26 +393,41 @@ var Game = {
                }
                else if (item === -2){ //[-2,manaId,X,Y]
                //mana
-               if(this.manaSprites.hasOwnProperty(snapShot[cursor+1])){
-                   this.manaSprites[sprites.id].x =  snapShot[cursor+2];
-                   this.manaSprites[sprites.id].y = snapShot[cursor+3];
-                   updatedChildArray.push(snapShot[cursor+1]);
+               if(this.screenSprites.hasOwnProperty("mana" + snapShot[cursor+1])){
+
+                if(snapShot[cursor+2] === -1){
+                    console.log("REMOVING MANA");
+                    this.stage.removeChild(this.screenSprites["mana" + snapShot[cursor+1]]);
+                    this.OnScreen.removeChild(this.screenSprites["mana" + snapShot[cursor+1]]);
+                    delete this.screenSprites["mana" + snapShot[cursor+1]];
+                   
+                }else{
+                   
+                   this.screenSprites["mana" + snapShot[cursor+1]].x =  snapShot[cursor+2];
+                   this.screenSprites["mana" + snapShot[cursor+1]].y = snapShot[cursor+3];
+                   updatedChildArray.push("mana" + snapShot[cursor+1]);
+                }
 
                }
                else{
+                  // console.log([]);
+
+
                    var manaSprite = new PIXI.Graphics();
                     manaSprite.isMana = true;
-                    manaSprite.id = snapShot[cursor+1];
-                    manaSprite.x = snapShot[cursor+2];
-                    manaSprite.y = snapShot[cursor+3];
-                    manaSprite.beginFill(this.randomolor());
+                    manaSprite.id = "mana" + snapShot[cursor+1];
+                    manaSprite.x =  snapShot[cursor+2] ;
+                    manaSprite.y =  snapShot[cursor+3] ;
+                    manaSprite.beginFill(this.randomColor());
                     manaSprite.drawCircle(0,0,10);
                     manaSprite.endFill();
 
                     this.OnScreen.addChild(manaSprite);
-                    this.manaSprites[snapShot[cursor+1]] = manaSprite;
-                    updatedChildArray.push(snapShot[cursor+1]);
+                    this.screenSprites["mana" + snapShot[cursor+1]] = manaSprite;
+                    updatedChildArray.push("mana" + snapShot[cursor+1]);
                     amount++;
+
+                  
                }
                    cursor = cursor + 4;
                    continue;
@@ -543,14 +558,17 @@ var Game = {
 
            difference.forEach((trash)=>{
 
+                if(trash.isMana)
+                    return;
+
                if(trash.nameLabel !== undefined)
                    this.stage.removeChild(trash.nameLabel);
    
-               this.stage.removeChild(trash);
-               if(!trash.isMana)
+                   
+                this.stage.removeChild(trash);
+
                    delete this.screenSprites[trash.id];
-               else
-                   delete this.manaSprites[trash.id];
+              
                this.OnScreen.removeChild(trash);
    
               });

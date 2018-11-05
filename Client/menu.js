@@ -134,8 +134,7 @@ var Menu = {
 
     setup: (a) =>  {
        
-
-          
+    
         //primus.write(["spawn"]);
 
        var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 

@@ -18,7 +18,7 @@ module.exports.Server = {
         this.updateRate = 20;
         var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'JSON',pingInterval:0}); //Need To Change to uws
         var game = Object.create(Game);
-        game.init();
+        game.init(primus);
 
         
         primus.on('connection', function (socket) {
@@ -34,7 +34,8 @@ module.exports.Server = {
                         
                         socket.car = Car.create(socket.id,true, {x:(getRndInteger(0,game.worldX)),y:(getRndInteger(0,game.worldY))},game.system);
                         socket.car.followerArray = [];
-                        socket.socket = socket; 
+                        socket.car.removeManaArray = [];
+                        socket.car.socket = socket; 
                         socket.car.name = data[1];
                         socket.car.carIndex = data[2];
 
@@ -182,7 +183,7 @@ module.exports.Server = {
                     }
                     else{
                         
-                        snapShot.push(-1,car.manaCount,car.followerArray.length,car.position.x,car.position.y,car.angle); //[...-1,manaCount,followerLength,X,Y,Angle]
+                        snapShot.push(-1,car.manaCount,car.followerArray.length,Math.trunc(car.position.x),Math.trunc(car.position.y),car.angle); //[...-1,manaCount,followerLength,X,Y,Angle]
                         
                     }
 
@@ -194,7 +195,24 @@ module.exports.Server = {
                 }
             });
 
-            ///Add Mana 
+            ///Add Mana
+            
+            game.manaPool.forEach(function (mana){
+                if((mana.x < maxX && mana.x > minX) && (mana.y < maxY && mana.y > minY)){
+                    let sID = car.socket.id;
+                    if(mana.playerTable[sID] === undefined){
+                        mana.playerTable[sID] = sID;
+                        snapShot.push(-2,mana.id, mana.x, mana.y);
+                    }
+                    
+                }
+            });
+
+            car.removeManaArray.forEach(function(rManaID){
+                console.log("PIOWJAIODJWPOIJ");
+                snapShot.push(-2,rManaID, -1,-1);
+            });
+            car.removeManaArray = [];
 
             
             return snapShot;

@@ -18,8 +18,8 @@ var io;
 
 module.exports.Game = {
 
-    init: function () { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
-     
+    init: function (primus) { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
+     this.primus = primus;
         
         
         this.carLimit = 500;
@@ -47,7 +47,9 @@ module.exports.Game = {
 
         this.addMana = () =>{ //Fix for new system
             var mana = this.system.createCircle(getRndInteger(0,this.worldX ), getRndInteger(0,this.worldY), 20);
-            mana.id = "mana" + (this.manaPool.length + 1).toString();
+            mana.inGame = true;
+            mana.playerTable = {};
+            mana.id = (this.manaPool.length + 1);
             this.manaPool.push(mana);
 
         };
@@ -320,6 +322,10 @@ module.exports.Game = {
 
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
+                   
+                    for (var playerID in body.playerTable) {
+                        player.removeManaArray.push(body.id);
+                   }
 
                     body.remove();
                     player.manaCount++;
@@ -354,6 +360,13 @@ module.exports.Game = {
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
+                    
+                    console.log(body.playerTable);
+                    for (var playerID in body.playerTable) {
+                         player.removeManaArray.push(body.id);
+                    }
+
+                
                     body.remove();
                     player.manaCount++;
                     var manaIndex = this.manaPool.indexOf(body);
