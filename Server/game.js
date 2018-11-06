@@ -129,7 +129,7 @@ module.exports.Game = {
             playerCar.followerArray.push(carFollower);
             playerCar.followers++;
             carFollower.follower = playerCar;
-            carFollower.changeID(Math.random().toString(36).substring(7));
+            carFollower.changeID(getRndInteger(1, 500));
         
         }
         else {
@@ -324,7 +324,11 @@ module.exports.Game = {
                     //handle mana collision
                    
                     for (var playerID in body.playerTable) {
-                        player.removeManaArray.push(body.id);
+                        var socket = this.primus.spark(playerID);
+                    if(socket !== undefined){
+                        if(socket.car !== null)
+                            socket.car.removeManaArray.push(body.id);
+                    }
                    }
 
                     body.remove();
@@ -332,8 +336,10 @@ module.exports.Game = {
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
 
-                    if(player.manaCount % 100 === 0)
+                    if(player.manaCount  === 1){
+                        console.log("WPAEUWI");
                         this.newCarFollower(player);
+                    }
 
 
 
@@ -363,7 +369,11 @@ module.exports.Game = {
                     
                     console.log(body.playerTable);
                     for (var playerID in body.playerTable) {
-                         player.removeManaArray.push(body.id);
+                        var socket = this.primus.spark(playerID);
+                        if(socket !== undefined){
+                            if(socket.car !== null)
+                                socket.car.removeManaArray.push(body.id);
+                        }
                     }
 
                 
@@ -372,9 +382,10 @@ module.exports.Game = {
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
 
-                    if(player.manaCount % 100 === 0)
+                    if(player.manaCount  === 1){
+                        console.log("WPAEUWI");
                         this.newCarFollower(player);
-
+                    }
 
                 }
                 else if(childCar.follower.id != body.par.follower.id){ //Enemy Car Collision

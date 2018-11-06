@@ -103,12 +103,12 @@ module.exports.Server = {
             });
 
             socket.kick = (followerCount) =>{
-                var index = this.players.indexOf(socket.car);
+                var index = game.players.indexOf(socket.car);
                 if (index > -1) {
                     
                     //Creates object containg information from the dead player in order to continue sending updates to client that is spectating. 
-                    this.players.splice(index, 1);
-                    socket.car =  {spectating:true, position: {x:socket.car.position.x, y:socket.car.position.y},id: socket.id, followerCountAtDeath:folowerCount}; 
+                    game.players.splice(index, 1);
+                    socket.car =  {spectating:true, position: {x:socket.car.position.x, y:socket.car.position.y},id: socket.id, followerCountAtDeath:followerCount, removeManaArray:socket.car.removeManaArray}; 
                 
                     socket.inGame = false;
                     socket.spectating = true;
@@ -172,24 +172,27 @@ module.exports.Server = {
             let drawWidth = 2000 * scale, drawHeight = 1000 * scale; //Default Draw Distance betwen cars
             let maxX = car.position.x + drawWidth, maxY = car.position.y + drawHeight, minX = car.position.x - drawWidth, minY = car.position.y - drawHeight;
 
+
+
+            ///Bug 
             primus.forEach(function (socket, id, connections) {
                 if(socket.inGame){ //Checks if the Socket is in the game
                     let enemyCar = socket.car;
                    
                     if(car !== enemyCar){
                         if((enemyCar.position.x < maxX && enemyCar.position.x > minX) && (enemyCar.position.y < maxY && enemyCar.position.y > minY))
-                            snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y,enemyCar.angle,enemyCar.carIndex); //[...name,x,y,angle,carIndex...]
+                            snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y, parseFloat(enemyCar.angle.toFixed(3))  ,enemyCar.carIndex); //[...name,x,y,angle,carIndex...]
                             //need to send carIndex
                     }
                     else{
                         
-                        snapShot.push(-1,car.manaCount,car.followerArray.length,Math.trunc(car.position.x),Math.trunc(car.position.y),car.angle); //[...-1,manaCount,followerLength,X,Y,Angle]
+                        snapShot.push(-1,car.manaCount,car.followerArray.length,Math.trunc(car.position.x),Math.trunc(car.position.y),parseFloat(car.angle.toFixed(3)) ); //[...-1,manaCount,followerLength,X,Y,Angle]
                         
                     }
 
                     enemyCar.followerArray.forEach(function(follower){
                         if((follower.position.x < maxX && follower.position.x > minX) && (follower.position.y < maxY && follower.position.y > minY))
-                            snapShot.push(follower.id,follower.position.x,follower.position.y,follower.angle,follower.isLaunching); //[...id,x,y,angle,isLaunching...]
+                            snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)),follower.isLaunching); //[...id,x,y,angle,isLaunching...]
                     });
 
                 }
@@ -197,6 +200,7 @@ module.exports.Server = {
 
             ///Add Mana
             
+            if(!car.spectating)
             game.manaPool.forEach(function (mana){
                 if((mana.x < maxX && mana.x > minX) && (mana.y < maxY && mana.y > minY)){
                     let sID = car.socket.id;

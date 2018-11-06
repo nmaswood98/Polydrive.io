@@ -374,14 +374,14 @@ var Game = {
                    carIndex = this.carIndex;
                    if(snapShot[cursor+2] != this.followerCount){
                        this.followerCount = snapShot[cursor+2];
-                       this.zoomTo(u.followerCount); ///ERROR HERE 
+                       this.zoomTo(snapShot[cursor + 2]); ///ERROR HERE 
                    }
                  //  console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
                    TweenMax.to(this.car,timeDelta/1000,{
                        ease:Linear.easeNone,
                        pixi:{x:snapShot[cursor+3],y:snapShot[cursor+4]},
                        directionalRotation:{
-                           rotation: (snapShot[cursor+5] - (Math.PI/2)) + "_short",
+                           rotation:  (snapShot[cursor+5] - (Math.PI/2)) + "_short",
                            useRadians: true
                        },
                        overwrite:"all"
@@ -454,7 +454,7 @@ var Game = {
                            });
                        }
                        else{
-                           if(snapShot[cursor+4]){
+                           if(snapShot[cursor+4] !== null){
                                if(this.screenSprites[item].anim == null && !(this.screenSprites[item].isLaunching) ){
                                    this.screenSprites[item].isLaunching = true;
                                    this.screenSprites[item].launchAnimation();
@@ -463,6 +463,8 @@ var Game = {
                            else{
                                this.screenSprites[item].isLaunching = false;
                            }
+
+                           
                        }
 
                        amount++;
