@@ -133,13 +133,15 @@ var Menu = {
     },
 
     setup: (a) =>  {
-       
-    
+     
         //primus.write(["spawn"]);
 
        var spriteSheet = a.resources["/polydriveSpriteSheet.json"].textures; 
         var that = this.menu;
         that.cCarIndex = Math.floor(Math.random() * 39);
+
+
+
       
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';

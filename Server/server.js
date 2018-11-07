@@ -178,11 +178,13 @@ module.exports.Server = {
             primus.forEach(function (socket, id, connections) {
                 if(socket.inGame){ //Checks if the Socket is in the game
                     let enemyCar = socket.car;
+                    let sentEnemyCar = false;
                    
                     if(car !== enemyCar){
-                        if((enemyCar.position.x < maxX && enemyCar.position.x > minX) && (enemyCar.position.y < maxY && enemyCar.position.y > minY))
+                        if((enemyCar.position.x < maxX && enemyCar.position.x > minX) && (enemyCar.position.y < maxY && enemyCar.position.y > minY)){
                             snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y, parseFloat(enemyCar.angle.toFixed(3))  ,enemyCar.carIndex); //[...name,x,y,angle,carIndex...]
-                            //need to send carIndex
+                            sentEnemyCar = true;
+                        }
                     }
                     else{
                         
@@ -192,8 +194,13 @@ module.exports.Server = {
 
                     enemyCar.followerArray.forEach(function(follower){
                         if((follower.position.x < maxX && follower.position.x > minX) && (follower.position.y < maxY && follower.position.y > minY))
-                            snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)),follower.isLaunching); //[...id,x,y,angle,isLaunching...]
-                    });
+                            if(sentEnemyCar){
+                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)),(follower.isLaunching) ? 100: 0); //[...id,x,y,angle,isLaunching...]
+                            }
+                            else{
+                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)), ((follower.isLaunching) ? 100 : 0) + enemyCar.carIndex + 1);
+                            }
+                        });
 
                 }
             });

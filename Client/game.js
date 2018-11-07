@@ -14,6 +14,7 @@ var Game = {
         this.primus = primus;
         this.carIndex = carIndex;
         this.followerCount = 0;
+        this.manaCount = 0;
         this.app = application;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
 
@@ -139,6 +140,67 @@ var Game = {
        // this.lBoard.updateLeaderboard([{name:"nabhan",score:231}]);
         this.lBoard.updateLeaderboard([{name:'nabhan',score:1},{name:"maswood",score:1},{name:"pablo",score:1}]);
         //
+
+
+
+
+        let notificaitonText = new PIXI.Text('+10 Car Captured',{fontFamily : 'Arial', fontSize: 85, fill : 0xffffff , align : 'center'});
+        
+        notificaitonText.scoreCount = 0;
+        notificaitonText.text = "+" + notificaitonText.scoreCount + " Car Captured";
+        notificaitonText.alpha = 0;
+        notificaitonText.anchor.set(0.5);
+        notificaitonText.x = this.app.screen.width / 2;
+        notificaitonText.y = this.app.screen.height / 9;
+
+        this.app.stage.addChild(notificaitonText);
+
+        this.notify = (message)=>{
+            
+            if( typeof message === 'number'){
+                notificaitonText.scoreCount += message;
+                notificaitonText.text = "+" + notificaitonText.scoreCount + " Car Captured";
+            }else{
+                notificaitonText.text = message;
+            }
+
+            if(notificaitonText.alpha === 1){
+                TweenMax.to(notificaitonText,1,{
+                    delay:2,
+                    ease:Linear.easeNone,
+                    pixi:{alpha:0},
+                    overwrite:"all",
+                    onComplete: ()=>{notificaitonText.scoreCount = 0;}
+                });
+
+                return;
+            }
+
+            TweenMax.to(notificaitonText,0.5,{
+                delay:0,
+                ease:Linear.easeNone,
+                pixi:{alpha:1},
+                overwrite:"all",
+                onComplete: ()=>{
+                    TweenMax.to(notificaitonText,1,{
+                        delay:4,
+                        ease:Linear.easeNone,
+                        pixi:{alpha:0},
+                        overwrite:"all",
+                        onComplete: ()=>{notificaitonText.scoreCount = 0;}
+                    });
+                }
+            });
+
+
+        };
+
+        
+
+
+        
+        
+
 
 
 
@@ -371,11 +433,25 @@ var Game = {
            
                if(item === -1){ //[-1,manaCount,followerCount,playerX,playerY,angle]
                //Player 
+
                    carIndex = this.carIndex;
-                   if(snapShot[cursor+2] != this.followerCount){
-                       this.followerCount = snapShot[cursor+2];
-                       this.zoomTo(snapShot[cursor + 2]); ///ERROR HERE 
+                   
+
+                   if(this.manaCount != snapShot[cursor +1]){
+
+                        if(snapShot[cursor+2] != this.followerCount){
+                            this.followerCount = snapShot[cursor+2];
+                            this.zoomTo(snapShot[cursor + 2]); ///ERROR HERE 
+                            this.notify((snapShot[cursor+1] - this.manaCount));
+                        }
+
+                        
+                        this.manaCount = snapShot[cursor+1];
                    }
+                   
+
+                   
+
                  //  console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
                    TweenMax.to(this.car,timeDelta/1000,{
                        ease:Linear.easeNone,
@@ -446,6 +522,7 @@ var Game = {
                        });
 
                        if( typeof item === 'string'){
+                        lastUpdatedIsPlayer = false;
                            carIndex = snapShot[cursor + 4];
                            TweenMax.to(this.screenSprites[item].nameLabel,timeDelta/1000,{
                                ease:Linear.easeNone,
@@ -454,7 +531,12 @@ var Game = {
                            });
                        }
                        else{
-                           if(snapShot[cursor+4] !== null){
+                            let potentialCarIndex = snapShot[cursor+4] % 100;
+                            if(potentialCarIndex > 0){ //Increase all carindexes by 1
+                                carIndex = potentialCarIndex - 1;
+                            }
+
+                           if(snapShot[cursor+4] >= 100){
                                if(this.screenSprites[item].anim == null && !(this.screenSprites[item].isLaunching) ){
                                    this.screenSprites[item].isLaunching = true;
                                    this.screenSprites[item].launchAnimation();
@@ -472,7 +554,18 @@ var Game = {
                       // createjs.Tween.get(this.screenSprites[u.id].nameLabel).to({x:u.x,y:u.y - 110},timeDelta);
                    }
                    else{
-                    if( typeof item === 'string'){carIndex = snapShot[cursor + 4];}
+
+                    if( typeof item === 'string'){
+                        carIndex = snapShot[cursor + 4];
+                    }
+                    else{
+
+                       let potentialCarIndex = snapShot[cursor+4] % 100;
+                            if(potentialCarIndex > 0){ //Increase all carindexes by 1
+                                carIndex = potentialCarIndex - 1;
+                            }
+
+                    }
 
                        var carSprite = new PIXI.Sprite(this.spriteSheet[carIndex]);
                        carSprite.interactive = false;
@@ -522,7 +615,7 @@ var Game = {
                            this.stage.addChild(playerName);
                            lastUpdatedIsPlayer = false;
                       }
-                      else if (!lastUpdatedIsPlayer){
+                      else if (lastUpdatedIsPlayer){
                            carSprite.interactive = true;
                            carSprite.on('pointerdown', () => {
                                this.line.car = carSprite;
