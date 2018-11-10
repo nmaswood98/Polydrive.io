@@ -526,21 +526,14 @@ var Leaderboard = {
 
         };
      //   console.log(this.app.stage.width);
-     this.board.updateLeaderboard = function(leaderBoardData){ //places entire array of players onto the leaderboard replacing the current leaderboard
+     this.board.updateLeaderboard = function(data){ //places entire array of players onto the leaderboard replacing the current leaderboard
             count = 0;
             playerNames.text = "";
             playerScores.text = "";
-
-            leaderBoardData.forEach(element => {
-              this.addPlayer(element);
-            });
-            
-            //leaderBoardTitle.x = this.app.screen.width - leaderBoardTitle.width - ((playerScores.x - playerNames.x)/2) + 10;
-            //console.log( );
-            //console.log(leaderBoardTitle.x + " tite");
-
+            for(let i = 1; i < (data.length - 1); i += 2){
+                this.addPlayer({name:data[i],score:data[i+1]});         
+            }
         };
-
 
     },
 

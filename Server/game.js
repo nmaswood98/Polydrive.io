@@ -140,14 +140,11 @@ module.exports.Game = {
 
     },
 
-  
-
-
 
     newCarFollower: function(playerCar){ //Creates a new car and adds to the playerCar follower pool
         if(playerCar.followerArray.length < this.carLimit){
         var carLoc = Vector.rotate({x:150,y:0}, playerCar.angle);
-        var newCar = Car.create(Math.random().toString(36).substring(7),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y},this.system);
+        var newCar = Car.create(getRndInteger(1, 500),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y},this.system);
         this.addCarFollower(playerCar,newCar,false);
         }
     },
@@ -180,13 +177,10 @@ module.exports.Game = {
         else
             movementSpeed = car.follower.speed * dt;
             
-        //console.log(movementSpeed);
        
         }
 
  
-        
-
         function avoidDir(car1,speed){
             let potentials = car1.cBody.potentials();
             var steer = {x:0,y:0};
@@ -366,7 +360,7 @@ module.exports.Game = {
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
-                    
+                    childCar.hitCar = true;
                     console.log(body.playerTable);
                     for (var playerID in body.playerTable) {
                         var socket = this.primus.spark(playerID);

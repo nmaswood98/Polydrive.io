@@ -4,8 +4,6 @@
 
 var Game = {
     
-    
-
      mPlusX : 0,
      mPlusY : 0,
     amountFollowing : 0,
@@ -31,35 +29,37 @@ var Game = {
 
         
         viewport.onMax = true;
+        viewport.zoomedWithMouseWheel = false;
         viewport.addChild(this.stage);
         this.app.stage.addChild(viewport);
         //viewport plugins for zooming
         viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
         viewport.clampZoom({maxWidth: this.app.renderer.width * 1,maxHeight: this.app.renderer.height * 1});
-
-        viewport.on("zoomed",(info)=>{
-            if(info.type === "wheel"){
-                viewport.onMax = false;
-            }   
-            else{
-                viewport.onMax = true;
-            }
+        var hit = false;
+        viewport.on("snap-zoom-start",(info)=>{
+            console.log("HEY MAN WHAT IS UP ");
+            viewport.onMax = false;
+            hit = true;
         
         });
 
-        this.zoomTo = (amount)=>{ //Scales canvas height and width based on amount of carss you have
+        this.zoomTo = (amount,immediatly)=>{ //Scales canvas height and width based on amount of carss you have
+            
             var sc = 0.009467213*amount + 1.090164;
-            if(amount < 15)
+            if(amount < 15){
                 sc = 1;
+            }
             else if (amount >=200)
                 sc = 0.005*amount + 2;
-            viewport.clampZoom({maxWidth: this.app.renderer.width * sc,maxHeight: this.app.renderer.height * sc});
-
-            if(viewport.onMax)
+            
+            
+            if(immediatly)
                 viewport.snapZoom({width: this.app.renderer.width * sc,height: this.app.renderer.height * sc,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
-        };
+       
+                viewport.clampZoom({maxWidth: this.app.renderer.width * sc,maxHeight: this.app.renderer.height * sc});
+            };
         
-
+           
 
        this.consoleZoom = ()=>{
            
@@ -138,7 +138,7 @@ var Game = {
         this.lBoard = Leaderboard.create(this.app);
         this.sLabel = ScoreLabel.create(this.app);
        // this.lBoard.updateLeaderboard([{name:"nabhan",score:231}]);
-        this.lBoard.updateLeaderboard([{name:'nabhan',score:1},{name:"maswood",score:1},{name:"pablo",score:1}]);
+        this.lBoard.updateLeaderboard([3,'nabhan',1,"maswood",1,"pablo",1,]);
         //
 
 
@@ -413,7 +413,7 @@ var Game = {
   },
 
   draw: function(snapShot,timeDelta) {
-      console.log(snapShot);
+    //console.log(snapShot);
             /* snapShot is an array of the world given by the server. A cursor is used to iterate over the array and draw it on screen. Item is the element which the cursor points to. 
                 If item is -1 then the next 6 elemnts including item is the player Information so we process and add 6 to the cursor then continue the loop.
                 If item is a string then we know that it's a enemy player in the game and the next 6 elments including item is the info to draw the enemyPlayer, Process then, cursor +6
@@ -440,13 +440,23 @@ var Game = {
                    if(this.manaCount != snapShot[cursor +1]){
 
                         if(snapShot[cursor+2] != this.followerCount){
+                            
+                            if(snapShot[cursor+2] > this.followerCount)
+                                this.notify((snapShot[cursor+1] - this.manaCount));
+                            else{
+                                
+                               
+                            }
                             this.followerCount = snapShot[cursor+2];
-                            this.zoomTo(snapShot[cursor + 2]); ///ERROR HERE 
-                            this.notify((snapShot[cursor+1] - this.manaCount));
+
+
+                            this.zoomTo(snapShot[cursor + 2],true); ///ERROR HERE 
+
                         }
 
                         
                         this.manaCount = snapShot[cursor+1];
+                        this.sLabel.updateScoreLabel(this.manaCount);
                    }
                    
 
@@ -472,7 +482,7 @@ var Game = {
                if(this.screenSprites.hasOwnProperty("mana" + snapShot[cursor+1])){
 
                 if(snapShot[cursor+2] === -1){
-                    console.log("REMOVING MANA");
+                 //   console.log("REMOVING MANA");
                     this.stage.removeChild(this.screenSprites["mana" + snapShot[cursor+1]]);
                     this.OnScreen.removeChild(this.screenSprites["mana" + snapShot[cursor+1]]);
                     delete this.screenSprites["mana" + snapShot[cursor+1]];
@@ -509,8 +519,10 @@ var Game = {
                    continue;
                }
                else if(typeof item === 'string' || typeof item === 'number'){ //[name,X,Y,angle,carIndex]  //[id,X,Y,angle,isLaunching]
-               //EnemyPlayer
+               //EnemyPlayer 
+               //console.log(item);
                    if(this.screenSprites.hasOwnProperty( item )){
+                    
                        TweenMax.to(this.screenSprites[item],timeDelta/1000,{
                            ease:Linear.easeNone,
                            pixi:{x:snapShot[cursor+1],y:snapShot[cursor+2]},
@@ -523,7 +535,7 @@ var Game = {
 
                        if( typeof item === 'string'){
                         lastUpdatedIsPlayer = false;
-                           carIndex = snapShot[cursor + 4];
+                           carIndex = snapShot[cursor + 4] - 1;
                            TweenMax.to(this.screenSprites[item].nameLabel,timeDelta/1000,{
                                ease:Linear.easeNone,
                                pixi:{x:snapShot[cursor+1],y:snapShot[cursor+2] - 110},
@@ -535,8 +547,9 @@ var Game = {
                             if(potentialCarIndex > 0){ //Increase all carindexes by 1
                                 carIndex = potentialCarIndex - 1;
                             }
-
+                          //  console.log(snapShot[cursor+4]);
                            if(snapShot[cursor+4] >= 100){
+                              
                                if(this.screenSprites[item].anim == null && !(this.screenSprites[item].isLaunching) ){
                                    this.screenSprites[item].isLaunching = true;
                                    this.screenSprites[item].launchAnimation();
@@ -554,25 +567,22 @@ var Game = {
                       // createjs.Tween.get(this.screenSprites[u.id].nameLabel).to({x:u.x,y:u.y - 110},timeDelta);
                    }
                    else{
-
-                    if( typeof item === 'string'){
-                        carIndex = snapShot[cursor + 4];
-                    }
-                    else{
+                    
+                   
 
                        let potentialCarIndex = snapShot[cursor+4] % 100;
                             if(potentialCarIndex > 0){ //Increase all carindexes by 1
                                 carIndex = potentialCarIndex - 1;
                             }
 
-                    }
-
-                       var carSprite = new PIXI.Sprite(this.spriteSheet[carIndex]);
+                
+                       let carSprite = new PIXI.Sprite(this.spriteSheet[carIndex]);
                        carSprite.interactive = false;
                        carSprite.anchor.set(0.5,0.5);
                        carSprite.scale.x = 4.382353; carSprite.scale.y = 4.382353;
                        carSprite.x = snapShot[cursor+1];
                        carSprite.y = snapShot[cursor+2];
+                       
                        carSprite.id = item;
                        carSprite.rotation = (snapShot[cursor+3] - (Math.PI/2));
 
@@ -616,6 +626,7 @@ var Game = {
                            lastUpdatedIsPlayer = false;
                       }
                       else if (lastUpdatedIsPlayer){
+                        console.log(carSprite.id);
                            carSprite.interactive = true;
                            carSprite.on('pointerdown', () => {
                                this.line.car = carSprite;
@@ -626,15 +637,18 @@ var Game = {
                                this.line.car = null;
                                carSprite.alpha = 1;
                            });
-           
-                           carSprite.on('pointerupoutside', ()=>{
+                          
+                           carSprite.on('pointerupoutside', (a)=>{
+                               
                                this.line.car = null;
                                carSprite.alpha = 1;
                                var pos = carSprite.getGlobalPosition();
                                var mouseX = this.mouse.x + this.mPlusX, mouseY = this.mouse.y + this.mPlusY;
                                this.launchedCar = {id:carSprite.id, x:pos.x,y:pos.y,mX:mouseX - this.mPlusX,mY:mouseY - this.mPlusY};
+                               
            
                            });
+                           //console.log(carSprite);
                       }
 
                    }

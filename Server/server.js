@@ -16,9 +16,21 @@ function getRndInteger(min, max) {
 module.exports.Server = {
     init: function(server){
         this.updateRate = 20;
+        var sendLeaderBoard = false;
         var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'JSON',pingInterval:0}); //Need To Change to uws
         var game = Object.create(Game);
         game.init(primus);
+
+        var validatePlayerPacket = function(data){
+            if(data.length === 6){
+                if(typeof data[1] != "number" || typeof data[2] != "boolean" || typeof data[3] != "boolean" || typeof data[4] != "boolean" || typeof data[5] != "object")
+                    return false;
+            }
+            else{
+                return false;
+            }
+            return true;
+        };
 
         
         primus.on('connection', function (socket) {
@@ -51,13 +63,21 @@ module.exports.Server = {
                     case "playerTick": //["playerTick",angle,stopped,leftClick,rightClick,launchedCar]
                         let carInfo = data[1];
 
-                        if(socket.inGame){
+                        if(socket.inGame && validatePlayerPacket(data)){
                             if(data[5] != null){
+                                let launchedCar = data[5];
                                 var carFound = socket.car.followerArray.find(c => c.id === launchedCar.id);
                                 if(carFound != undefined){
                                     carFound.launching = true;
+                                    carFound.hitCar = false;
                                     carFound.launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
-                                    setTimeout(function () { carFound.launching = false; }, 1000); //amount of time the car will launch for
+                                    setTimeout(function () { carFound.launching = false; 
+                                        if(!carFound.hitCar){
+                                            var index = carFound.follower.followerArray.indexOf(socket.car);
+                                            carFound.follower.followerArray.splice( index, 1 );
+                                            carFound.cBody.remove();
+                                        }
+                                    }, 1000); //amount of time the car will launch for
                                   }
                                   else{
                                       console.log("ERROR: CLIENT SENT NONEXISTANT ID");
@@ -117,7 +137,7 @@ module.exports.Server = {
                 else{
                     console.log("ERROR at 135, THIS SHOULDN'T RUN");
                 }
-                socket.write("KICKED"); ///update in lcinet
+                socket.write([2]); ///update in lcinet
                 //socket.car = null;
                 setTimeout( () => {  socket.spectating = false;
                     socket.car = null;
@@ -144,8 +164,24 @@ module.exports.Server = {
 
         });
 
+        function compare(a,b){
+            if(a.manaCount < b.manaCount)
+                return 1;
+            else if (b.manaCount > a.manaCount)
+                return -1;
+            return 0;
+        };
+
         const sendUpdates = ()=>{
-            //Add LeaderBoard write;
+            //LeaderBoard Creations
+            let currentLB = [3];
+            if(sendLeaderBoard){
+                game.players.sort(compare);
+                for(let i = 0; i < Math.min(10,game.players.length);i++){
+                    let player = game.players[i];
+                    currentLB.push(player.name,player.manaCount);
+                }
+            }
 
             primus.forEach(function (socket, id, connections) {//socket.car contains the car information, socket.car.followerArray etc
               if(socket.inGame || socket.spectating ){
@@ -154,9 +190,14 @@ module.exports.Server = {
                 snapShot.push(Date.now());
 
                 socket.write(snapShot);
+
+                if(sendLeaderBoard)
+                    socket.write(currentLB);
+
               }
               });
 
+            sendLeaderBoard = false;
         };
 
         const createSnapShot = (car)=>{
@@ -182,7 +223,7 @@ module.exports.Server = {
                    
                     if(car !== enemyCar){
                         if((enemyCar.position.x < maxX && enemyCar.position.x > minX) && (enemyCar.position.y < maxY && enemyCar.position.y > minY)){
-                            snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y, parseFloat(enemyCar.angle.toFixed(3))  ,enemyCar.carIndex); //[...name,x,y,angle,carIndex...]
+                            snapShot.push(enemyCar.name,enemyCar.position.x,enemyCar.position.y, parseFloat(enemyCar.angle.toFixed(3))  ,enemyCar.carIndex + 1); //[...name,x,y,angle,carIndex...]
                             sentEnemyCar = true;
                         }
                     }
@@ -195,10 +236,10 @@ module.exports.Server = {
                     enemyCar.followerArray.forEach(function(follower){
                         if((follower.position.x < maxX && follower.position.x > minX) && (follower.position.y < maxY && follower.position.y > minY))
                             if(sentEnemyCar){
-                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)),(follower.isLaunching) ? 100: 0); //[...id,x,y,angle,isLaunching...]
+                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)),(follower.launching) ? 100: 0); //[...id,x,y,angle,isLaunching...]
                             }
                             else{
-                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)), ((follower.isLaunching) ? 100 : 0) + enemyCar.carIndex + 1);
+                                snapShot.push(follower.id,follower.position.x,follower.position.y,parseFloat(follower.angle.toFixed(3)), ((follower.launching) ? 100 : 0) + enemyCar.carIndex + 1);
                             }
                         });
 
@@ -234,7 +275,12 @@ module.exports.Server = {
             sendUpdates();
         };
 
+        
+
+     
+
         setInterval(tick.bind(this), 1000 / this.updateRate);
+        setInterval(function(){sendLeaderBoard = true;}, 1000 );
 
     }
 

@@ -35,9 +35,9 @@ var Manager = {
            
             
             switch(data[0]) {
-                    case 0: //draw
+                    case 0: //draw ///Check if scope effected this code
                         var d = new Date();
-                        let timeStamp = data[data.length - 1];
+                        let timeStamp = data.pop();
                         var currentTime = d.getTime() - this.travelTime; //add /2
                         this.travelTime =  Date.now() - timeStamp;
                         var serverUpdate = [timeStamp, data];
@@ -64,8 +64,11 @@ var Manager = {
 
                         game.car.visible = false;
                         break;
+                    case 3: //Leaderboard
+                        game.lBoard.updateLeaderboard(data);
+                        break;
                     default:
-                        console.log("ERROR: Unrecognized packet from the server");
+                        console.log("ERROR: Unrecognized packet from the server", data);
             }
           });
 
