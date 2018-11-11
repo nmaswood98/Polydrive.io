@@ -17,10 +17,10 @@ module.exports.Server = {
     init: function(server){
         this.updateRate = 20;
         var sendLeaderBoard = false;
-        var primus = new Primus(server, {port: 3000, transformer: 'websockets',parser: 'JSON',pingInterval:0}); //Need To Change to uws
+        var primus = new Primus(server, {port: 5000, transformer: 'websockets',parser: 'JSON',pingInterval:10000}); //Need To Change to uws
         var game = Object.create(Game);
         game.init(primus);
-
+        
         var validatePlayerPacket = function(data){
             if(data.length === 6){
                 if(typeof data[1] != "number" || typeof data[2] != "boolean" || typeof data[3] != "boolean" || typeof data[4] != "boolean" || typeof data[5] != "object")
@@ -118,6 +118,7 @@ module.exports.Server = {
                         break;
                     default:
                         console.log("ERROR: Client sent packet unrecognized by server");
+                        socket.end();
                 }
 
             });
@@ -261,7 +262,6 @@ module.exports.Server = {
             });
 
             car.removeManaArray.forEach(function(rManaID){
-                console.log("PIOWJAIODJWPOIJ");
                 snapShot.push(-2,rManaID, -1,-1);
             });
             car.removeManaArray = [];

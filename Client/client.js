@@ -8,15 +8,18 @@ var Manager = {
    d: new Date(),
 
     
-    init: function(application,name,carIndex,menu){
+    init: function(serverIP,application,name,carIndex,menu){
         this.app = application;
-        var primus = new Primus();
+        console.log(serverIP);
+        var primus = new Primus(serverIP);
         var socket = {};
         this.travelTime = 0;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
         this.serverUpdates = [];
         this.lastServerUpdate = null;
+
+        
         
         var game = Object.create(Game);
         game.init(primus,application,name,carIndex);

@@ -85,7 +85,7 @@ module.exports.Game = {
         newCar.manaCount += 10;
         if (carLost.follower.id === carLost.id) {
              //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
-            console.log(carLost.followerArray.length + "asdf");
+            
             var followerCountAtDeath = carLost.followerArray.length;
             carLost.followerArray.forEach((car) => { //sends all car followers from player to the new player.
                 
@@ -331,7 +331,7 @@ module.exports.Game = {
                     this.manaPool.splice(manaIndex, 1);
 
                     if(player.manaCount  === 1){
-                        console.log("WPAEUWI");
+                        //adding new player
                         this.newCarFollower(player);
                     }
 
@@ -345,7 +345,7 @@ module.exports.Game = {
                             console.log("ERROR");
                         }else{
                             this.playerLost(body.par,player);
-                            console.log(player.playerName);
+                            
                         }
                         player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
 
@@ -377,7 +377,7 @@ module.exports.Game = {
                     this.manaPool.splice(manaIndex, 1);
 
                     if(player.manaCount  === 1){
-                        console.log("WPAEUWI");
+                      
                         this.newCarFollower(player);
                     }
 
@@ -389,7 +389,7 @@ module.exports.Game = {
                                 console.log("ERROR");
                         }else{
                                 this.playerLost(body.par,player);
-                                console.log(childCar.playerName);
+                               
                         }
                         childCar.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
 

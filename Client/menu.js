@@ -48,8 +48,15 @@ var Menu = {
         
 
     init: function () {
-       
-
+        this.serverIP = null;
+        fetch("/GameServer/east")
+        .then((response) => {
+          return response.text();
+        })
+        .then((serverIP) => {
+          this.serverIP = serverIP;
+          console.log(this);
+        });
        
         this.screenSprites = {};
         this.manaSprites = {};
@@ -165,10 +172,7 @@ var Menu = {
             textbox.style.display = "";
         };
 
-        that.manager = Object.create(Manager);
-        console.log(that.cCarIndex);
-        that.manager.init(that.app,textbox.value,that.cCarIndex,that);
-        that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
+        
 
 
         //document.body.focus();
@@ -212,7 +216,15 @@ var Menu = {
 
 
             if(!that.manager){
-            
+                
+                if(that.serverIP != null){
+                    that.manager = Object.create(Manager);
+                    console.log(that.cCarIndex);
+                    that.manager.init(that.serverIP,that.app,textbox.value,that.cCarIndex,that);
+                    that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
+                    that.manager.spawn(textbox.value,that.cCarIndex);
+                }
+                
             }
             else{
                 that.manager.spawn(textbox.value,that.cCarIndex);

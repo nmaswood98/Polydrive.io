@@ -1,9 +1,9 @@
-/// <reference path="game.js"/>
-/// <reference path="WorldItems.js"/>
+/// <reference path="../GameServer/game.js"/>
+/// <reference path="../GameServer/WorldItems.js"/>
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
-var Game = require('./game.js').Game;
-var Server = require('./server.js').Server;
+var Game = require('../GameServer/game.js').Game;
+var Server = require('../GameServer/server.js').Server;
 
 var Primus = require('primus');
 
@@ -32,27 +32,21 @@ app.use("/polydriveSpriteSheet.json", express.static(publicPath + '/Assets/polyd
 
 
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
-app.use("/primus/primus.js", express.static(publicPath + 'node_modules/primus/primus.js'));
+app.use("/primus/primus.js", express.static(publicPath + '/Assets/primus.js'));
 
 
+app.get('/GameServer/:location', function(req, res) {
 
+    res.send("ws://192.168.1.217:5000");
 
-
-app.get('/', function(req, res) {
-
-
-    
-
-    res.sendFile(path.join(publicPath + '/Client/index.html'));
-  //  console.log("hello");
 });
 
 
-
-
-
-
-
+app.get('/', function(req, res) {
+  
+    res.sendFile(path.join(publicPath + '/Client/index.html'));
+  //  console.log("hello");
+});
 
 HTTPserver.listen(80, function () {
   //  console.log('server is up biath');
@@ -60,7 +54,6 @@ HTTPserver.listen(80, function () {
 });
 
 
-var server = Object.create(Server);
-server.init(HTTPserver);
+
 
 
