@@ -15,8 +15,6 @@ var publicPath = path.join(__dirname + "/..");
 var app = express();
 var HTTPserver = http.createServer(app);
 
-
-
 HTTPserver.listen(5000, function () {
   //  console.log('server is up biath');
 
@@ -26,4 +24,8 @@ HTTPserver.listen(5000, function () {
 var server = Object.create(Server);
 server.init(HTTPserver);
 
+app.get('/playerCount', function(req, res) {
+  
+  res.send([server.getPlayerCount()]);
 
+});

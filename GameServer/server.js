@@ -16,10 +16,24 @@ function getRndInteger(min, max) {
 module.exports.Server = {
     init: function(server){
         this.updateRate = 20;
+        var mainServer = null;
+        var playerNames = {};
+
+        var setName = (name) => { //there is probably a more
+            if(playerNames[name] === name)
+                return setName(name + '1');
+            else
+                return playerNames[name] = name;
+        };
+
         var sendLeaderBoard = false;
-        var primus = new Primus(server, {port: 5000, transformer: 'websockets',parser: 'JSON',pingInterval:10000}); //Need To Change to uws
+        var primus = new Primus(server, {port: 5000, transformer: 'websockets',parser: 'binary',pingInterval:10000}); //Need To Change to uws
         var game = Object.create(Game);
         game.init(primus);
+
+        this.getPlayerCount = function(){
+            return game.players.length;
+        };
         
         var validatePlayerPacket = function(data){
             if(data.length === 6){
@@ -43,12 +57,17 @@ module.exports.Server = {
             socket.on('data', function (data) {///data should always be an array
                 switch(data[0]) {
                     case "spawn": ///might need to wait until recieved cilent movement to add into the world // ["spawn"]
-                        
+                        //check if enough players
+                        if(game.players.length < 101){
                         socket.car = Car.create(socket.id,true, {x:(getRndInteger(0,game.worldX)),y:(getRndInteger(0,game.worldY))},game.system);
                         socket.car.followerArray = [];
                         socket.car.removeManaArray = [];
                         socket.car.socket = socket; 
-                        socket.car.name = data[1];
+
+                       
+                        socket.car.name = setName(data[1]);
+
+
                         socket.car.carIndex = data[2];
 
                         socket.write([1,socket.car.position.x,socket.car.position.y]); //Replace with actual Welcome Message
@@ -56,9 +75,16 @@ module.exports.Server = {
                         socket.car.speed = 5;
                         socket.car.rClick = false;
                         game.players.push(socket.car);
-                        
+                        if(mainServer != null)
+                            mainServer.write([4,game.players.length]);
+                        else
+                            console.log("What is going on");
 
                         socket.inGame = true;
+                        }
+                        else{
+                            socket.write([5]);
+                        }
                         break;
                     case "playerTick": //["playerTick",angle,stopped,leftClick,rightClick,launchedCar]
                         let carInfo = data[1];
@@ -73,7 +99,7 @@ module.exports.Server = {
                                     carFound.launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
                                     setTimeout(function () { carFound.launching = false; 
                                         if(!carFound.hitCar){
-                                            var index = carFound.follower.followerArray.indexOf(socket.car);
+                                            var index = carFound.follower.followerArray.indexOf(carFound);
                                             carFound.follower.followerArray.splice( index, 1 );
                                             carFound.cBody.remove();
                                         }
@@ -111,10 +137,14 @@ module.exports.Server = {
                                 socket.car.stopped = true;
                                 game.moveCar(1,socket.car, data[1], socket.car.speed);
                             }
+                            
                         }
 
                         break;
-                    case "newC": //["newC"]
+                    case "playerCount": //playerCount
+                        socket.write([4,game.players.length]);
+                        if(mainServer === null)
+                            mainServer = socket;
                         break;
                     default:
                         console.log("ERROR: Client sent packet unrecognized by server");
@@ -126,9 +156,11 @@ module.exports.Server = {
             socket.kick = (followerCount) =>{
                 var index = game.players.indexOf(socket.car);
                 if (index > -1) {
-                    
+                    delete playerNames[socket.car.name];
                     //Creates object containg information from the dead player in order to continue sending updates to client that is spectating. 
                     game.players.splice(index, 1);
+                    if(mainServer != null)
+                        mainServer.write([4,game.players.length]);
                     socket.car =  {spectating:true, position: {x:socket.car.position.x, y:socket.car.position.y},id: socket.id, followerCountAtDeath:followerCount, removeManaArray:socket.car.removeManaArray}; 
                 
                     socket.inGame = false;
@@ -152,6 +184,7 @@ module.exports.Server = {
            //disconnect code
            console.log("Disconnecting Socket0");
            if(socket.inGame){
+               delete playerNames[socket.car.name];
            var index = game.players.indexOf(socket.car);
 
            if (index > -1) {
@@ -162,7 +195,8 @@ module.exports.Server = {
             socket.car.cBody.remove(); //removes body from collision system
         }
         }
-
+        if(mainServer != null)
+            mainServer.write([4,game.players.length]);
         });
 
         function compare(a,b){

@@ -10,6 +10,9 @@ var Game = {
     
     init: function(primus,application,name,carIndex){
         this.primus = primus;
+        this.setSocket = (p) => {
+            this.primus = p;
+        };
         this.carIndex = carIndex;
         this.followerCount = 0;
         this.manaCount = 0;
@@ -155,7 +158,7 @@ var Game = {
 
         this.app.stage.addChild(notificaitonText);
 
-        this.notify = (message)=>{
+        this.app.notify = (message)=>{
             
             if( typeof message === 'number'){
                 notificaitonText.scoreCount += message;
@@ -442,7 +445,7 @@ var Game = {
                         if(snapShot[cursor+2] != this.followerCount){
                             
                             if(snapShot[cursor+2] > this.followerCount)
-                                this.notify((snapShot[cursor+1] - this.manaCount));
+                                this.app.notify((snapShot[cursor+1] - this.manaCount));
                             else{
                                 
                                

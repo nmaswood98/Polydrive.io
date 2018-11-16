@@ -22,7 +22,7 @@ module.exports.Game = {
      this.primus = primus;
         
         
-        this.carLimit = 500;
+        this.carLimit = 100;
              
         this.system = new Collisions();
         this.result = this.system.createResult();
@@ -327,12 +327,15 @@ module.exports.Game = {
 
                     body.remove();
                     player.manaCount++;
+                   
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
-
+                    this.addMana();
                     if(player.manaCount  === 1){
-                        //adding new player
-                        this.newCarFollower(player);
+                        //adding new player\
+                        
+                            this.newCarFollower(player);
+                        
                     }
 
 
@@ -361,7 +364,7 @@ module.exports.Game = {
                 if(body.par === undefined){ //Is Mana
                     //handle mana collision
                     childCar.hitCar = true;
-                    console.log(body.playerTable);
+                    
                     for (var playerID in body.playerTable) {
                         var socket = this.primus.spark(playerID);
                         if(socket !== undefined){
@@ -372,13 +375,16 @@ module.exports.Game = {
 
                 
                     body.remove();
+                    
                     player.manaCount++;
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
-
+                    this.addMana();
                     if(player.manaCount  === 1){
                       
-                        this.newCarFollower(player);
+                        
+                            this.newCarFollower(player);
+                        
                     }
 
                 }

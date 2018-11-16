@@ -11,13 +11,15 @@ var Manager = {
     init: function(serverIP,application,name,carIndex,menu){
         this.app = application;
         console.log(serverIP);
-        var primus = new Primus(serverIP);
+        var primus = null;
         var socket = {};
         this.travelTime = 0;
         this.currentTime = this.d.getTime();
         this.lastTime = 0;
         this.serverUpdates = [];
         this.lastServerUpdate = null;
+
+        
 
         
         
@@ -34,52 +36,89 @@ var Manager = {
         this.hideMenu = menu.hideMenu.bind(menu);
         this.showMenu = menu.showMenu.bind(menu);
 
-        primus.on('data',  (data) => {
-           
-            
-            switch(data[0]) {
-                    case 0: //draw ///Check if scope effected this code
-                        var d = new Date();
-                        let timeStamp = data.pop();
-                        var currentTime = d.getTime() - this.travelTime; //add /2
-                        this.travelTime =  Date.now() - timeStamp;
-                        var serverUpdate = [timeStamp, data];
-                        this.serverUpdates.push(serverUpdate);
-                        break;
-                    case 1: //Welcome
-                        game.car.x = data[1];
-                        game.car.y = data[2];
-                        game.car.id = data[3];
-                        break;
-                    case 2: //kicked
-                        game.starting = false;
-                        //blur
-                        var blurFilter2 = new PIXI.filters.BlurFilter();
-                        blurFilter2.resolution = 0.5;
-                        blurFilter2.blur = 0;
-                        this.app.stage.filters = [blurFilter2]; 
-                        setTimeout( () => {TweenMax.to(blurFilter2 ,1.5,{
-                            ease:Linear.easeNone,
-                            blur:10
-                        }); }, 1500);
-                        //b
-                        setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
-
-                        game.car.visible = false;
-                        break;
-                    case 3: //Leaderboard
-                        game.lBoard.updateLeaderboard(data);
-                        break;
-                    default:
-                        console.log("ERROR: Unrecognized packet from the server", data);
+        this.createSocket = (serverIP) =>{
+            if(primus === null){
+                primus = new Primus(serverIP);
+                initializeSocket(primus);
             }
-          });
+            else{
+                primus.destroy();
+                primus = new Primus(serverIP);
+                initializeSocket(primus);
+                
+            }
+        };
 
+        var initializeSocket = (p) =>{
+            game.setSocket(p);
+            p.on('data',  (data) => {
+                switch(data[0]) {
+                            case 0: //draw ///Check if scope effected this code
+                                    var d = new Date();
+                                    let timeStamp = data.pop();
+                                    var currentTime = d.getTime() - this.travelTime; //add /2
+                                    this.travelTime =  Date.now() - timeStamp;
+                                    var serverUpdate = [timeStamp, data];
+                                    this.serverUpdates.push(serverUpdate);
+                                    break;
+                            case 1: //Welcome
+                                    game.car.x = data[1];
+                                    game.car.y = data[2];
+                                    game.car.id = data[3];
+                                    menu.hideMenu();
+                                    game.show();
+                                    game.car.swapTexture(carIndex);
+                                    break;
+                            case 2: //kicked
+                                    game.starting = false;
+                                    //blur
+                                    var blurFilter2 = new PIXI.filters.BlurFilter();
+                                    blurFilter2.resolution = 0.5;
+                                    blurFilter2.blur = 0;
+                                    this.app.stage.filters = [blurFilter2]; 
+                                    setTimeout( () => {TweenMax.to(blurFilter2 ,1.5,{
+                                        ease:Linear.easeNone,
+                                        blur:10
+                                    }); }, 1500);
+                                    //b
+                                    setTimeout( () =>{this.hideGame(); this.showMenu(); this.app.stage.filters = [];  }, 3000);
+
+                                    game.car.visible = false;
+                                    break;
+                            case 3: //Leaderboard
+                                    game.lBoard.updateLeaderboard(data);
+                                    break;
+                            case 5:
+                                    this.app.notify("Servers Full.");
+                                    break;
+                            default:
+                                    console.log("ERROR: Unrecognized packet from the server", data);
+                }
+              });
+
+        };
+
+        
         this.spawn = (name,carIndex)=>{
+            
              game.starting =true;
-             primus.write(["spawn",name,carIndex]);
-             game.show();
-             game.car.swapTexture(carIndex);
+             if(primus != null)
+                primus.write(["spawn",name,carIndex]);
+            else
+                {
+                    this.app.notify("Servers Full.");
+                    fetch("/GameServer/east")
+                    .then((response) => {
+                            return response.text();
+                                        })
+                        .then((serverIP) => {
+                            if(serverIP != '0')
+                                this.createSocket(serverIP);
+                            });
+
+                }
+            
+           
         };
 
         window.addCars = (amount)=>{

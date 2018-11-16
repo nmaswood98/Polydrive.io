@@ -48,16 +48,11 @@ var Menu = {
         
 
     init: function () {
+        this.primus = null;
         this.serverIP = null;
-        fetch("/GameServer/east")
-        .then((response) => {
-          return response.text();
-        })
-        .then((serverIP) => {
-          this.serverIP = serverIP;
-          console.log(this);
-        });
-       
+        //connect to server
+        
+       //connect to server
         this.screenSprites = {};
         this.manaSprites = {};
         this.OnScreen = new PIXI.Container();
@@ -66,16 +61,7 @@ var Menu = {
 
         };
 
-
-
-
-
-
-
-
-
-
-
+        
 
 
         
@@ -172,6 +158,28 @@ var Menu = {
             textbox.style.display = "";
         };
 
+
+
+
+
+        that.manager = Object.create(Manager);
+        console.log(that.cCarIndex);
+        that.manager.init(that.serverIP,that.app,textbox.value,that.cCarIndex,that);
+        that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
+
+
+        fetch("/GameServer/east")
+        .then((response) => {
+            
+          return response.text();
+        })
+        .then((serverIP) => {
+            
+            if(serverIP != "0")
+                that.manager.createSocket(serverIP);
+        });
+
+
         
 
 
@@ -212,7 +220,7 @@ var Menu = {
    
            // textbox.style.display = "none";
            // while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
-                that.hideMenu();
+                
 
 
             if(!that.manager){
@@ -558,6 +566,52 @@ var Leaderboard = {
         return instance.board;
     }
 
+};
+
+var ModalView = {
+    init: function(application){
+        
+        var spriteSheet = PIXI.loader.resources["/polydriveSpriteSheet.json"].textures;
+        var animationArray = [];
+        
+        PIXI.loader.resources["/polydriveSpriteSheet.json"].data.animations.nitro.forEach(element => {
+            animationArray.push(spriteSheet[element]);
+        }); 
+        this.stage = new PIXI.Container();
+        //this.stage.interactiveChildren = false;
+        //this.stage.visible = false;
+        var graphics = new PIXI.Graphics();
+        graphics.interactive = true;
+        graphics.beginFill(0x242121);
+        graphics.drawRect(0, 0, application.screen.width/2, application.screen.height/2);
+        graphics.endFill();
+        //graphics.anchor.set(0.5);
+        this.stage.addChild(graphics);
+
+        var title = new PIXI.Text('Car Picker' , {
+            fontFamily: 'Tahoma',
+            fontSize: 60,
+            fill: 'white',
+            lineJoin: "round",
+            align: 'center'
+        });
+        title.anchor.set(0.5);
+        title.x = graphics.width/2 ;
+        title.y = 100 ;
+        graphics.addChild(title);
+
+    },
+
+    create: function(application){
+        var instance = Object.create(this);
+        instance.init(application);
+        application.stage.addChild(instance.stage);
+       // instance.stage.x = application.screen.width/2;
+        instance.stage.pivot.x = -application.screen.width/4;
+        instance.stage.pivot.y = -application.screen.height/5;
+        instance.stage.alpha = 0;
+        return instance.stage;
+    }
 };
 
 var CarPicker = {
