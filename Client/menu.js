@@ -133,9 +133,46 @@ var Menu = {
         var that = this.menu;
         that.cCarIndex = Math.floor(Math.random() * 39);
 
+        let helperText = new PIXI.Text('+10 Car Captured',{fontFamily : 'Arial', fontSize: 85, fill : 0xffffff , align : 'center'});
+        
+        helperText.scoreCount = 0;
+        helperText.text = "+" + helperText.scoreCount + " Car Captured";
+        helperText.alpha = 0;
+        helperText.anchor.set(0.5);
+        helperText.x = that.app.screen.width / 2;
+        helperText.y = that.app.screen.height / 9;
 
+        that.app.stage.addChild(helperText);
 
-      
+        helperText.switchBetween = (message)=>{
+            let displayAndDisappear = (index) =>{
+                helperText.text = message[index];
+                console.log(message[index]);
+            TweenMax.to(helperText,0.3,{
+                delay:0,
+                ease:Linear.easeNone,
+                pixi:{alpha:1},
+                overwrite:"all",
+                onComplete: ()=>{
+                    TweenMax.to(helperText,0.3,{
+                        delay:0.3,
+                        ease:Linear.easeNone,
+                        pixi:{alpha:0},
+                        overwrite:"all",
+                        onComplete: ()=>{
+                            if(index < (message.length - 1))
+                                displayAndDisappear(index + 1);
+                            else
+                                displayAndDisappear(0);
+                    }
+                    });
+                }
+            });
+        };
+        displayAndDisappear(0);
+        };
+
+    helperText.switchBetween(["Hello","What","Is","Up","This","Is","Nabhan","Maswood"]);
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';
         that.app.view.style.top = '50%';
@@ -164,7 +201,7 @@ var Menu = {
 
         that.manager = Object.create(Manager);
         console.log(that.cCarIndex);
-        that.manager.init(that.serverIP,that.app,textbox.value,that.cCarIndex,that);
+        that.manager.init(that.serverIP,that.app,textbox.value,that);
         that.manager.app.ticker.add(function(delta){that.manager.ticker(delta);});
 
 
@@ -404,6 +441,7 @@ var Menu = {
         //carChangeText.carpicker.alpha = 0;
         
         that.cCarIndex = carChangeText.carpicker.getCarIndex();
+        console.log(that.cCarIndex );
         carSprite.texture = spriteSheet[that.cCarIndex];
         that.viewport.interactive = false;
 

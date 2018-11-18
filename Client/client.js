@@ -8,7 +8,8 @@ var Manager = {
    d: new Date(),
 
     
-    init: function(serverIP,application,name,carIndex,menu){
+    init: function(serverIP,application,name,menu){
+        
         this.app = application;
         console.log(serverIP);
         var primus = null;
@@ -24,7 +25,7 @@ var Manager = {
         
         
         var game = Object.create(Game);
-        game.init(primus,application,name,carIndex);
+        game.init(primus,application,name,menu.cCarIndex);
         game.app.ticker.add((delta)=>{game.ticker(delta);});
         game.isDrawing = false;
         game.hide();
@@ -67,7 +68,7 @@ var Manager = {
                                     game.car.id = data[3];
                                     menu.hideMenu();
                                     game.show();
-                                    game.car.swapTexture(carIndex);
+                                    game.car.swapTexture(menu.cCarIndex);
                                     break;
                             case 2: //kicked
                                     game.starting = false;

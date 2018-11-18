@@ -13,6 +13,7 @@ var Game = {
         this.setSocket = (p) => {
             this.primus = p;
         };
+        console.log(carIndex);
         this.carIndex = carIndex;
         this.followerCount = 0;
         this.manaCount = 0;
@@ -295,6 +296,7 @@ var Game = {
         }.bind(gameThis));
 
         this.car.swapTexture = (index)=>{
+            console.log(index);
             this.carIndex = index;
             this.car.texture = this.spriteSheet[this.carIndex];
         };

@@ -49,7 +49,7 @@ module.exports.Game = {
             var mana = this.system.createCircle(getRndInteger(0,this.worldX ), getRndInteger(0,this.worldY), 20);
             mana.inGame = true;
             mana.playerTable = {};
-            mana.id = (this.manaPool.length + 1);
+            mana.id = (this.manaPool.length + 1); ///Error Here need unique id or reuse id of mana already destroyed
             this.manaPool.push(mana);
 
         };
