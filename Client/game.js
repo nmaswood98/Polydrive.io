@@ -77,6 +77,7 @@ var Game = {
             viewport.visible = false;
             this.lBoard.visible = false;
             this.sLabel.visible = false;
+            this.garageLabel.visible = false;
             
             console.log(this);
         }
@@ -85,6 +86,7 @@ var Game = {
             viewport.visible = true;
             this.lBoard.visible = true;
             this.sLabel.visible = true;
+            this.garageLabel.visible = true;
             this.car.visible = true;
 
         }
@@ -141,8 +143,9 @@ var Game = {
         //LeaderBoard
         this.lBoard = Leaderboard.create(this.app);
         this.sLabel = ScoreLabel.create(this.app);
+        this.garageLabel = GarageLabel.create(this.app);
        // this.lBoard.updateLeaderboard([{name:"nabhan",score:231}]);
-        this.lBoard.updateLeaderboard([3,'nabhan',1,"maswood",1,"pablo",1,]);
+       // this.lBoard.updateLeaderboard([3,'nabhan',1,"maswood",1,"pablo",1,]);
         //
 
 
@@ -462,6 +465,8 @@ var Game = {
                         
                         this.manaCount = snapShot[cursor+1];
                         this.sLabel.updateScoreLabel(this.manaCount);
+                        this.garageLabel.updateGarageLabel(snapShot[cursor + 6]);
+                        
                    }
                    
 
@@ -479,7 +484,7 @@ var Game = {
                    });
 
                    lastUpdatedIsPlayer = true;
-                   cursor = cursor + 6;
+                   cursor = cursor + 7;
                    continue;
                }
                else if (item === -2){ //[-2,manaId,X,Y]

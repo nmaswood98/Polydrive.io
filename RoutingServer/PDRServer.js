@@ -54,11 +54,11 @@ eastCoastClient.on('data', function (data) {
 app.get('/GameServer/:location', function(req, res) {
 
     
-      var serverIP = "192.168.1.217:5000";
+      var serverIP = "192.168.1.227:5000";
    
     
           if(eastCoastClient.playerCount < 101)
-              res.send("ws://192.168.1.217:5000");
+              res.send("ws://192.168.1.227:5000");
           else
               res.send("0");
          

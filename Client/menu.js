@@ -133,46 +133,12 @@ var Menu = {
         var that = this.menu;
         that.cCarIndex = Math.floor(Math.random() * 39);
 
-        let helperText = new PIXI.Text('+10 Car Captured',{fontFamily : 'Arial', fontSize: 85, fill : 0xffffff , align : 'center'});
-        
-        helperText.scoreCount = 0;
-        helperText.text = "+" + helperText.scoreCount + " Car Captured";
-        helperText.alpha = 0;
-        helperText.anchor.set(0.5);
-        helperText.x = that.app.screen.width / 2;
-        helperText.y = that.app.screen.height / 9;
 
-        that.app.stage.addChild(helperText);
 
-        helperText.switchBetween = (message)=>{
-            let displayAndDisappear = (index) =>{
-                helperText.text = message[index];
-                console.log(message[index]);
-            TweenMax.to(helperText,0.3,{
-                delay:0,
-                ease:Linear.easeNone,
-                pixi:{alpha:1},
-                overwrite:"all",
-                onComplete: ()=>{
-                    TweenMax.to(helperText,0.3,{
-                        delay:0.3,
-                        ease:Linear.easeNone,
-                        pixi:{alpha:0},
-                        overwrite:"all",
-                        onComplete: ()=>{
-                            if(index < (message.length - 1))
-                                displayAndDisappear(index + 1);
-                            else
-                                displayAndDisappear(0);
-                    }
-                    });
-                }
-            });
-        };
-        displayAndDisappear(0);
-        };
 
-    helperText.switchBetween(["Hello","What","Is","Up","This","Is","Nabhan","Maswood"]);
+
+
+    
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';
         that.app.view.style.top = '50%';
@@ -303,7 +269,7 @@ var Menu = {
         logo.anchor.set(0.5);
       //  logo.scale.set(0.5);
         logo.x = that.app.screen.width / 2;
-        logo.y = that.app.screen.height/4;
+        logo.y = that.app.screen.height/4.75;
 
         that.viewport.addChild(logo);
 
@@ -463,6 +429,63 @@ var Menu = {
 
 
 
+    let helperText = new PIXI.Text('+10 Car Captured',{fontFamily : 'copperplate gothic', fontSize: 40,fontWeight: 'lighter', fill : 0xffffff , align : 'center'});
+    helperText.alpha = 0;
+    helperText.anchor.set(0.5);
+    helperText.x = that.app.screen.width / 2;
+    helperText.y = that.app.screen.height / 3.46; //3.46
+    helperText.repeat = false;
+    that.viewport.addChild(helperText);
+
+    helperText.stop = function(){
+        this.repeat = false;
+    };
+
+    helperText.switchBetween = (message)=>{
+        helperText.repeat = true;
+        let displayAndDisappear = (index,transitionTime,delayTime,delayBetweenTime) =>{
+            helperText.text = message[index];
+            console.log(message[index]);
+        TweenMax.to(helperText,transitionTime,{
+            delay:delayBetweenTime,
+            ease:Linear.easeNone,
+            pixi:{alpha:1},
+            overwrite:"all",
+            onComplete: ()=>{
+                TweenMax.to(helperText,transitionTime,{
+                    delay:delayTime,
+                    ease:Linear.easeNone,
+                    pixi:{alpha:0},
+                    overwrite:"all",
+                    onComplete: ()=>{
+
+                        if(helperText.repeat){
+                            if(index < (message.length - 1))
+                                displayAndDisappear(index + 1,0.3,2,0);
+                            else
+                                displayAndDisappear(0,0.3,2,0);
+                        }
+
+                    }
+                });
+            }
+        });
+    };
+
+    displayAndDisappear(0,0.3,4,1);
+
+    };
+
+helperText.switchBetween([
+"Capture Cars by driving into them!",
+"Click to go faster!",
+"Right Click makes your captured cars go faster!",
+"Click and Drag your captured cars for a speed boost!",
+"Hold D to lock direction or F to stop moving!"
+]);
+
+
+
     },
 
     createLeaderboard: function(){
@@ -518,6 +541,44 @@ var ScoreLabel = {
 
 };
 
+var GarageLabel = {
+    init: function(application){
+        this.app = application;
+        
+        this.garageText = new PIXI.Text('Garage: 0', {
+            fontFamily: 'Tahoma',
+            fontSize: 35,
+            fill: 'white',
+            strokeThickness: 8,
+            lineJoin: "round",
+            align: 'left'
+        }); 
+
+        this.garageText.x = 20;
+        this.garageText.y = this.garageText.height - 20;
+
+        this.app.stage.addChild(this.garageText);
+
+        this.garageText.updateGarageLabel = function(score){
+            this.text = 'Garage: ' + score;
+        };
+
+        
+
+
+
+    },
+
+    create: function(application){
+        var instance = Object.create(this);
+        instance.init(application);
+        return instance.garageText;
+
+    }
+
+
+};
+
 
 //Creates Leaderboard for the game. Can be updated and added on to.
 var Leaderboard = {
@@ -545,7 +606,7 @@ var Leaderboard = {
         
 
         //Name list for LeaderBoard
-       var playerNames = new PIXI.Text('Pixi.js can has\n multiline text!' , {
+       var playerNames = new PIXI.Text('' , {
             fontFamily: 'Tahoma',
             fontSize: 35,
             fill: 'white',
@@ -560,7 +621,7 @@ var Leaderboard = {
        
         //
         //Score for each Player on the leaderboard
-        var playerScores = new PIXI.Text('Pixi.js can has\n multiline text!' , {
+        var playerScores = new PIXI.Text('' , {
             fontFamily: 'Tahoma',
             fontSize: 35,
             fill: 'white',

@@ -47,7 +47,7 @@ module.exports.Server = {
         };
 
         
-        primus.on('connection', function (socket) {
+        primus.on('connection', function (socket) { ///Need to refractor
             socket.inGame = false; 
             socket.spectating = false;
             socket.car = null;
@@ -59,11 +59,22 @@ module.exports.Server = {
                     case "spawn": ///might need to wait until recieved cilent movement to add into the world // ["spawn"]
                         //check if enough players
                         if(game.players.length < 101){
+                        ///creates casr
                         socket.car = Car.create(socket.id,true, {x:(getRndInteger(0,game.worldX)),y:(getRndInteger(0,game.worldY))},game.system);
                         socket.car.followerArray = [];
+                        socket.car.garageCount = 0;
+
+                        socket.car.addFromGarage = function(){
+                            if(this.garageCount > 0){
+                                this.garageCount--;
+                                this.manaCount -= 10;
+                                game.newCarFollower(this);
+                            }
+                        };
+                        
                         socket.car.removeManaArray = [];
                         socket.car.socket = socket; 
-
+                        
                        
                         socket.car.name = setName(data[1]);
 
@@ -71,16 +82,18 @@ module.exports.Server = {
                         socket.car.carIndex = data[2];
 
                         socket.write([1,socket.car.position.x,socket.car.position.y]); //Replace with actual Welcome Message
-                        socket.inGame = true;
+                        
                         socket.car.speed = 5;
                         socket.car.rClick = false;
                         game.players.push(socket.car);
+                        
                         if(mainServer != null)
                             mainServer.write([4,game.players.length]);
                         else
                             console.log("What is going on");
 
                         socket.inGame = true;
+                        console.log("REACHED LINE 86 BEFORE CRASH");
                         }
                         else{
                             socket.write([5]);
@@ -97,13 +110,20 @@ module.exports.Server = {
                                     carFound.launching = true;
                                     carFound.hitCar = false;
                                     carFound.launchAngle = Math.atan2((launchedCar.mY - launchedCar.y), (launchedCar.mX - launchedCar.x)) - (Math.PI);
-                                    setTimeout(function () { carFound.launching = false; 
+
+                                    setTimeout(function () { 
+
+                                        carFound.launching = false; 
+
                                         if(!carFound.hitCar){
                                             var index = carFound.follower.followerArray.indexOf(carFound);
                                             carFound.follower.followerArray.splice( index, 1 );
                                             carFound.cBody.remove();
+
+
                                         }
                                     }, 1000); //amount of time the car will launch for
+
                                   }
                                   else{
                                       console.log("ERROR: CLIENT SENT NONEXISTANT ID");
@@ -172,8 +192,12 @@ module.exports.Server = {
                 }
                 socket.write([2]); ///update in lcinet
                 //socket.car = null;
-                setTimeout( () => {  socket.spectating = false;
-                    socket.car = null;
+                setTimeout( () => {  
+                    socket.spectating = false;
+
+                    if(!socket.inGame)
+                        socket.car = null;
+
                 }, 5000);
 
             };
@@ -264,7 +288,7 @@ module.exports.Server = {
                     }
                     else{
                         
-                        snapShot.push(-1,car.manaCount,car.followerArray.length,Math.trunc(car.position.x),Math.trunc(car.position.y),parseFloat(car.angle.toFixed(3)) ); //[...-1,manaCount,followerLength,X,Y,Angle]
+                        snapShot.push(-1,car.manaCount,car.followerArray.length,Math.trunc(car.position.x),Math.trunc(car.position.y),parseFloat(car.angle.toFixed(3)),car.garageCount ); //[...-1,manaCount,followerLength,X,Y,Angle,garageCount]
                         
                     }
 

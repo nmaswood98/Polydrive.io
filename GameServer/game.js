@@ -22,7 +22,7 @@ module.exports.Game = {
      this.primus = primus;
         
         
-        this.carLimit = 100;
+        this.carLimit = 1;
              
         this.system = new Collisions();
         this.result = this.system.createResult();
@@ -82,7 +82,7 @@ module.exports.Game = {
         /* newCar hit carLost. If carLost is a player then we should kick them from the game while transfering all cars the player had to the new player
             If carLost is just an enemy car then we should just call addCarFollower which will result in carLost tranfering ownership to newCar */
   
-        newCar.manaCount += 10;
+        newCar.follower.manaCount += 10;
         if (carLost.follower.id === carLost.id) {
              //followers have % at the end of their id, playercars don't. This identifies if the carLost is the players
             
@@ -95,10 +95,23 @@ module.exports.Game = {
                 }
             });
             carLost.followerArray = [];
+            newCar.follower.garageCount += carLost.garageCount;
             carLost.socket.kick(followerCountAtDeath);
-        }
-            
             this.addCarFollower(newCar.follower, carLost,true, true);
+        }
+        else{
+            let carLostFollower = carLost.follower;
+            this.addCarFollower(newCar.follower, carLost,true, true);
+
+            carLostFollower.addFromGarage();
+
+        }
+
+        
+            
+            
+
+            
 
 
 
@@ -134,6 +147,7 @@ module.exports.Game = {
         }
         else {
             carFollower.cBody.remove();
+            playerCar.garageCount++;
         }
         
 
@@ -146,6 +160,9 @@ module.exports.Game = {
         var carLoc = Vector.rotate({x:150,y:0}, playerCar.angle);
         var newCar = Car.create(getRndInteger(1, 500),false,{x: playerCar.position.x + carLoc.x,y:playerCar.position.y + carLoc.y},this.system);
         this.addCarFollower(playerCar,newCar,false);
+        }
+        else{
+            playerCar.garageCount++;
         }
     },
 
