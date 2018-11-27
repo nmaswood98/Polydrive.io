@@ -191,9 +191,11 @@ var Menu = {
         
         that.tilingSprite = new PIXI.extras.TilingSprite(
             spriteSheet["TextureBackground.png"],
-            that.app.screen.width * 20,
-            that.app.screen.height * 20
+            that.app.screen.width * 2,
+            that.app.screen.height * 2
         );
+        that.tilingSprite.x = -20;
+        that.tilingSprite.y = -10;
        // that.tilingSprite.visible = false;
         that.viewport.addChild(that.tilingSprite);
         
@@ -383,7 +385,7 @@ var Menu = {
         blurFilter2.blur = 0;
       TweenMax.to(blurFilter2 ,0.1,{
             ease:Linear.easeNone,
-            blur:10
+            blur:8
         });
 
         TweenMax.to(carChangeText.carpicker ,0.1,{

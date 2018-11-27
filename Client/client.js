@@ -55,11 +55,11 @@ var Manager = {
             p.on('data',  (data) => {
                 switch(data[0]) {
                             case 0: //draw ///Check if scope effected this code
-                                    var d = new Date();
+                                    let d = new Date();
                                     let timeStamp = data.pop();
-                                    var currentTime = d.getTime() - this.travelTime; //add /2
+                                    let currentTime = d.getTime() - this.travelTime; //add /2
                                     this.travelTime =  Date.now() - timeStamp;
-                                    var serverUpdate = [timeStamp, data];
+                                    let serverUpdate = [timeStamp, data];
                                     this.serverUpdates.push(serverUpdate);
                                     break;
                             case 1: //Welcome

@@ -39,17 +39,25 @@ module.exports.Game = {
         this.spectating = []; //Spectators 
         this.miscObjects = []; //Objects
         this.manaPool = []; //Mana
+        this.manaRemoved = [];
         //
 
         this.sockets = {}; // Stores the sockets to the players in the game
 
 ///GameBoardasdfasdfasfdadf
-
+        
         this.addMana = () =>{ //Fix for new system
             var mana = this.system.createCircle(getRndInteger(0,this.worldX ), getRndInteger(0,this.worldY), 20);
             mana.inGame = true;
             mana.playerTable = {};
-            mana.id = (this.manaPool.length + 1); ///Error Here need unique id or reuse id of mana already destroyed
+
+            if(this.manaRemoved.length === 0){
+                mana.id = (this.manaPool.length + 1); 
+            }
+            else{
+                mana.id = this.manaRemoved.pop();
+            }
+
             this.manaPool.push(mana);
 
         };
@@ -342,6 +350,7 @@ module.exports.Game = {
                     }
                    }
 
+                    this.manaRemoved.push(body.id);
                     body.remove();
                     player.manaCount++;
                    
@@ -390,7 +399,7 @@ module.exports.Game = {
                         }
                     }
 
-                
+                    this.manaRemoved.push(body.id);
                     body.remove();
                     
                     player.manaCount++;
