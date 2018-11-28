@@ -15,7 +15,7 @@ function getRndInteger(min, max) {
 
 module.exports.Server = {
     init: function(server){
-        this.updateRate = 20;
+        this.updateRate = 60;
         var mainServer = null;
         var playerNames = {};
 
@@ -81,7 +81,7 @@ module.exports.Server = {
 
                         socket.car.carIndex = data[2];
 
-                        socket.write([1,socket.car.position.x,socket.car.position.y]); //Replace with actual Welcome Message
+                        socket.write([1,socket.car.position.x,socket.car.position.y,game.worldSizeType]); //Replace with actual Welcome Message
                         
                         socket.car.speed = 5;
                         socket.car.rClick = false;
@@ -181,6 +181,15 @@ module.exports.Server = {
                     game.players.splice(index, 1);
                     if(mainServer != null)
                         mainServer.write([4,game.players.length]);
+
+                    
+                    if(socket.car.followerArray.length > 0){
+                        socket.car.followerArray.forEach(elem => {
+                            elem.cBody.remove();
+                        });
+                    }
+
+                    socket.car.followerArray = [];
                     socket.car =  {spectating:true, position: {x:socket.car.position.x, y:socket.car.position.y},id: socket.id, followerCountAtDeath:followerCount, removeManaArray:socket.car.removeManaArray}; 
                 
                     socket.inGame = false;

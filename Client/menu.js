@@ -62,7 +62,7 @@ var Menu = {
         };
 
         
-
+        this.app.renderer.backgroundColor = 0xffffff;
 
         
         TweenMax.ticker.fps(60);
@@ -73,7 +73,7 @@ var Menu = {
         this.app.stage.addChild(this.stage);
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         this.app.renderer.resize(this.app.screen.width*2, this.app.screen.height*2);
-
+        this.stage.tint = 0xff0000 ;
 
      this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
      this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
@@ -134,11 +134,6 @@ var Menu = {
         that.cCarIndex = Math.floor(Math.random() * 39);
 
 
-
-
-
-
-    
         that.app.view.style.position = 'absolute';
         that.app.view.style.left = '50%';
         that.app.view.style.top = '50%';
@@ -181,22 +176,14 @@ var Menu = {
             if(serverIP != "0")
                 that.manager.createSocket(serverIP);
         });
-
-
-        
-
-
-        //document.body.focus();
-        
         
         that.tilingSprite = new PIXI.extras.TilingSprite(
             spriteSheet["TextureBackground.png"],
-            that.app.screen.width * 2,
-            that.app.screen.height * 2
+            that.app.screen.width * 3,
+            that.app.screen.height * 3
         );
         that.tilingSprite.x = -20;
         that.tilingSprite.y = -10;
-       // that.tilingSprite.visible = false;
         that.viewport.addChild(that.tilingSprite);
         
         that.viewport.setChildIndex(that.tilingSprite,0);

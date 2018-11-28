@@ -18,6 +18,8 @@ var Game = {
         this.followerCount = 0;
         this.manaCount = 0;
         this.app = application;
+        this.worldX = 7500;
+        this.worldY = 5000;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
 
         //this.stage is a child of viewport and viewport is a  child of this.app.stage
@@ -202,15 +204,6 @@ var Game = {
 
         };
 
-        
-
-
-        
-        
-
-
-
-
         this.tilingSprite = new PIXI.extras.TilingSprite(
             this.spriteSheet["TextureBackground.png"],
             7500,
@@ -218,6 +211,34 @@ var Game = {
         );
         this.stage.addChild(this.tilingSprite);
         
+        this.resizeGame = (size) =>{
+            switch(size) {
+                case 0:
+                    this.worldX = 2500;
+                    this.worldY = 2500;
+                    break;
+                case 1:
+                    this.worldX = 7500;
+                    this.worldY = 5000;
+                    break;
+                case 2: 
+                    this.worldX = 10000;
+                    this.worldY = 7500;
+                    break;
+                case 3:
+                    this.worldX = 15000;
+                    this.worldY = 10000;
+                    break; 
+                default:
+                    this.worldX = 2500;
+                    this.worldY = 2500;
+            }
+
+            this.tilingSprite.width = this.worldX;
+            this.tilingSprite.height = this.worldY;
+        };
+
+
         this.stage.setChildIndex(this.tilingSprite,0);
 
 
@@ -417,8 +438,18 @@ var Game = {
     this.setStage(this.car.x - (this.app.renderer.width/2 ), this.car.y - (this.app.renderer.height/2),this.car.x - (this.app.screen.width/2 ), this.car.y - (this.app.screen.height/2));
       //  console.log(this.car.rotation);
       
+
+    if(this.car.x > this.worldX + 100 || this.car.y > this.worldY + 100 || this.car.x < -100 || this.car.y < -100 ){
+        
+        this.app.renderer.backgroundColor = 0xfc0000;
+    }
+    else{
+        this.app.renderer.backgroundColor = 0xffffff;
+    }
     
   },
+
+  
 
   draw: function(snapShot,timeDelta) {
     //console.log(snapShot);

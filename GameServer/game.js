@@ -20,15 +20,44 @@ module.exports.Game = {
 
     init: function (primus) { //Initilizes the game world and the socket connections. Need to refactor code to remove socket connection and process elsewhere
      this.primus = primus;
-        
-        
-        this.carLimit = 1;
+
+        this.worldSizeType = 0;
+        this.worldX = 2500;
+        this.worldY = 2500;
+        this.carLimit = 100;
+
+        this.resizeGame = (size) =>{
+            switch(size) {
+                case 0:
+                    this.worldX = 2500;
+                    this.worldY = 2500;
+                    break;
+                case 1:
+                    this.worldX = 7500;
+                    this.worldY = 5000;
+                    break;
+                case 2: 
+                    this.worldX = 10000;
+                    this.worldY = 7500;
+                    break;
+                case 3:
+                    this.worldX = 15000;
+                    this.worldY = 10000;
+                    break; 
+                default:
+                    this.worldX = 2500;
+                    this.worldY = 2500;
+            }
+
+            this.worldSizeType = size;
+        };
+
+        this.resizeGame(3);
              
         this.system = new Collisions();
         this.result = this.system.createResult();
 
-        this.worldY = 5000;
-        this.worldX = 7500;
+        
     
         var lastUpdate = Date.now();
         setInterval(this.tick.bind(this), 1000 / 60);
@@ -102,8 +131,9 @@ module.exports.Game = {
                     this.addCarFollower(newCar.follower, car,false, true);
                 }
             });
-            carLost.followerArray = [];
+            
             newCar.follower.garageCount += carLost.garageCount;
+            
             carLost.socket.kick(followerCountAtDeath);
             this.addCarFollower(newCar.follower, carLost,true, true);
         }
@@ -384,7 +414,24 @@ module.exports.Game = {
 
             });
 
-        player.followerArray.forEach(childCar => { //CHecks all the car Followers. 
+            if(player.position.x > this.worldX + 100 || player.position.y > this.worldY + 100 || player.position.x < -100 || player.position.y < -100){
+                if(player.timeOutside === null)
+                {
+                    player.timeOutside = Date.now();
+                }
+                else if ((Date.now() - player.timeOutside) >= 2500){
+                    player.socket.kick(player.followerArray.length);
+                    return;
+                }
+                
+            }
+            else{
+                player.timeOutside = null;
+            }
+
+        player.followerArray.forEach(childCar => {
+           
+            //CHecks all the car Followers. 
             potentials = childCar.cBody.potentials();
             potentials.forEach(body => {
                 if(body.par === undefined){ //Is Mana

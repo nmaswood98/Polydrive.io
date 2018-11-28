@@ -65,7 +65,8 @@ var Manager = {
                             case 1: //Welcome
                                     game.car.x = data[1];
                                     game.car.y = data[2];
-                                    game.car.id = data[3];
+                                    game.car.id = "Player";
+                                    game.resizeGame(data[3]);
                                     menu.hideMenu();
                                     game.show();
                                     game.car.swapTexture(menu.cCarIndex);
@@ -150,7 +151,7 @@ var Manager = {
     ticker: function(delta){
         
 
-      var d = new Date();
+                var d = new Date();
       //console.log(Date.now());
                 var currentTime = d.getTime() - this.travelTime;
                var offset = 100;
