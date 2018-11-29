@@ -48,6 +48,7 @@ var Menu = {
         
 
     init: function () {
+        
         this.primus = null;
         this.serverIP = null;
         //connect to server
@@ -90,15 +91,12 @@ var Menu = {
         
         
         window.addEventListener('resize',()=>{
-        
-  
-            // You can use the 'screen' property as the renderer visible
-            // area, this is more useful than view.width/height because
-            // it handles resolution
+
+            this.app.renderer.resize(window.innerWidth*2, window.innerHeight*2);
+            this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
+            this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
+            this.updateSize();
             
-           
-          
-       
         });
 
         this.viewport = this.stage;
@@ -204,15 +202,9 @@ var Menu = {
         startButton.buttonMode = true;
        
         
-     /* var lb = Object.create(Leaderboard);
-      lb.init(that.app);
-      lb.updateLeaderboard([{name:'nabhan',score:2232},{name:"maswood",score:3232},{name:"pablo",score:23892}]);
- textbox.style.display = "none";*/
+
         startButton.on('pointerdown', ()=>{
    
-           // textbox.style.display = "none";
-           // while(that.app.stage.children[0]) { that.app.stage.removeChild(that.app.stage.children[0]); }
-                
 
 
             if(!that.manager){
@@ -335,13 +327,7 @@ var Menu = {
 
     that.app.ticker.add(delta => {that.ticker(delta);});
 
-   // var textSample = that.createText(20,0,'Score: 0',35,'left');
-  // that.lBoard = Leaderboard.create(that.app);
-  // that.sLabel = ScoreLabel.create(that.app);
-     
-  // that.lBoard.updateLeaderboard([{name:'nabhan',score:121},{name:"maswood",score:1},{name:"pablo",score:1},]);
-    //console.log(that.lBoard.getBounds());
-    
+
     
    
     var carChangeText = new PIXI.Text('Change Car', {
@@ -465,13 +451,30 @@ var Menu = {
 
     };
 
-helperText.switchBetween([
-"Capture Cars by driving into them!",
-"Click to go faster!",
-"Right Click makes your captured cars go faster!",
-"Click and Drag your captured cars for a speed boost!",
-"Hold D to lock direction or F to stop moving!"
-]);
+    helperText.switchBetween([
+        "Capture Cars by driving into them!",
+        "Click to go faster!",
+        "Right Click makes your captured cars go faster!",
+        "Click and Drag your captured cars for a speed boost!",
+        "Hold D to lock direction or F to stop moving!"
+    ]);
+
+
+    that.updateSize = function(){
+        startButton.x = that.app.screen.width / 2;
+        startButton.y = that.app.screen.height / 2;
+
+        logo.x = that.app.screen.width / 2;
+        logo.y = that.app.screen.height/4.75;
+
+        carChangeText.x = 20;
+        carChangeText.y = that.app.screen.height - carChangeText.height - 20;
+
+        helperText.x = that.app.screen.width / 2;
+        helperText.y = that.app.screen.height / 3.46; //3.46
+        console.log(carChangeText.carpicker.updatePosition);
+        carChangeText.carpicker.updatePosition();
+    };
 
 
 
@@ -668,7 +671,7 @@ var ModalView = {
         this.stage = new PIXI.Container();
         //this.stage.interactiveChildren = false;
         //this.stage.visible = false;
-        var graphics = new PIXI.Graphics();
+        var gBounds = new PIXI.Graphics();
         graphics.interactive = true;
         graphics.beginFill(0x242121);
         graphics.drawRect(0, 0, application.screen.width/2, application.screen.height/2);
@@ -697,6 +700,12 @@ var ModalView = {
        // instance.stage.x = application.screen.width/2;
         instance.stage.pivot.x = -application.screen.width/4;
         instance.stage.pivot.y = -application.screen.height/5;
+
+        instance.stage.updatePosition = function (){
+            instance.stage.pivot.x = -application.screen.width/4;
+            instance.stage.pivot.y = -application.screen.height/5;
+        };
+
         instance.stage.alpha = 0;
         return instance.stage;
     }
@@ -716,6 +725,7 @@ var CarPicker = {
         //this.stage.visible = false;
         var graphics = new PIXI.Graphics();
         graphics.interactive = true;
+        
         graphics.beginFill(0x242121);
         graphics.drawRect(0, 0, application.screen.width/2, application.screen.height/2);
         graphics.endFill();
@@ -766,7 +776,6 @@ var CarPicker = {
         var limit = Math.min(500,graphics.width/2.7155);
        // console.log();
         arrow.x = carSprite.x - limit;
-        //console.log(carSprite.x - arrow.x);
         arrow.y = graphics.height/2;
         arrow.scale.set(0.4);
         arrow.rotation = Math.PI;
@@ -782,6 +791,8 @@ var CarPicker = {
         graphics.addChild(arrow2);
 
         arrow2.on('pointerdown',(s)=>{
+       
+            
             if(cCar != 4){
                 cCar++;
                 carSprite.texture = spriteSheet[cCar + cColor];
@@ -894,13 +905,74 @@ var CarPicker = {
                 carSprite.texture = spriteSheet[cCar + cColor];
             }
 
-    
-                
-
-           
-
-
         });
+
+        this.stage.updateChildPositions = () =>{
+            
+            graphics.clear();
+            graphics.beginFill(0x242121);
+            graphics.drawRect(0, 0, application.screen.width/2, application.screen.height/2);
+            graphics.endFill();
+
+            graphics.calculateBounds();
+            let gBounds = {width:application.screen.width/2, height:application.screen.height/2  };
+           // console.log(graphics.width/2 + " " + application.screen.width/4 )
+
+            
+            limit = Math.min(500,gBounds.width/2.7155);
+            title.x = gBounds.width/2 ;
+            title.y = 100 ;
+            
+            carSprite.x =  gBounds.width/2;
+            carSprite.y = gBounds.height/2;
+
+            arrow.x = carSprite.x - limit;
+            arrow.y = gBounds.height/2;
+
+            arrow2.x = carSprite.x + limit;
+            arrow2.y = gBounds.height/2;
+
+            colors.clear();
+            colors.lineStyle(0);
+            colors.beginFill(0xff0000);
+            colors.drawCircle(gBounds.width/9, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0x8e98f2);
+            colors.drawCircle((gBounds.width/9) * 2, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xa6f58f);
+            colors.drawCircle((gBounds.width/9) * 3, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xcc85fc);
+            colors.drawCircle((gBounds.width/9) * 4, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xf68ada);
+            colors.drawCircle((gBounds.width/9) * 5, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xa5aa5d);
+            colors.drawCircle((gBounds.width/9) * 6, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xfcc884);
+            colors.drawCircle((gBounds.width/9) * 7, gBounds.height - 100,30);
+            colors.endFill();
+
+            colors.lineStyle(0);
+            colors.beginFill(0xbe9763);
+            colors.drawCircle((gBounds.width/9) * 8, gBounds.height - 100,30);
+            colors.endFill();
+        };
 
         graphics.addChild(colors);
 
@@ -913,9 +985,18 @@ var CarPicker = {
         var instance = Object.create(this);
         instance.init(application);
         application.stage.addChild(instance.stage);
-       // instance.stage.x = application.screen.width/2;
-        instance.stage.pivot.x = -application.screen.width/4;
-        instance.stage.pivot.y = -application.screen.height/5;
+       instance.stage.pivot.x = -application.screen.width/4;
+       instance.stage.pivot.y = -application.screen.height/5;
+
+        instance.stage.updatePosition = function (){
+
+            instance.stage.x = 0;
+            instance.stage.y = 0;
+            instance.stage.pivot.x = -application.screen.width/4;
+            instance.stage.pivot.y = -application.screen.height/5;
+            instance.stage.updateChildPositions();
+
+        };
         instance.stage.alpha = 0;
         return instance.stage;
     }
