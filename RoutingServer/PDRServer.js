@@ -3,7 +3,7 @@
 
 var fs = require('fs');
 
-let rawdata = fs.readFileSync('../GameServer/gameServer.json');  
+let rawdata = fs.readFileSync('../GameServer/gameServer.JSON');  
 let gameServerIPs = JSON.parse(rawdata);  
 //console.log(gameServerIPs.Local); 
 

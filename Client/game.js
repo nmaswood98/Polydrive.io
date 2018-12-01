@@ -730,7 +730,7 @@ var Game = {
                else{
 
                }
-               
+               this.app.renderer.render();
            } ///while end
 
            amount = this.OnScreen.children.length - amount;
