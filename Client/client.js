@@ -11,7 +11,7 @@ var Manager = {
     init: function(serverIP,application,name,menu){
         
         this.app = application;
-        console.log(serverIP);
+        ////console.log(serverIP);
         var primus = null;
         var socket = {};
         this.travelTime = 0;
@@ -30,10 +30,21 @@ var Manager = {
         game.isDrawing = false;
         game.hide();
 
+
+        window.addEventListener('resize',()=>{
+
+            this.app.renderer.resize(window.innerWidth*2, window.innerHeight*2);
+            this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
+            this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
+            menu.updateSize();
+            game.updateSize(window.innerWidth*2, window.innerHeight*2);
+            
+        });
+
         this.drawFrame = game.draw.bind(game); 
 
         this.hideGame = game.hide.bind(game);
-        console.log(menu + "49");
+        ////console.log(menu + "49");
         this.hideMenu = menu.hideMenu.bind(menu);
         this.showMenu = menu.showMenu.bind(menu);
 
@@ -49,6 +60,8 @@ var Manager = {
                 
             }
         };
+
+        
 
         var initializeSocket = (p) =>{
             game.setSocket(p);
@@ -131,7 +144,7 @@ var Manager = {
                 sc = 0.005*amount + 2;
 
           //  game.zoomTo(sc);
-            console.log(sc);
+            //console.log(sc);
             for(var i = 0; i < amount; i++)
                 socket.emit("newC");
         };
@@ -152,7 +165,7 @@ var Manager = {
         
 
                 var d = new Date();
-      //console.log(Date.now());
+      ////console.log(Date.now());
                 var currentTime = d.getTime() - this.travelTime;
                var offset = 100;
            
