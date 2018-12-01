@@ -51,7 +51,7 @@ module.exports.Server = {
             socket.inGame = false; 
             socket.spectating = false;
             socket.car = null;
-            console.log("Client Connected");
+            //console.log("Client Connected");
             
             sendUpdates();
             socket.on('data', function (data) {///data should always be an array
@@ -90,10 +90,10 @@ module.exports.Server = {
                         if(mainServer != null)
                             mainServer.write([4,game.players.length]);
                         else
-                            console.log("What is going on");
+                            console.log("Line 93 Shouldn't Run");
 
                         socket.inGame = true;
-                        console.log("REACHED LINE 86 BEFORE CRASH");
+                        //console.log("REACHED LINE 86 BEFORE CRASH");
                         }
                         else{
                             socket.write([5]);
@@ -215,7 +215,7 @@ module.exports.Server = {
 
         primus.on('disconnection', function (socket) {
            //disconnect code
-           console.log("Disconnecting Socket0");
+           //console.log("Disconnecting Socket0");
            if(socket.inGame){
                delete playerNames[socket.car.name];
            var index = game.players.indexOf(socket.car);

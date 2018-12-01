@@ -52,7 +52,7 @@ module.exports.Game = {
             this.worldSizeType = size;
         };
 
-        this.resizeGame(3);
+        this.resizeGame(1);
              
         this.system = new Collisions();
         this.result = this.system.createResult();
@@ -115,6 +115,23 @@ module.exports.Game = {
 
     },
 
+    shouldAddCar: function(player){
+        let carCount = player.followerArray.length + player.garageCount;
+        let barrierToPass = 10000;
+
+        if(carCount <= 10){
+            barrierToPass = (60 * carCount) + 40;
+        }
+        else if (carCount <= 15){
+            barrierToPass = (90 * carCount) + 40;
+        }
+
+        if((player.manaCount >= barrierToPass) && (carCount <= 50))
+            return true;
+        
+        return false;
+    },
+
     playerLost: function (carLost, newCar) { // BUG IS HERE
         /* newCar hit carLost. If carLost is a player then we should kick them from the game while transfering all cars the player had to the new player
             If carLost is just an enemy car then we should just call addCarFollower which will result in carLost tranfering ownership to newCar */
@@ -131,11 +148,11 @@ module.exports.Game = {
                     this.addCarFollower(newCar.follower, car,false, true);
                 }
             });
-            
+            carLost.followerArray = []; ///////THis is required for some reason. 
             newCar.follower.garageCount += carLost.garageCount;
             
             carLost.socket.kick(followerCountAtDeath);
-            this.addCarFollower(newCar.follower, carLost,true, true);
+            this.addCarFollower(newCar.follower, carLost,false, true);
         }
         else{
             let carLostFollower = carLost.follower;
@@ -168,14 +185,17 @@ module.exports.Game = {
         }
         //Changing Car Follower
         //
+
         if(shouldRemove){
-        var index = carFollower.follower.followerArray.indexOf(carFollower);
-        if (index > -1){
-            carFollower.follower.followerArray.splice(index,1);
+            
+            var index = carFollower.follower.followerArray.indexOf(carFollower);
+            if (index > -1){
+                carFollower.follower.followerArray.splice(index,1);
+            }
+            else
+                console.log("ERROR at line 377");
         }
-        else
-            console.log("ERROR at line 377");
-        }
+
         if(playerCar.followerArray.length < this.carLimit){
             playerCar.followerArray.push(carFollower);
             playerCar.followers++;
@@ -187,6 +207,8 @@ module.exports.Game = {
             carFollower.cBody.remove();
             playerCar.garageCount++;
         }
+
+       
         
 
 
@@ -387,11 +409,9 @@ module.exports.Game = {
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
                     this.addMana();
-                    if(player.manaCount  === 1){
-                        //adding new player\
-                        
+
+                    if(this.shouldAddCar(player)){    
                             this.newCarFollower(player);
-                        
                     }
 
 
@@ -403,7 +423,9 @@ module.exports.Game = {
                         if(player.cBody.head.collides(body.head)){
                             console.log("ERROR");
                         }else{
-                            this.playerLost(body.par,player);
+
+                            if(player.speed >= body.par.speed)
+                                this.playerLost(body.par,player);
                             
                         }
                         player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
@@ -453,26 +475,29 @@ module.exports.Game = {
                     var manaIndex = this.manaPool.indexOf(body);
                     this.manaPool.splice(manaIndex, 1);
                     this.addMana();
-                    if(player.manaCount  === 1){
-                      
-                        
+
+                    if(this.shouldAddCar(player)){    
                             this.newCarFollower(player);
-                        
                     }
 
                 }
                 else if(childCar.follower.id != body.par.follower.id){ //Enemy Car Collision
 
+
                     if(childCar.cBody.head.collides(body,this.result)) {
                         if(childCar.cBody.head.collides(body.head)){
                                 console.log("ERROR");
                         }else{
+
+                            if(childCar.speed >= body.par.speed)
                                 this.playerLost(body.par,player);
                                
                         }
                         childCar.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
 
                     }
+
+
 
                 }
 

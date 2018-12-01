@@ -13,13 +13,14 @@ var Game = {
         this.setSocket = (p) => {
             this.primus = p;
         };
-        console.log(carIndex);
+        //console.log(carIndex);
         this.carIndex = carIndex;
         this.followerCount = 0;
         this.manaCount = 0;
         this.app = application;
         this.worldX = 7500;
         this.worldY = 5000;
+        this.zoomScale = 1;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
 
         //this.stage is a child of viewport and viewport is a  child of this.app.stage
@@ -33,6 +34,8 @@ var Game = {
             interaction: this.app.renderer.interaction
         });
 
+
+
         
         viewport.onMax = true;
         viewport.zoomedWithMouseWheel = false;
@@ -43,7 +46,7 @@ var Game = {
         viewport.clampZoom({maxWidth: this.app.renderer.width * 1,maxHeight: this.app.renderer.height * 1});
         var hit = false;
         viewport.on("snap-zoom-start",(info)=>{
-            console.log("HEY MAN WHAT IS UP ");
+           // console.log("HEY MAN WHAT IS UP ");
             viewport.onMax = false;
             hit = true;
         
@@ -51,25 +54,25 @@ var Game = {
 
         this.zoomTo = (amount,immediatly)=>{ //Scales canvas height and width based on amount of carss you have
             
-            var sc = 0.009467213*amount + 1.090164;
+            this.zoomScale = 0.009467213*amount + 1.090164;
             if(amount < 15){
-                sc = 1;
+                this.zoomScale = 1;
             }
             else if (amount >=200)
-                sc = 0.005*amount + 2;
+            this.zoomScale = 0.005*amount + 2;
             
             
             if(immediatly)
-                viewport.snapZoom({width: this.app.renderer.width * sc,height: this.app.renderer.height * sc,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
+                viewport.snapZoom({width: this.app.renderer.width * this.zoomScale,height: this.app.renderer.height * this.zoomScale,center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
        
-                viewport.clampZoom({maxWidth: this.app.renderer.width * sc,maxHeight: this.app.renderer.height * sc});
+                viewport.clampZoom({maxWidth: this.app.renderer.width * this.zoomScale,maxHeight: this.app.renderer.height * this.zoomScale});
             };
         
            
 
        this.consoleZoom = ()=>{
            
-            console.log(viewport.hitArea);
+          //  console.log(viewport.hitArea);
 
 
        };
@@ -81,7 +84,7 @@ var Game = {
             this.sLabel.visible = false;
             this.garageLabel.visible = false;
             
-            console.log(this);
+           // console.log(this);
         }
 
         this.show = ()=>{
@@ -168,7 +171,12 @@ var Game = {
             
             if( typeof message === 'number'){
                 notificaitonText.scoreCount += message;
-                notificaitonText.text = "+" + notificaitonText.scoreCount + " Car Captured";
+
+                if(notificaitonText.scoreCount === 1)
+                    notificaitonText.text =  notificaitonText.scoreCount + " Car Captured";
+                else
+                    notificaitonText.text =  notificaitonText.scoreCount + " Cars Captured";
+
             }else{
                 notificaitonText.text = message;
             }
@@ -282,6 +290,29 @@ var Game = {
         this.build();
           
         this.intialized = true;
+
+
+
+        this.updateSize =  (width,height) =>{
+           // console.log(this.app.screen.width);
+            viewport.resize(width,height);
+            viewport.wheel({center:{x:this.app.screen.width/2,y:this.app.screen.height/2}});
+            viewport.clampZoom({maxWidth: this.app.renderer.width * this.zoomScale,maxHeight: this.app.renderer.height * this.zoomScale});
+            viewport.moveCenter({x:this.app.screen.width/2,y:this.app.screen.height/2});
+            viewport.snapZoom({width: this.app.renderer.width * this.zoomScale,height: this.app.renderer.height * this.zoomScale,center:{x:this.app.screen.width/2,y:this.app.screen.height/2},time: 1});
+        
+        
+            notificaitonText.x = this.app.screen.width / 2;
+            notificaitonText.y = this.app.screen.height / 9;
+
+            this.lBoard.updatePosition();
+            this.sLabel.updatePosition();
+            this.garageLabel.updatePosition();
+        
+        };
+
+
+
     },
 
     build: function(){
@@ -320,7 +351,7 @@ var Game = {
         }.bind(gameThis));
 
         this.car.swapTexture = (index)=>{
-            console.log(index);
+            //console.log(index);
             this.carIndex = index;
             this.car.texture = this.spriteSheet[this.carIndex];
         };
@@ -421,14 +452,13 @@ var Game = {
         if(this.starting)
      if(this.starting && this.car.id != -1){
         if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-            //socket.emit("playerTick",{angle: this.carrotation, stop: false, leftClick: this.lClick,rightClick: this.rClick},this.launchedCar);
-            this.primus.write(["playerTick",this.carrotation,false,this.lClick,this.rClick,this.launchedCar]);
+           // this.primus.write(["playerTick",this.carrotation,false,this.lClick,this.rClick,this.launchedCar]);
+            this.primus.write(["playerTick",this.carrotation,false,this.rClick,this.lClick,this.launchedCar]);
             this.launchedCar = null;
         }
         else{
            
-         //   socket.emit("playerTick",{angle: this.carrotation, stop: true,leftClick: this.lClick},this.launchedCar);
-            this.primus.write(["playerTick",this.carrotation,true,this.lClick,this.rClick,this.launchedCar]);
+            this.primus.write(["playerTick",this.carrotation,true,this.rClick,this.lClick,this.launchedCar]);
             this.launchedCar = null;
         }
     }
@@ -481,7 +511,7 @@ var Game = {
                         if(snapShot[cursor+2] != this.followerCount){
                             
                             if(snapShot[cursor+2] > this.followerCount)
-                                this.app.notify((snapShot[cursor+1] - this.manaCount));
+                                this.app.notify((snapShot[cursor+2] - this.followerCount));
                             else{
                                 
                                
@@ -667,7 +697,7 @@ var Game = {
                            lastUpdatedIsPlayer = false;
                       }
                       else if (lastUpdatedIsPlayer){
-                        console.log(carSprite.id);
+                      //  console.log(carSprite.id);
                            carSprite.interactive = true;
                            carSprite.on('pointerdown', () => {
                                this.line.car = carSprite;
