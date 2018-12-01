@@ -71,9 +71,11 @@ var Manager = {
                                     let d = new Date();
                                     let timeStamp = data.pop();
                                     let currentTime = d.getTime() - this.travelTime; //add /2
+                                    
                                     this.travelTime =  Date.now() - timeStamp;
                                     let serverUpdate = [timeStamp, data];
                                     this.serverUpdates.push(serverUpdate);
+                                 //   console.log(this.serverUpdates.length);
                                     break;
                             case 1: //Welcome
                                     game.car.x = data[1];
@@ -163,31 +165,36 @@ var Manager = {
 
     ticker: function(delta){
         
-
-                var d = new Date();
-      ////console.log(Date.now());
-                var currentTime = d.getTime() - this.travelTime;
-               var offset = 100;
-           
-               var canDraw = false;
-               
-               if(true){
-                  for(var i = 0; i < this.serverUpdates.length;i++ ) {
-                      
-                      element = this.serverUpdates[i];
-                      var currentRenderingTime = currentTime - offset;
-                      
-                      if(element[0] >= currentRenderingTime ){
+        var d = new Date();
+        ////console.log(Date.now());
+                  var currentTime = d.getTime() - this.travelTime;
+                 var offset = 200;
+             
+                 var canDraw = false;
+                 
+                 if(true){
+                    for(var i = 0; i < this.serverUpdates.length;i++ ) {
                         
-                      // this.drawFrame(element[1],element[2],element[0] - currentRenderingTime);
-                      this.drawFrame(element[1],element[0] - currentRenderingTime);
-                      
-                       this.serverUpdates.splice(0,i + 1 );
-                      break;
-                      }
-       
-                  }
-               }
+                        element = this.serverUpdates[i];
+                        var currentRenderingTime = currentTime - offset;
+                        
+                        if(element[0] >= currentRenderingTime ){
+                        let t = element[0] - currentRenderingTime;
+                        this.drawFrame(element[1],t);
+                         this.serverUpdates.splice(0,i + 1 );
+                         return;
+                        break;
+                        }
+                        else{
+                          this.drawFrame(element[1],offset);
+                          console.log(t);
+                          this.serverUpdates.splice(0,i + 1 );
+                          return;
+                          
+                        }
+         
+                    }
+                 }
 
 
 

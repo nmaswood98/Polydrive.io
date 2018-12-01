@@ -489,7 +489,7 @@ module.exports.Game = {
                                 console.log("ERROR");
                         }else{
 
-                            if(childCar.speed >= body.par.speed)
+                            
                                 this.playerLost(body.par,player);
                                
                         }
