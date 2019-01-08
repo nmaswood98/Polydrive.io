@@ -482,6 +482,7 @@ var Game = {
   
 
   draw: function(snapShot,timeDelta) {
+      
     //console.log(snapShot);
             /* snapShot is an array of the world given by the server. A cursor is used to iterate over the array and draw it on screen. Item is the element which the cursor points to. 
                 If item is -1 then the next 6 elemnts including item is the player Information so we process and add 6 to the cursor then continue the loop.
@@ -533,9 +534,10 @@ var Game = {
 
                    
 
-                 //  console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
+                
+                   //  console.log([snapShot[cursor],snapShot[cursor + 1],snapShot[cursor + 2],snapShot[cursor + 3],snapShot[cursor + 4],snapShot[cursor + 5]]);
                    TweenMax.to(this.car,timeDelta/1000,{
-                       ease:Linear.easeNone,
+                       ease:Linear.ease,
                        pixi:{x:snapShot[cursor+3],y:snapShot[cursor+4]},
                        directionalRotation:{
                            rotation:  (snapShot[cursor+5] - (Math.PI/2)) + "_short",
@@ -543,7 +545,7 @@ var Game = {
                        },
                        overwrite:"all"
                    });
-
+                   
                    lastUpdatedIsPlayer = true;
                    cursor = cursor + 7;
                    continue;

@@ -15,7 +15,7 @@ function getRndInteger(min, max) {
 
 module.exports.Server = {
     init: function(server){
-        this.updateRate = 60;
+        this.updateRate = 20;
         var mainServer = null;
         var playerNames = {};
 
@@ -256,7 +256,7 @@ module.exports.Server = {
                 var d = new Date();
                 let snapShot = createSnapShot(socket.car);
                 snapShot.push(Date.now());
-
+              //  console.log(Date.now());
                 socket.write(snapShot);
 
                 if(sendLeaderBoard)

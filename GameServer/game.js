@@ -92,7 +92,7 @@ module.exports.Game = {
         };
 
 
-        for(var i = 0;i < 500;i++){
+        for(var i = 0;i < 0;i++){
             this.addMana();
    
 

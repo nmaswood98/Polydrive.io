@@ -36,7 +36,7 @@ var Manager = {
             this.app.renderer.resize(window.innerWidth*2, window.innerHeight*2);
             this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
             this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
-            menu.updateSize();
+            menu.updateSize();  
             game.updateSize(window.innerWidth*2, window.innerHeight*2);
             
         });
@@ -68,12 +68,18 @@ var Manager = {
             p.on('data',  (data) => {
                 switch(data[0]) {
                             case 0: //draw ///Check if scope effected this code
+                                    
                                     let d = new Date();
                                     let timeStamp = data.pop();
-                                    let currentTime = d.getTime() - this.travelTime; //add /2
+                                    let currentTime = d.getTime() - this.travelTime; //add
+                                    
                                     this.travelTime =  Date.now() - timeStamp;
+                                  //  console.log(Date.now());
                                     let serverUpdate = [timeStamp, data];
                                     this.serverUpdates.push(serverUpdate);
+                                    if(this.serverUpdates.length == 2){
+                                        this.drawGame(this.serverUpdates);
+                                    }
                                     break;
                             case 1: //Welcome
                                     game.car.x = data[1];
@@ -110,6 +116,11 @@ var Manager = {
                                     console.log("ERROR: Unrecognized packet from the server", data);
                 }
               });
+
+              p.on('incoming::ping',  (data) => {
+                  console.log("Ping");
+              });
+              
 
         };
 
@@ -161,26 +172,35 @@ var Manager = {
         this.intialized = true;
     },
 
+    drawGame: function(snapShotArray){
+        var offset = 200;
+      //  this.drawFrame(snapShotArray[0][1],0);
+        this.drawFrame(snapShotArray[0][1],offset);
+        snapShotArray.splice(0,1);
+    },
+
+
     ticker: function(delta){
-        
+        /*
 
                 var d = new Date();
       ////console.log(Date.now());
-                var currentTime = d.getTime() - this.travelTime;
-               var offset = 200;
-           
+                var boocurrentTime = d.getTime() - this.travelTime;
+               var offset = 100;
+                 //   console.log(this.serverUpdates.length);
                var canDraw = false;
                
                if(true){
                   for(var i = 0; i < this.serverUpdates.length;i++ ) {
                       
                       element = this.serverUpdates[i];
-                      var currentRenderingTime = currentTime - offset;
+                      var currentRenderingTime = currentTime - offset; 
                       
                       if(element[0] >= currentRenderingTime ){
                         
                       // this.drawFrame(element[1],element[2],element[0] - currentRenderingTime);
-                      this.drawFrame(element[1],element[0] - currentRenderingTime);
+                     // console.log(this.travelTime);
+                      this.drawFrame(element[1],offset + Math.abs(this.travelTime) );
                       
                        this.serverUpdates.splice(0,i + 1 );
                       break;
@@ -190,7 +210,7 @@ var Manager = {
                }
 
 
-
+*/
     }
  
 
