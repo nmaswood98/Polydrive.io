@@ -182,7 +182,6 @@ var Manager = {
 
     ticker: function(delta){
         /*
-
                 var d = new Date();
       ////console.log(Date.now());
                 var boocurrentTime = d.getTime() - this.travelTime;
@@ -208,8 +207,6 @@ var Manager = {
        
                   }
                }
-
-
 */
     }
  

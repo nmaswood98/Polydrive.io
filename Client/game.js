@@ -125,7 +125,8 @@ var Game = {
         ///
       
         //document.body.appendChild(this.app.view);
-        this.app.renderer.plugins.interaction.supportsTouchEvents = true;
+      //  this.app.renderer.plugins.interaction.supportsTouchEvents = true;
+      // this.app.renderer.plugins.interaction.autoPreventDefault = false
         this.mouse = this.app.renderer.plugins.interaction.mouse.global;
         this.stage.addChild(this.OnScreen);
 

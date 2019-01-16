@@ -89,8 +89,10 @@ module.exports.Server = {
                         
                         if(mainServer != null)
                             mainServer.write([4,game.players.length]);
-                        else
-                            console.log("Line 93 Shouldn't Run");
+                        else{
+
+                        }
+                            
 
                         socket.inGame = true;
                         //console.log("REACHED LINE 86 BEFORE CRASH");
