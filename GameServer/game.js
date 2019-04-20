@@ -25,6 +25,11 @@ module.exports.Game = {
         this.worldX = 2500;
         this.worldY = 2500;
         this.carLimit = 100;
+        
+        this.playerSpeed = 7;
+        this.playerBoostSpeed = 20; 
+        this.followerCarSpeed = 5;
+        this.followerBoostSpeed = 40;
 
         this.resizeGame = (size) =>{
             switch(size) {
@@ -358,7 +363,7 @@ module.exports.Game = {
 
                 if(carFollower.launching){
                     
-                    this.moveCar(dt,carFollower,carFollower.launchAngle,30);
+                    this.moveCar(dt,carFollower,carFollower.launchAngle,this.followerBoostSpeed);
                 }
                 else {
                     

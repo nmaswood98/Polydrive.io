@@ -83,7 +83,7 @@ module.exports.Server = {
 
                         socket.write([1,socket.car.position.x,socket.car.position.y,game.worldSizeType]); //Replace with actual Welcome Message
                         
-                        socket.car.speed = 5;
+                        socket.car.speed = game.playerSpeed;
                         socket.car.rClick = false;
                         game.players.push(socket.car);
                         
@@ -137,19 +137,19 @@ module.exports.Server = {
                             if (data[2] == false){
                                 socket.car.stopped = false;
             
-                                if (socket.car.speed >= 4.8 && socket.car.speed <= 5.1) {
-                                    socket.car.speed = 5;
+                                if (socket.car.speed >= (game.playerSpeed - .2) && socket.car.speed <= (game.playerSpeed + .1)) {
+                                    socket.car.speed = game.playerSpeed;
                                 }
                                 
-                                if (socket.car.speed < 5) { 
+                                if (socket.car.speed < game.playerSpeed) { 
                                     socket.car.speed += 0.2; 
                                 }
                                 else if (data[3] === true || data[4] === true) {
-                                    if (socket.car.speed <= 15) {
+                                    if (socket.car.speed <= game.playerBoostSpeed) {
                                     socket.car.speed += 0.35;
                                     }
                                 }
-                                else if (socket.car.speed > 5) {
+                                else if (socket.car.speed > game.playerSpeed) {
                                     socket.car.speed = socket.car.speed * 0.96;
                                 }
                                     game.moveCar(1,socket.car, data[1], socket.car.speed);

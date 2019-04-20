@@ -5,7 +5,11 @@
   "main": "PDServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --max-old-space-size=4076 PDServer.js"
+    "start": "cd RoutingServer && pm2 start PDRServer.js && cd .. && cd GameServer && pm2 start PDServer.js",
+    "start-logs":"cd RoutingServer && nodemon PDRServer.js & cd .. && cd GameServer && nodemon PDServer.js",
+    "stop": "pm2 stop all",
+    "destroy": "pm2 delete all"
+
   },
   "author": "",
   "license": "ISC",
