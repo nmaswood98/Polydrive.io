@@ -33,16 +33,30 @@ app.use(express.static(publicPath));
 app.use("/Client/index.html", express.static(publicPath + '/Client/index.html'));
 app.use("/pixi.js", express.static(publicPath + '/Assets/pixi.js'));
 
-app.use("/client.js", express.static(publicPath + '/Distribution/client.js'));
-app.use("/game.js", express.static(publicPath + '/Distribution/game.js'));
-app.use("/menu.js", express.static(publicPath + '/Distribution/menu.js'));
+var distrubtion = false; 
+
+if (distrubtion) {
+  app.use("/client.js", express.static(publicPath + '/Distribution/client.js'));
+  app.use("/game.js", express.static(publicPath + '/Distribution/game.js'));
+  app.use("/menu.js", express.static(publicPath + '/Distribution/menu.js'));
+  app.use("/primus/primus.js", express.static(publicPath + '/Distribution/primus.js'));
+}
+else {
+  app.use("/client.js", express.static(publicPath + '/Client/client.js'));
+  app.use("/game.js", express.static(publicPath + '/Client/game.js'));
+  app.use("/menu.js", express.static(publicPath + '/Client/menu.js'));
+  app.use("/primus/primus.js", express.static(publicPath + '/Assets/primus.js'));
+}
+
+
+
 
 app.use("/polydriveSpriteSheet.png", express.static(publicPath + '/Assets/polydriveSpriteSheet.png'));
 app.use("/polydriveSpriteSheet.json", express.static(publicPath + '/Assets/polydriveSpriteSheet.json'));
 
 
 app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/socket.io/socket.io.js'));
-app.use("/primus/primus.js", express.static(publicPath + '/Distribution/primus.js'));
+
 
 var gameServerSockets = {};
 Object.keys(gameServerIPs).forEach(function(k){

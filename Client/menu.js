@@ -65,6 +65,7 @@ var Menu = {
         
         this.app.renderer.backgroundColor = 0xffffff;
 
+
         
         TweenMax.ticker.fps(60);
         this.app.mouse = this.app.renderer.plugins.interaction.mouse.global;
@@ -234,6 +235,8 @@ var Menu = {
             }
 
         });
+
+
 
 
         that.viewport.addChild(startButton);
@@ -503,7 +506,7 @@ var Menu = {
     
 
     ticker: function(delta){
-
+        
    
     }
 
@@ -984,6 +987,92 @@ var CarPicker = {
         return instance.stage;
     }
 };
+
+var CoolDownBar = {
+    init: function (application, x, y, length, rate) {
+        let bar = new PIXI.Graphics();
+        let currentLength = 0;
+        let colorOfBar = 0x00ff45;
+        let active = false;
+
+        this.changeActive = (value) => {
+            active = value;
+        };
+
+        this.barState = {barWasFull: false};
+        
+
+
+        bar.lineStyle(20, 0x33FF00);
+        bar.moveTo(this.currentLength, 30);
+        bar.lineTo(this.currentLength, 30);
+        application.stage.addChild(bar);
+
+
+        this.update = () => {
+            
+            if (this.barState.barWasFull) {
+                colorOfBar = 0x6d0101;
+            }
+            else if (currentLength > (length / 3) * 2) {
+                colorOfBar = 0xFF0000;
+
+            }
+            else if (currentLength > length / 3) {
+                colorOfBar = 0xFFFF00;
+
+            }
+            else {
+                colorOfBar = 0x00ff45;
+            }
+
+            if (active) {
+                if (currentLength < length && !this.barState.barWasFull) {
+                    currentLength += rate;
+
+                    bar.clear();
+                    bar.lineStyle(30, colorOfBar, 1);
+                    //aphics.beginFill(0xffFF00, 0.5);
+
+                    bar.moveTo(x, y);
+                    bar.lineTo(x + currentLength, y);
+
+                }
+                else {
+
+                    this.barState.barWasFull = true;
+                }
+
+            }
+            else {
+                if (currentLength > 0) {
+                    currentLength -= rate;
+
+                    bar.clear();
+                    bar.lineStyle(30, colorOfBar, 1);
+
+                    bar.moveTo(x, y);
+                    bar.lineTo(x + currentLength, y);
+
+                }
+                else {
+                    this.barState.barWasFull = false;
+                }
+
+            }
+
+        };
+
+    },
+    create: function (application, x, y, length, rate) {
+        let instance = Object.create(this);
+        console.log(instance);
+        instance.init(application, x, y, length, rate);
+
+        return instance;
+    }
+};
+
 
 var menu = Object.create(Menu);
 menu.init();

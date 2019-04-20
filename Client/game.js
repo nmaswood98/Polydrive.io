@@ -7,6 +7,19 @@ var Game = {
      mPlusX : 0,
      mPlusY : 0,
     amountFollowing : 0,
+
+    removeMana: function(){
+        
+        Object.keys(this.screenSprites).forEach((key)=>{
+            let sprite = this.screenSprites[key];
+            if(sprite.isMana){
+                this.stage.removeChild(sprite);
+                this.OnScreen.removeChild(sprite);
+                delete this.screenSprites[key];
+            }
+        });
+
+    },
     
     init: function(primus,application,name,carIndex){
         this.primus = primus;
@@ -78,13 +91,13 @@ var Game = {
        };
 
         this.hide = ()=>{
-    
+            this.removeMana();
             viewport.visible = false;
             this.lBoard.visible = false;
             this.sLabel.visible = false;
             this.garageLabel.visible = false;
-            
-           // console.log(this);
+           
+           // console.log(this);    
         }
 
         this.show = ()=>{
@@ -249,28 +262,44 @@ var Game = {
 
 
         this.stage.setChildIndex(this.tilingSprite,0);
+        var barSize = this.app.screen.width/1.5;
+        var barSprite = CoolDownBar.create(this.app,this.app.screen.width/2 - barSize/2,this.app.screen.height - 20 ,barSize,10);
+        this.barSpriteState = barSprite.barState;
+       // this.app.renderer.plugins.interaction.on('pointerdown', barSprite.changeActive.bind(null,true));
+      //  this.app.renderer.plugins.interaction.on('pointerup', barSprite.changeActive.bind(null,false));
+        this.app.ticker.add(barSprite.update);
 
 
-        this.app.renderer.plugins.interaction.on('mousedown',() => {
-            if(this.rClick)
+        this.app.renderer.plugins.interaction.on('mousedown', () => {
+            if (!this.starting)
+                return;
+
+            if (this.rClick)
                 this.rClick = false;
 
             this.lClick = true;
-           // console.log(this.lClick);
+            barSprite.changeActive(true);
+            // console.log(this.lClick);
         });
 
-        this.app.renderer.plugins.interaction.on('rightdown',() => {
-            if(this.lClick)
+        this.app.renderer.plugins.interaction.on('rightdown', () => {
+            if (!this.starting)
+                return;
+            if (this.lClick)
                 this.lClick = false;
 
             this.rClick = true;
-           // console.log(this.lClick);
+            barSprite.changeActive(true);
+            // console.log(this.lClick);
         });
 
-        this.app.renderer.plugins.interaction.on('rightup',() => {
+        this.app.renderer.plugins.interaction.on('rightup', () => {
+            if (!this.starting)
+                return;
             this.rClick = false;
             this.lClick = false;
-           // console.log(this.lClick);
+            barSprite.changeActive(false);
+            // console.log(this.lClick);
         });
 
 
@@ -278,6 +307,7 @@ var Game = {
         this.app.renderer.plugins.interaction.on('mouseup',  () => {
             this.lClick = false;
             this.rClick = false;
+            barSprite.changeActive(false);
           //  console.log(this.lClick);
         });
 
@@ -311,6 +341,9 @@ var Game = {
             this.garageLabel.updatePosition();
         
         };
+
+
+
 
 
 
@@ -431,9 +464,7 @@ var Game = {
          //   console.log((this.car.rotation * 180)/Math.PI);
 
            }
-
-                
-        
+           
         }
         else{
             this.carrotation = this.carrotation + angle2 * 0.2 ;
@@ -448,21 +479,24 @@ var Game = {
    //     console.log(Math.abs(this.car.rotation)* 180/Math.PI);
 
 
-      
-        
-        if(this.starting)
-     if(this.starting && this.car.id != -1){
-        if(this.checkDistance(mouseX,mouseY) && this.mouse.x != 0 && !this.aKey.down){
-           // this.primus.write(["playerTick",this.carrotation,false,this.lClick,this.rClick,this.launchedCar]);
-            this.primus.write(["playerTick",this.carrotation,false,this.rClick,this.lClick,this.launchedCar]);
-            this.launchedCar = null;
-        }
-        else{
-           
-            this.primus.write(["playerTick",this.carrotation,true,this.rClick,this.lClick,this.launchedCar]);
-            this.launchedCar = null;
-        }
-    }
+      if (this.barSpriteState.barWasFull === true) { //Detects the cooldown and prevents. WIll add server check for this later 
+          this.rClick = false;
+          this.lClick = false;
+      }
+
+      if (this.starting)
+          if (this.starting && this.car.id != -1) {
+              if (this.checkDistance(mouseX, mouseY) && this.mouse.x != 0 && !this.aKey.down) {
+                  // this.primus.write(["playerTick",this.carrotation,false,this.lClick,this.rClick,this.launchedCar]);
+                  this.primus.write(["playerTick", this.carrotation, false, this.rClick, this.lClick, this.launchedCar]);
+                  this.launchedCar = null;
+              }
+              else {
+
+                  this.primus.write(["playerTick", this.carrotation, true, this.rClick, this.lClick, this.launchedCar]);
+                  this.launchedCar = null;
+              }
+          }
    
   // console.log(this.app.renderer);
   if(this.starting)
@@ -867,3 +901,4 @@ var Game = {
  
 
 };
+

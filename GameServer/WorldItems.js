@@ -29,6 +29,8 @@ Car:  {
         this.moving = true;
         this.removed = false;
         this.spectating = false;
+
+        this.speed = 1;
         
         this.changeID= (i)=>{this.id = i; };
 

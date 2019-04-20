@@ -191,6 +191,12 @@ module.exports.Server = {
                         });
                     }
 
+                    game.manaPool.forEach((mana)=>{
+                        if(mana.playerTable.hasOwnProperty(socket.id)){
+                            delete mana.playerTable[socket.id];
+                        }
+                    });
+
                     socket.car.followerArray = [];
                     socket.car =  {spectating:true, position: {x:socket.car.position.x, y:socket.car.position.y},id: socket.id, followerCountAtDeath:followerCount, removeManaArray:socket.car.removeManaArray}; 
                 
@@ -280,7 +286,7 @@ module.exports.Server = {
             else if (amount >=200)
                 scale = 0.005*amount + 2;
 
-            let drawWidth = 2000 * scale, drawHeight = 1000 * scale; //Default Draw Distance betwen cars
+            let drawWidth = 2000 * scale, drawHeight = 1100 * scale; //Default Draw Distance betwen cars
             let maxX = car.position.x + drawWidth, maxY = car.position.y + drawHeight, minX = car.position.x - drawWidth, minY = car.position.y - drawHeight;
 
 

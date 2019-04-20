@@ -233,13 +233,14 @@ module.exports.Game = {
         
         if(car.follower === car){
             car.velocity = { x: speed * Math.cos(car.angle + Math.PI) * dt , y: speed * Math.sin(car.angle + Math.PI) * dt };
-            
+            car.speed = speed; 
             car.translate(car.velocity);
             return;
         }
 
         if(car.launching){
             car.velocity = {x:0,y:0};
+            car.speed = speed;
             car.velocity = { x: speed * Math.cos(car.angle + Math.PI) * dt, y: speed * Math.sin(car.angle + Math.PI) * dt };
             car.translate(car.velocity);
             return;
@@ -418,19 +419,28 @@ module.exports.Game = {
 
                 }
                 else if(player.follower.id != body.par.follower.id){ //Enemy Car Collision
-
+                    
                     if(player.cBody.head.collides(body,this.result)) {
                         if(player.cBody.head.collides(body.head)){
-                            console.log("ERROR");
-                        }else{
-
-                            if(player.speed >= body.par.speed)
-                                this.playerLost(body.par,player);
                             
+                        }else{
+                            
+                            if(player.speed >= body.par.speed){ //the error is in that body.par.speed is undfined
+                                this.playerLost(body.par,player);
+                            }
+                            else{
+                                console.log('player.speed' + player.speed + " body.par.speed" + body.par.speed);
+                            }
+                            
+
                         }
+
+                        
+                     
                         player.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
 
                     }
+
 
                 }
 
@@ -483,19 +493,24 @@ module.exports.Game = {
                 }
                 else if(childCar.follower.id != body.par.follower.id){ //Enemy Car Collision
 
-
+                    
                     if(childCar.cBody.head.collides(body,this.result)) {
                         if(childCar.cBody.head.collides(body.head)){
                                 console.log("ERROR");
                         }else{
 
-                            
+                            if(player.speed >= body.par.speed){ //the error is in that body.par.speed is undfined
                                 this.playerLost(body.par,player);
+                            }
+                            else{
+                                console.log('player.speed' + player.speed + " body.par.speed" + body.par.speed);
+                            }
                                
                         }
                         childCar.translate({x:-(this.result.overlap * this.result.overlap_x),y:-(this.result.overlap * this.result.overlap_y)});
-
+                        console.log("HELP");
                     }
+
 
 
 
