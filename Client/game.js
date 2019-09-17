@@ -424,7 +424,6 @@ var Game = {
 
 
   ticker: function(delta){
-      console.log(delta);
      
       //  this.consoleZoom();
      // console.log(this.followerCount);
