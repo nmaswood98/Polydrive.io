@@ -267,8 +267,9 @@ var Game = {
         this.barSpriteState = barSprite.barState;
        // this.app.renderer.plugins.interaction.on('pointerdown', barSprite.changeActive.bind(null,true));
       //  this.app.renderer.plugins.interaction.on('pointerup', barSprite.changeActive.bind(null,false));
+        this.app.ticker.maxFPS = 60;
         this.app.ticker.add(barSprite.update);
-
+     
 
         this.app.renderer.plugins.interaction.on('mousedown', () => {
             if (!this.starting)
