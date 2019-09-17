@@ -35,7 +35,8 @@ var Game = {
         this.worldY = 5000;
         this.zoomScale = 1;
         this.stage = new PIXI.Container(); //Main Container for everything in the game
-
+        PIXI.ticker.shared.minFPS = 60;
+        PIXI.ticker.shared.maxFPS = 60;
         //this.stage is a child of viewport and viewport is a  child of this.app.stage
         //viewport allows zooming of the view. this.stage contains all the sprites for the game
         var viewport = new  PIXI.extras.Viewport({ //for zooming
