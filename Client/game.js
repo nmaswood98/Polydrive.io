@@ -424,6 +424,12 @@ var Game = {
 
 
   ticker: function(delta){
+      
+      if(delta <= (1000/60)){
+          return;
+      }
+      
+      
       //  this.consoleZoom();
      // console.log(this.followerCount);
       var mouseX = this.mouse.x + this.mPlusX; var mouseY = this.mouse.y + this.mPlusY;
