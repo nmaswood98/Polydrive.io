@@ -77,8 +77,8 @@ var Menu = {
         this.app.renderer.resize(this.app.screen.width*2, this.app.screen.height*2);
         this.stage.tint = 0xff0000 ;
 
-     this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
-     this.app.renderer.view.style.height = this.app.screen.height/2 + "px";
+     this.app.renderer.view.style.width = this.app.screen.width + "px";
+     this.app.renderer.view.style.height = this.app.screen.height + "px";
         //console.log( this.app.screen.width);
       //  this.app.renderer.resize(this.app.screen.width/2, this.app.screen.height/2);
        
