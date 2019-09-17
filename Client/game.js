@@ -424,8 +424,8 @@ var Game = {
 
 
   ticker: function(delta){
-      
-      if(delta <= (1000/60)){
+      console.log(delta);
+      if(delta < (1000/60)){
           return;
       }
       
