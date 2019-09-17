@@ -74,7 +74,7 @@ var Menu = {
         this.stage = new PIXI.Container();
         this.app.stage.addChild(this.stage);
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-        this.app.renderer.resize(this.app.screen.width*2, this.app.screen.height*2);
+        this.app.renderer.resize(window.innerWidth*2, window.innerHeight*2);
         this.stage.tint = 0xff0000 ;
 
      this.app.renderer.view.style.width = this.app.screen.width/2 + "px";
