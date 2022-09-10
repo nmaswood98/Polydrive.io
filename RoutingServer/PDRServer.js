@@ -4,7 +4,7 @@
 var fs = require('fs');
 
 console.log(process.env.RAILWAY_STATIC_URL);
-let gameServerIPs =  {"east": `${process.env.RAILWAY_STATIC_URL}:5001`, "NA-East": `${process.env.RAILWAY_STATIC_URL}:5001`};
+let gameServerIPs =  {"east": `${"polydriveio-production.up.railway.app"}:80`, "NA-East": `${"polydriveio-production.up.railway.app"}:80`};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;
