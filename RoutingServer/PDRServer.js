@@ -3,9 +3,7 @@
 
 var fs = require('fs');
 
-let rawdata = fs.readFileSync('../GameServer/gameServer.JSON');  
-let gameServerIPs = JSON.parse(rawdata);  
-//console.log(gameServerIPs.Local); 
+let gameServerIPs =  {"east": "localhost:5001", "NA-East": "localhost:5001"};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;

@@ -6,10 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd RoutingServer && pm2 start PDRServer.js && cd .. && cd GameServer && pm2 start PDServer.js",
-    "start-logs":"cd RoutingServer && nodemon PDRServer.js & cd .. && cd GameServer && nodemon PDServer.js",
+    "start-logs": "cd RoutingServer && nodemon PDRServer.js & cd .. && cd GameServer && nodemon PDServer.js",
     "stop": "pm2 stop all",
     "destroy": "pm2 delete all"
-
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +16,7 @@
     "binary-pack": "^1.0.2",
     "detect-collisions": "^2.4.1",
     "express": "^4.16.3",
+    "pm2": "^5.2.0",
     "primus": "^7.2.2",
     "request": "^2.88.0",
     "socket.io": "^2.1.1"
