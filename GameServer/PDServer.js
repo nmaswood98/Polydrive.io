@@ -15,7 +15,7 @@ var publicPath = path.join(__dirname + "/..");
 var app = express();
 var HTTPserver = http.createServer(app);
 
-HTTPserver.listen(80, function () {
+HTTPserver.listen(5000, function () {
   console.log('Game Server is Up');
 
 });
