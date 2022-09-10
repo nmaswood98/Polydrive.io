@@ -3,8 +3,7 @@
 
 var fs = require('fs');
 
-console.log(process.env.RAILWAY_STATIC_URL);
-let gameServerIPs =  {"east": `${process.env.RAILWAY_STATIC_URL}:5000`, "NA-East": `${process.env.RAILWAY_STATIC_URL}:5000`};
+let gameServerIPs =  {"east": `${process.env.RAILWAY_STATIC_URL}`, "NA-East": `${process.env.RAILWAY_STATIC_URL}`};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;
@@ -102,6 +101,9 @@ HTTPserver.listen(80, function () {
   console.log('PDR Server is up');
 
 });
+
+var server = Object.create(Server);
+server.init(HTTPserver);
 
 
 
