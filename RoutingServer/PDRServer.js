@@ -100,7 +100,7 @@ app.get('/', function(req, res) {
 });
 
 HTTPserver.listen(80, function () {
-  //  //console.log('server is up biath');
+  console.log('PDR Server is up');
 
 });
 

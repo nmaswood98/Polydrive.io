@@ -16,7 +16,7 @@ var app = express();
 var HTTPserver = http.createServer(app);
 
 HTTPserver.listen(5001, function () {
-  //  console.log('server is up biath');
+  console.log('Game Server is Up');
 
 });
 

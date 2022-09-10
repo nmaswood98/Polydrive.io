@@ -5,7 +5,7 @@
   "main": "PDServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cd RoutingServer && pm2 start PDRServer.js && cd .. && cd GameServer && pm2 start PDServer.js",
+    "start": "cd RoutingServer && pm2 start PDRServer.js && cd .. && cd GameServer && pm2 start PDServer.js && pm2 logs tail",
     "start-logs": "cd RoutingServer && nodemon PDRServer.js & cd .. && cd GameServer && nodemon PDServer.js",
     "stop": "pm2 stop all",
     "destroy": "pm2 delete all"
