@@ -3,7 +3,8 @@
 
 var fs = require('fs');
 
-let gameServerIPs =  {"east": `${process.env.GAMEIP}:5001`, "NA-East": `${process.env.GAMEIP}:5001`};
+console.log(process.env.RAILWAY_STATIC_URL);
+let gameServerIPs =  {"east": `${process.env.RAILWAY_STATIC_URL}:5001`, "NA-East": `${process.env.RAILWAY_STATIC_URL}:5001`};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;
