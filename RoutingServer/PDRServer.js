@@ -3,7 +3,7 @@
 
 var fs = require('fs');
 
-let gameServerIPs =  {"east": "localhost:5001", "NA-East": "localhost:5001"};
+let gameServerIPs =  {"east": `${process.env.GAMEIP}:5001`, "NA-East": `${process.env.GAMEIP}:5001`};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;
