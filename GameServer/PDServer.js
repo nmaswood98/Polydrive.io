@@ -20,7 +20,6 @@ HTTPserver.listen(5000, function () {
 
 });
 
-
 var server = Object.create(Server);
 server.init(HTTPserver);
 
