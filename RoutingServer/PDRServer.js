@@ -3,7 +3,7 @@
 
 var fs = require('fs');
 
-let gameServerIPs =  {"east": `${process.env.RAILWAY_STATIC_URL}`, "NA-East": `${process.env.RAILWAY_STATIC_URL}`};
+let gameServerIPs =  {"east": `${"polydriveio-production.up.railway.app"}`, "NA-East": `${"polydriveio-production.up.railway.app"}`};
 
 var HTMLElement = typeof HTMLElement === 'undefined' ? function(){} : HTMLElement;
 var Game = require('../GameServer/game.js').Game;
@@ -59,7 +59,7 @@ app.use("/socket.io/socket.io.js", express.static(publicPath + 'node_modules/soc
 var gameServerSockets = {};
 Object.keys(gameServerIPs).forEach(function(k){
   console.log("ws://" + gameServerIPs[k]);
-  let serverSocket = new Socket("ws://" + gameServerIPs[k]);
+  let serverSocket = new Socket("wss://" + gameServerIPs[k]);
   serverSocket.playerCount = -1; //-1 if no response from the server
   serverSocket.write(["playerCount"]);
   serverSocket.on('data', function (data) {
@@ -85,7 +85,7 @@ app.get('/GameServer/:location', function(req, res) {
     if(gameServerIPs[req.params.location] !== undefined){
       let serverIP = gameServerIPs[req.params.location];
       let serverSocket = gameServerSockets[serverIP];
-      res.send("ws://" + serverIP);
+      res.send("wss://" + serverIP);
     }
 
 });
